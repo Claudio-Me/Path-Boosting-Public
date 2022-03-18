@@ -1,23 +1,14 @@
-import timeit
-from collections import defaultdict
-# https://stackoverflow.com/questions/41165664/convert-list-to-dictionary-with-duplicate-keys-using-dict-comprehension
-def testing():
-    a = ['rosso', 'rosso', 'rosso', 'rosso', 'giallo', 'giallo', 'blu', 'arancione']
+from testing.testing_from_array_label_to_dictionary import testing
+import networkx as nx
 
-    for i in range(23):
-        a = a + a
 
-    my_list = list(zip(a, range(len(a))))
-    print("start")
-    start = timeit.timeit()
-
-    new_dict = defaultdict(list)
-    for (key, value) in my_list:
-        new_dict[key].append(value)
-
-    end = timeit.timeit()
-    print(end - start)
+def read_data(dataset_name):
+    directory = "data/"
+    return nx.read_gml(directory + dataset_name)
 
 
 if __name__ == '__main__':
-    testing()
+    my_graph = read_data("LALMER.gml")
+    u = my_graph.edge_attr_dict_factory
+    my_graph.sticazzi=3
+    print(u)
