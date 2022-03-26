@@ -1,14 +1,14 @@
-from testing.testing_from_array_label_to_dictionary import testing
+from testing.testing import Testing
+
+from pattern_boosting import PatternBoosting
+
+import data.data_reader as dt
 import networkx as nx
-
-
-def read_data(dataset_name):
-    directory = "data/"
-    return nx.read_gml(directory + dataset_name)
-
+import numpy as np
 
 if __name__ == '__main__':
-    my_graph = read_data("LALMER.gml")
-    u = my_graph.edge_attr_dict_factory
-    my_graph.sticazzi=3
-    print(u)
+    # Testing()
+    LALMER_graph = dt.read_data("LALMER.gml")
+    OREDIA_graph = dt.read_data("OREDIA.gml")
+    dataset = [LALMER_graph, OREDIA_graph]
+    PatternBoosting(dataset)

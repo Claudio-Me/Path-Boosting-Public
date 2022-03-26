@@ -31,7 +31,7 @@ def method_3(my_list):
         new_dict[key].append(value)
 
 
-def testing(method_number, number_of_tests=20, approx_length=67108864):
+def testing_from_array_label_to_dictionary(method_number, number_of_tests=20, approx_length=67108864):
     base = ['rosso', 'rosso', 'rosso', 'rosso', 'giallo', 'giallo', 'blu', 'arancione']
     a = base
     while len(a) < approx_length:
