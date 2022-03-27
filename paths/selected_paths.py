@@ -1,4 +1,4 @@
-from path import Path
+from paths.path import Path
 from collections import defaultdict
 
 

@@ -31,32 +31,33 @@ def method_3(my_list):
         new_dict[key].append(value)
 
 
-def testing_from_array_label_to_dictionary(method_number, number_of_tests=20, approx_length=67108864):
-    base = ['rosso', 'rosso', 'rosso', 'rosso', 'giallo', 'giallo', 'blu', 'arancione']
-    a = base
-    while len(a) < approx_length:
-        a = a + a
-    print(len(a))
+class testing_from_array_label_to_dictionary:
+    def __init__(self,method_number, number_of_tests=20, approx_length=67108864):
+        base = ['rosso', 'rosso', 'rosso', 'rosso', 'giallo', 'giallo', 'blu', 'arancione']
+        a = base
+        while len(a) < approx_length:
+             a = a + a
+        print(len(a))
 
-    my_list = list(zip(a, range(len(a))))
-    print("start")
+        my_list = list(zip(a, range(len(a))))
+        print("start")
 
-    timing = []
+        timing = []
 
-    for i in range(number_of_tests):
-        start = timer()
+        for i in range(number_of_tests):
+            start = timer()
 
-        if method_number == 1:
-            method_1(my_list)
-        elif method_number == 2:
-            method_2(my_list)
-        elif method_number == 3:
-            method_3(my_list)
-        else:
-            print("Error, method " + str(method_number) + " not found")
-        end = timer()
+            if method_number == 1:
+                method_1(my_list)
+            elif method_number == 2:
+                method_2(my_list)
+            elif method_number == 3:
+               method_3(my_list)
+            else:
+                print("Error, method " + str(method_number) + " not found")
+            end = timer()
         # print(end - start)
-        timing.append(end - start)
+            timing.append(end - start)
 
-    timing = np.array(timing)
-    print("Method " + str(method_number) + " timing: " + str(np.average(timing)))
+        timing = np.array(timing)
+        print("Method " + str(method_number) + " timing: " + str(np.average(timing)))

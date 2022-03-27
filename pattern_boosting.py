@@ -1,4 +1,5 @@
 from graph import GraphPB
+from boosting_matrix import BoostingMatrix
 from collections import defaultdict
 import numpy as np
 
@@ -27,16 +28,24 @@ class PatternBoosting:
         # metal_centers = list(itertools.chain(*[graph.metal_center for graph in self.dataset]))
         matrix_header = set()
         label_to_graphs = defaultdict(list)
+
         for i in range(len(self.dataset)):
-            metal_labels = self.dataset[i].get_metal_center_label_and_add_metal_center_to_selected_paths()
-            matrix_header.update(metal_labels)
-            for label in metal_labels:
+            graph = self.dataset[i]
+            metal_center_labels = graph.get_metal_center_labels()
+            matrix_header.update(metal_center_labels)
+            for label in metal_center_labels:
                 label_to_graphs[label].append(int(i))
 
-        self.boosting_matrix = np.zeros((len(self.dataset), len(matrix_header)), dtype=int)
-        self.matrix_header = list(matrix_header)
+        boosting_matrix = np.zeros((len(self.dataset), len(matrix_header)), dtype=int)
+        matrix_header = list(matrix_header)
 
-        for i in range(len(self.matrix_header)):
-            label = self.matrix_header[i]
-            if label in label_to_graphs:
-                self.boosting_matrix[i][label_to_graphs[label]] = 1
+        for ith_label in range(len(matrix_header)):
+            label = matrix_header[ith_label]
+            for ith_graph in label_to_graphs[label]:
+                graph = self.dataset[ith_graph]
+                nodes = graph.label_to_node[label]
+                boosting_matrix[ith_graph][ith_label] = len(nodes)
+                for node in nodes:
+                    graph.selected_paths.add_path(path_label=label, path=[node])
+
+        self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)

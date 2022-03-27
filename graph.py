@@ -8,7 +8,10 @@ from paths.selected_paths import SelectedPaths
 
 class GraphPB:
     # list of labels of metal center
-    metal_labels = list(range(200))
+    metal_labels = [3, 4, 11, 12, 13, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 37, 38, 39, 40, 41, 42, 43,
+                    44, 45, 46, 47, 48, 49, 50, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
+                    73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
+                    100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116]
 
     def __init__(self, adjacency_matrix, node_to_labels_dictionary, adj_list=None):
         # adjacency matrix is assumed to be a boolean matrix
@@ -19,7 +22,7 @@ class GraphPB:
 
         self.label_to_node = self.__from_node_feature_dictionary_to_feature_node_dictionary(node_to_labels_dictionary)
 
-        self.metal_center = self.find_metal_center()
+        self.metal_center = self.find_metal_center_nodes()
 
         self.selected_paths = SelectedPaths()
 
@@ -67,7 +70,22 @@ class GraphPB:
             raise ValueError("Metal center not found")
         return metal_center_labels
 
-    def find_metal_center(self):
+    def get_metal_center_labels(self):
+        warnings.warn("Metal list not initialized yet")
+        metal_center_labels = []
+        warning = True
+        for metal_label in self.metal_labels:
+            if metal_label in self.label_to_node:
+                if warning and (len(self.label_to_node[metal_label]) > 1 or len(metal_center_labels) > 0):
+                    warnings.warn("Warning found multiple candidates for metal center in the same molecule")
+                    warning = False
+                metal_center_labels = metal_center_labels + [metal_label]
+
+        if len(metal_center_labels) == 0:
+            raise ValueError("Metal center not found")
+        return metal_center_labels
+
+    def find_metal_center_nodes(self):
         warnings.warn("Metal list not initialized yet")
         metal_center = []
         warning = True
@@ -83,13 +101,12 @@ class GraphPB:
         return metal_center
 
     def from_adj_matrix_to_adj_list(self):
-        al = {}  # does not contain path from a node to itself.
-        for x, row in enumerate(self.adj_matrix):
-            al[x + 1] = []
-            for i, v in enumerate(row):
-                if v == 1 and i != x:
-                    al[x + 1].append(i + 1)
-        return al
+        adj_list = defaultdict(list)
+        for i in range(len(self.adj_matrix)):
+            for j in range(len(self.adj_matrix[i])):
+                if self.adj_matrix[i][j] != 0:
+                    adj_list[i].append(j)
+        return adj_list
 
     @staticmethod
     def from_GraphNX_to_GraphPB(nx_Graph):
