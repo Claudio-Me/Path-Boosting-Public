@@ -48,6 +48,13 @@ class GraphPB:
 
         return nl_dict
 
+    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label):
+        return self.selected_paths.get_new_paths_labels_and_add_them_to_the_dictionary(path_label, self.adj_list,
+                                                                                       self.node_to_label)
+
+    def number_of_times_selected_path_is_present(self, path_label):
+        return self.selected_paths.get_number_of_times_path_is_present(path_label)
+
     def get_label_of_node(self, node):
         return self.node_to_label[node]
 
@@ -79,7 +86,7 @@ class GraphPB:
                 if warning and (len(self.label_to_node[metal_label]) > 1 or len(metal_center_labels) > 0):
                     warnings.warn("Warning found multiple candidates for metal center in the same molecule")
                     warning = False
-                metal_center_labels = metal_center_labels + [metal_label]
+                metal_center_labels = metal_center_labels + [[metal_label]]
 
         if len(metal_center_labels) == 0:
             raise ValueError("Metal center not found")

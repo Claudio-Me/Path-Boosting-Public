@@ -7,6 +7,7 @@ class BoostingMatrix:
         assert isinstance(matrix_header, list)
         assert isinstance(matrix, np.ndarray)
 
+        self.already_selected_columns = set()
         self.matrix = matrix
         self.header = matrix_header
 
