@@ -8,7 +8,4 @@ import numpy as np
 
 if __name__ == '__main__':
     Testing()
-    LALMER_graph = dt.read_data("LALMER.gml")
-    OREDIA_graph = dt.read_data("OREDIA.gml")
-    dataset = [LALMER_graph, OREDIA_graph]
-    PatternBoosting(dataset)
+

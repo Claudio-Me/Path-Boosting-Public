@@ -8,6 +8,7 @@ import numpy as np
 class TestPatternBoosting:
     def __init__(self):
         self.test_1()
+        self.test_2()
 
     def create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)
@@ -35,3 +36,9 @@ class TestPatternBoosting:
         labels_in_header = [tuple([20]), tuple([20, 0]), tuple([20, 10])]
         for label in labels_in_header:
             assert label in pattern_boosting.boosting_matrix.header
+
+    def test_2(self):
+        LALMER_graph = dt.read_data("LALMER.gml")
+        OREDIA_graph = dt.read_data("OREDIA.gml")
+        dataset = [LALMER_graph, OREDIA_graph]
+        PatternBoosting(dataset)
