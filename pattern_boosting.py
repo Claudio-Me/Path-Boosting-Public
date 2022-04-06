@@ -49,6 +49,12 @@ class PatternBoosting:
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
+        """
+        given a st of paths and a set of graphs that contains the given paths it returns the new column that should
+        be added to the dataset. in each line of the column the value represent the number of times the path that
+        correspond to the column is present in the graph.
+        The order of the columns follows the order of the input vector of paths
+        """
 
         new_columns = np.zeros((len(self.dataset), len(new_paths)))
 
@@ -62,6 +68,10 @@ class PatternBoosting:
         return new_columns
 
     def __get_new_paths(self, selected_path_label, graphs_that_contain_selected_column_path):
+        """
+        given one path it returns the list of all the possible extension of the input path
+        If the path is not present in the graph an empty list is returned for that extension
+        """
 
         new_paths = [list(
             self.dataset[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(selected_path_label))
@@ -70,7 +80,11 @@ class PatternBoosting:
         return new_paths
 
     def initialize_boosting_matrix(self):
-
+        """
+        it initialize the attribute boosting_matrix by searching in all the dataset all the metal atoms present in the
+         graphs
+         Note it handle also the case in which more than in one graph are present multiple metal atoms
+        """
         # get a list of all the metal centers atomic numbers
         # metal_centers = list(itertools.chain(*[graph.metal_center for graph in self.dataset]))
         matrix_header = set()

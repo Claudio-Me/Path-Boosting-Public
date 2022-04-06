@@ -38,7 +38,7 @@ class TestPatternBoosting:
             assert label in pattern_boosting.boosting_matrix.header
 
     def test_2(self):
-        LALMER_graph = dt.read_data("LALMER.gml")
-        OREDIA_graph = dt.read_data("OREDIA.gml")
+        LALMER_graph = dt.read_data_from_name("LALMER.gml")
+        OREDIA_graph = dt.read_data_from_name("OREDIA.gml")
         dataset = [LALMER_graph, OREDIA_graph]
         PatternBoosting(dataset)

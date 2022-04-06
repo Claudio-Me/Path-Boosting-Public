@@ -19,6 +19,13 @@ class SelectedPaths:
             self.dictionary[path_label].append(path_objet)
 
     def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label, adj_list, node_to_label_dictionary):
+        """
+        it returns the possible extension of the input path that can be made in the input graph graph
+        note: if the input label is not present in the selected paths, an empty set is returned
+        note: the choice of having in input adj_list and node_to_label_dictionary instead of the object graph is just to
+        avoid self references (this function is usually called inside a graph so it would have to pass self as a
+        parameter). To solve this incosistency one could move this function as a method of graph instead of selected_path
+        """
         assert isinstance(path_label, tuple)
         if not self.is_present(path_label):
             return set()

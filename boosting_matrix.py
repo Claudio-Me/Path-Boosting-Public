@@ -12,6 +12,9 @@ class BoostingMatrix:
         self.header = matrix_header
 
     def add_column(self, new_column, header):
+        """"
+        given a list of columns and their header adds them to the main matrix
+        """
         assert len(new_column) == len(self.matrix)
         new_column = np.array(new_column)
         if isinstance(new_column[0], np.ndarray):
