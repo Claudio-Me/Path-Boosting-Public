@@ -11,4 +11,5 @@ def read_data_from_directory(directory):
         directory = directory + "/"
     names = glob.glob(directory + '*.gml')
     dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
+    print("dataset loaded")
     return dataset

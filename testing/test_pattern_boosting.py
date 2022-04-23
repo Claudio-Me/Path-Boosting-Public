@@ -1,6 +1,7 @@
 import data.data_reader as dt
 from graph import GraphPB
 from pattern_boosting import PatternBoosting
+from data import data_reader
 from settings import Settings
 import numpy as np
 
@@ -9,6 +10,7 @@ class TestPatternBoosting:
     def __init__(self):
         self.test_1()
         self.test_2()
+        self.test_on_5k_dataset()
 
     def create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)
@@ -41,4 +43,8 @@ class TestPatternBoosting:
         LALMER_graph = dt.read_data_from_name("LALMER.gml")
         OREDIA_graph = dt.read_data_from_name("OREDIA.gml")
         dataset = [LALMER_graph, OREDIA_graph]
+        PatternBoosting(dataset)
+
+    def test_on_5k_dataset(self):
+        dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
         PatternBoosting(dataset)

@@ -43,9 +43,9 @@ class SelectedPaths:
             new_path_labels_with_no_duplicates = set()
             for i in range(len(new_path_labels)):
                 label = new_path_labels[i]
-                path = new_path_labels[i]
+                path = new_paths[i]
                 if len(label) > 0:
-                    self.dictionary[label].append(path)
+                    self.add_path(path_label=label, path=path)
                     new_path_labels_with_no_duplicates.add(label)
 
             return new_path_labels_with_no_duplicates

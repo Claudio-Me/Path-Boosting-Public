@@ -27,15 +27,12 @@ class LaunchRCode:
         return result
 '''
 
-
+import random
 
 
 class LaunchRCode:
     def __init__(self):
-
         pass
 
-    def launch_function(self, input):
-
-
-        return 0
+    def launch_function(self, matrix):
+        return random.randint(0, len(matrix[0]) - 1)
