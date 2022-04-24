@@ -1,4 +1,4 @@
-'''import pandas as pd
+import pandas as pd
 import rpy2.robjects as robjects
 from rpy2.robjects import pandas2ri
 from rpy2.robjects import numpy2ri
@@ -25,14 +25,4 @@ class LaunchRCode:
         result = self.function_name(input)
 
         return result
-'''
 
-import random
-
-
-class LaunchRCode:
-    def __init__(self):
-        pass
-
-    def launch_function(self, matrix):
-        return random.randint(0, len(matrix[0]) - 1)

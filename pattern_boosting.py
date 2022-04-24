@@ -2,6 +2,7 @@ from graph import GraphPB
 from boosting_matrix import BoostingMatrix
 from R_code.interface_with_R_code import LaunchRCode
 from settings import Settings
+from gradient_boosting_step import GradientBoostingStep
 
 from collections import defaultdict
 import numpy as np
@@ -26,13 +27,13 @@ class PatternBoosting:
 
     def pattern_boosting(self):
         # class to launch code in R
-        self.r_interface = LaunchRCode()
+        self.gradient_boosting_step = GradientBoostingStep()
 
         self.initialize_boosting_matrix()
 
         for i in range(self.settings.number_of_learners - 1):
 
-            selected_column_number = self.r_interface.launch_function(self.boosting_matrix.matrix)
+            selected_column_number = self.gradient_boosting_step.select_column(self.boosting_matrix.matrix)
 
             if not (selected_column_number in self.boosting_matrix.already_selected_columns):
                 # if the selected column has never been selected before
