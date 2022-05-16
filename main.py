@@ -1,10 +1,4 @@
-from testing.testing import Testing
-
-from pattern_boosting import PatternBoosting
-
-import data.data_reader as dt
-import networkx as nx
-import numpy as np
+from classes.testing.testing import Testing
 
 if __name__ == '__main__':
     Testing()

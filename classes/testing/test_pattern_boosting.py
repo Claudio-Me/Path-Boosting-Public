@@ -22,6 +22,7 @@ class TestPatternBoosting:
         return graph
 
     def test_1(self):
+        print("testing patterboosting on fully connected graphs")
         # Note: this test assumes that the R function returns always the column 0
         graph_dimension = 3
         metal_labels = [20]
@@ -40,11 +41,13 @@ class TestPatternBoosting:
             assert label in pattern_boosting.boosting_matrix.header
 
     def test_2(self):
+        print("Testing patterbosting on 2-elelements dataset")
         LALMER_graph = dt.read_data_from_name("LALMER.gml")
         OREDIA_graph = dt.read_data_from_name("OREDIA.gml")
         dataset = [LALMER_graph, OREDIA_graph]
         PatternBoosting(dataset)
 
     def test_on_5k_dataset(self):
+        print("testing data reading, reading data from 5k selections dataset")
         dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
         PatternBoosting(dataset)
