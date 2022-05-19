@@ -3,7 +3,8 @@ import numpy as np
 import networkx as nx
 import warnings
 
-from paths.selected_paths import SelectedPaths
+from settings import Settings
+from classes.paths.selected_paths import SelectedPaths
 
 
 class GraphPB:
@@ -13,12 +14,14 @@ class GraphPB:
                     73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99,
                     100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116]
 
-    def __init__(self, adjacency_matrix, node_to_labels_dictionary, adj_list=None):
+    def __init__(self, adjacency_matrix: np.ndarray, node_to_labels_dictionary: dict, label_value, adj_list=None):
         # adjacency matrix is assumed to be a boolean matrix
         self.adj_matrix = adjacency_matrix
 
         # nodel_labels is assumed to be a dictionary where the key is the node and the value is the feature
         self.node_to_label = node_to_labels_dictionary
+
+        self.label_value = label_value
 
         self.label_to_node = self.__from_node_feature_dictionary_to_feature_node_dictionary(node_to_labels_dictionary)
 
@@ -131,7 +134,10 @@ class GraphPB:
         adj_list = nx.to_dict_of_lists(nx_Graph)
         adj_list = {int(k): [int(i) for i in v] for k, v in adj_list.items()}
 
-        return GraphPB(adjacency_matrix=adj_matrix, node_to_labels_dictionary=n_t_l_d, adj_list=adj_list)
+        label = nx_Graph.graph[Settings.graph_label_variable]
+
+        return GraphPB(adjacency_matrix=adj_matrix, node_to_labels_dictionary=n_t_l_d, label_value=label,
+                       adj_list=adj_list)
 
     @staticmethod
     def __from_node_feature_dictionary_to_feature_node_dictionary(node_to_feature_dictionary):

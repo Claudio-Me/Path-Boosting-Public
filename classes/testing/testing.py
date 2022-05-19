@@ -1,4 +1,4 @@
-from classes.testing.testing import TestPatternBoosting
+from classes.testing.test_pattern_boosting import TestPatternBoosting
 from classes.testing.testing_dataset_reading import TestDatasetReading
 
 
@@ -6,6 +6,6 @@ from classes.testing.testing_dataset_reading import TestDatasetReading
 class Testing:
     def __init__(self):
         # TestGraphPBClass()
-        TestDatasetReading()
+        # TestDatasetReading()
         TestPatternBoosting()
 

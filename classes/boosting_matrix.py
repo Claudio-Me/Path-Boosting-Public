@@ -2,7 +2,7 @@ import numpy as np
 
 
 class BoostingMatrix:
-    def __init__(self, matrix, matrix_header):
+    def __init__(self, matrix: np.ndarray, matrix_header: list):
         assert len(matrix[0]) == len(matrix_header)
         assert isinstance(matrix_header, list)
         assert isinstance(matrix, np.ndarray)
