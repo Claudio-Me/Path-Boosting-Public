@@ -9,22 +9,19 @@ import networkx as nx
 
 
 class PatternBoosting:
-    def __init__(self, dataset, settings=Settings()):
+    def __init__(self, settings=Settings()):
         self.settings = settings
 
-        if isinstance(dataset, Dataset):
-            self.dataset = dataset
+    def training(self, training_dataset):
 
-        elif isinstance(dataset, list):
-            self.dataset = Dataset(dataset)
+        if isinstance(training_dataset, Dataset):
+            self.dataset = training_dataset
+
+        elif isinstance(training_dataset, list):
+            self.dataset = Dataset(training_dataset)
         else:
             raise TypeError("Input dataset not recognized")
 
-        self.pattern_boosting()
-
-        self.gradient_boosting_step.plot_training_accuracy()
-
-    def pattern_boosting(self):
         # class to launch code in R
         self.gradient_boosting_step = GradientBoostingStep()
 
@@ -49,6 +46,10 @@ class PatternBoosting:
                 new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
 
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
+
+        self.gradient_boosting_step.plot_training_accuracy()
+
+
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
         """

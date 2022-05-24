@@ -23,8 +23,8 @@ class TestPatternBoosting:
         test_dataset = [self.create_test_fully_connected_graph(graph_dimension, metal_labels),
                         self.create_test_fully_connected_graph(graph_dimension, metal_labels)]
 
-
-        pattern_boosting = PatternBoosting(test_dataset, settings)
+        pattern_boosting = PatternBoosting(settings)
+        pattern_boosting.training(test_dataset)
         assert len(pattern_boosting.boosting_matrix.matrix) == 2
         assert len(pattern_boosting.boosting_matrix.matrix[0]) == 3
         assert np.count_nonzero(pattern_boosting.boosting_matrix.matrix) == 6
@@ -37,12 +37,14 @@ class TestPatternBoosting:
         LALMER_graph = dt.read_data_from_name("LALMER.gml")
         OREDIA_graph = dt.read_data_from_name("OREDIA.gml")
         dataset = [LALMER_graph, OREDIA_graph]
-        PatternBoosting(dataset)
+        pattern_boosting = PatternBoosting()
+        pattern_boosting.training(dataset)
 
     def test_on_5k_dataset(self):
         print("Testing patternboosting on 5k test data")
         dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
-        PatternBoosting(dataset)
+        pattern_boosting = PatternBoosting()
+        pattern_boosting.training(dataset)
 
     def create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)
