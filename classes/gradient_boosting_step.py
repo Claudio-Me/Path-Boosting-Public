@@ -77,5 +77,5 @@ class GradientBoostingStep:
         ax.set_xlabel('Number of learners')
 
         # plot only integers on the x axis
-        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.show()

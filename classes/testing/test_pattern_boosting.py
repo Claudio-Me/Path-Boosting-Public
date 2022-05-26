@@ -9,7 +9,7 @@ import numpy as np
 class TestPatternBoosting:
     def __init__(self):
         self.test_1()
-        self.test_2()
+        # self.test_2()
         # self.test_on_5k_dataset()
         self.test_on_5k_dataset_with_test_data()
 

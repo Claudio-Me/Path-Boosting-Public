@@ -18,10 +18,10 @@ class PatternBoosting:
     def training(self, training_dataset, test_dataset=None):
 
         if isinstance(training_dataset, Dataset):
-            self.dataset = training_dataset
+            self.training_dataset = training_dataset
 
         elif isinstance(training_dataset, list):
-            self.dataset = Dataset(training_dataset)
+            self.training_dataset = Dataset(training_dataset)
         else:
             raise TypeError("Input dataset not recognized")
 
@@ -29,7 +29,7 @@ class PatternBoosting:
             if isinstance(test_dataset, Dataset):
                 self.test_dataset = test_dataset
 
-            elif isinstance(training_dataset, list):
+            elif isinstance(test_dataset, list):
                 self.test_dataset = Dataset(test_dataset)
             else:
                 raise TypeError("Input dataset not recognized")
@@ -39,16 +39,18 @@ class PatternBoosting:
         self.initialize_boosting_matrix()
         model = None
         test_error = []
+        train_error = []
         number_of_learners = []
         for iteration_number in range(self.settings.number_of_learners - 1):
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=model,
                                                                                            boosting_matrix=self.boosting_matrix,
-                                                                                           labels=self.dataset.labels,
+                                                                                           labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
 
             if test_dataset is not None:
-                test_error.append(self.evaluate(test_dataset))
+                test_error.append(self.evaluate(self.test_dataset))
+            train_error.append(self.evaluate(self.training_dataset))
 
             number_of_learners.append(iteration_number + 1)
 
@@ -67,8 +69,11 @@ class PatternBoosting:
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
         self.gradient_boosting_step.plot_training_accuracy()
-        self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
+        self.plot_error(number_of_learners, train_error, tittle="train error", x_label="number of learners",
                         y_label="MSE")
+        if test_dataset is not None:
+            self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
+                            y_label="MSE")
 
     def evaluate(self, dataset: Dataset):
 
@@ -89,12 +94,12 @@ class PatternBoosting:
         The order of the columns follows the order of the input vector of paths
         """
 
-        new_columns = np.zeros((len(self.dataset.graphs_list), len(new_paths)))
+        new_columns = np.zeros((len(self.training_dataset.graphs_list), len(new_paths)))
 
         for path_number in range(len(new_paths)):
             path = new_paths[path_number]
             for graph_number in graphs_that_contain_selected_column_path:
-                graph = self.dataset.graphs_list[graph_number]
+                graph = self.training_dataset.graphs_list[graph_number]
                 n = graph.number_of_times_selected_path_is_present(path)
                 new_columns[graph_number][path_number] = n
 
@@ -107,7 +112,7 @@ class PatternBoosting:
         """
 
         new_paths = [list(
-            self.dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+            self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
                 selected_path_label))
             for graph_number in graphs_that_contain_selected_column_path]
         new_paths = list(set([path for paths_list in new_paths for path in paths_list]))
@@ -124,21 +129,21 @@ class PatternBoosting:
         matrix_header = set()
         label_to_graphs = defaultdict(list)
 
-        for i in range(len(self.dataset.graphs_list)):
-            graph = self.dataset.graphs_list[i]
+        for i in range(len(self.training_dataset.graphs_list)):
+            graph = self.training_dataset.graphs_list[i]
             metal_center_labels = graph.get_metal_center_labels()
             metal_center_labels = [tuple(label) for label in metal_center_labels]
             matrix_header.update(metal_center_labels)
             for label in metal_center_labels:
                 label_to_graphs[label].append(int(i))
 
-        boosting_matrix = np.zeros((len(self.dataset.graphs_list), len(matrix_header)), dtype=int)
+        boosting_matrix = np.zeros((len(self.training_dataset.graphs_list), len(matrix_header)), dtype=int)
         matrix_header = list(matrix_header)
 
         for ith_label in range(len(matrix_header)):
             label = matrix_header[ith_label]
             for ith_graph in label_to_graphs[label]:
-                graph = self.dataset.graphs_list[ith_graph]
+                graph = self.training_dataset.graphs_list[ith_graph]
                 nodes = graph.label_to_node[label[0]]
                 boosting_matrix[ith_graph][ith_label] = len(nodes)
                 for node in nodes:
@@ -151,11 +156,15 @@ class PatternBoosting:
         fig, ax = plt.subplots()
 
         # Using set_dashes() to modify dashing of an existing line
-        ax.plot(x, y, label='')
+        tail = 10
+        if len(x) > tail:
+            ax.plot(x[-tail:], y[-tail:], label='')
+        else:
+            ax.plot(x, y, label='')
         ax.set_title(tittle)
         ax.set_ylabel(y_label)
         ax.set_xlabel(x_label)
 
         # plot only integers on the x axis
-        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
         plt.show()
