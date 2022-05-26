@@ -10,7 +10,8 @@ class TestPatternBoosting:
     def __init__(self):
         self.test_1()
         self.test_2()
-        self.test_on_5k_dataset()
+        # self.test_on_5k_dataset()
+        self.test_on_5k_dataset_with_test_data()
 
     def test_1(self):
         print("testing patterboosting on fully connected graphs")
@@ -20,8 +21,8 @@ class TestPatternBoosting:
         settings = Settings()
         settings.number_of_learners = 2
 
-        test_dataset = [self.create_test_fully_connected_graph(graph_dimension, metal_labels),
-                        self.create_test_fully_connected_graph(graph_dimension, metal_labels)]
+        test_dataset = [self.__create_test_fully_connected_graph(graph_dimension, metal_labels),
+                        self.__create_test_fully_connected_graph(graph_dimension, metal_labels)]
 
         pattern_boosting = PatternBoosting(settings)
         pattern_boosting.training(test_dataset)
@@ -46,7 +47,14 @@ class TestPatternBoosting:
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(dataset)
 
-    def create_test_fully_connected_graph(self, graph_dimension, metal_labels):
+    def test_on_5k_dataset_with_test_data(self):
+        print("Testing patternboosting on 5k test data, with test data")
+        dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
+        pattern_boosting = PatternBoosting()
+        pattern_boosting.training(train_dataset, test_dataset)
+
+    def __create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)
 
         node_to_labels_dictionary = dict([(int(i), int(i) * 10) for i in range(graph_dimension)])

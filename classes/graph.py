@@ -2,6 +2,7 @@ from collections import defaultdict
 import numpy as np
 import networkx as nx
 import warnings
+import copy
 
 from settings import Settings
 from classes.paths.selected_paths import SelectedPaths
@@ -35,7 +36,7 @@ class GraphPB:
         else:
             self.adj_list = adj_list
 
-        # dictionary that is [node,label]-->[list of neighbours of "node" with label "label"]
+        # dictionary that is [(node,label)]-->[list of neighbours of "node" with label "label"]
         self.neighbours_with_label = self.create_dictionary_of_neighbours_with_label()
 
     def get_neighbours_of__with_label(self, node, label):
@@ -122,9 +123,38 @@ class GraphPB:
                     adj_list[i].append(j)
         return adj_list
 
+    def number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
+        """takes in input a path label and returns the number of times this path is present in the graph"""
+        starting_point = path_label[0]
+        if not (starting_point in self.label_to_node):
+            return 0
+        else:
+            result = [self.__find_path([], path_label, start_node) for start_node in self.label_to_node[starting_point]]
+            return sum(result)
+
+    def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node):
+        visited_nodes = copy.deepcopy(old_visited_nodes)
+        visited_nodes.append(current_node)
+        if len(path_label) == len(visited_nodes):
+            # we covered all the path_label
+            return 1
+        elif (current_node, path_label[len(visited_nodes)]) in self.neighbours_with_label:
+            for new_node in self.neighbours_with_label[(current_node, path_label[len(visited_nodes)])]:
+                new_nodes_list: list = []
+                if not (new_node in visited_nodes):
+                    new_nodes_list.append(new_node)
+                if not new_nodes_list:
+                    # it means the list is empty
+                    return 0
+                else:
+
+                    result = [self.__find_path(visited_nodes, path_label, new_node) for new_node in new_nodes_list]
+                    return sum(result)
+        else:
+            return 0
+
     @staticmethod
     def from_GraphNX_to_GraphPB(nx_Graph):
-
         # need to convert dictionary keys and values from string to integer
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}

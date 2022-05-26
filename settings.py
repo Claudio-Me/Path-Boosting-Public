@@ -8,6 +8,8 @@ class Settings:
     graph_label_variable = "target_svp_homo_lumo_gap"
 
     estimation_type = EstimationType.regression
+    test_size = 0.2
 
     # quantity not used yet
     testing = False
+    evaluate_test_dataset_during_training = True

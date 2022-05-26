@@ -18,7 +18,7 @@ class SelectedPaths:
             path_objet = Path(path, path[-1])
             self.dictionary[path_label].append(path_objet)
 
-    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label, adj_list, node_to_label_dictionary):
+    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label: tuple, adj_list, node_to_label_dictionary):
         """
         it returns the possible extension of the input path that can be made in the input graph graph
         note: if the input label is not present in the selected paths, an empty set is returned

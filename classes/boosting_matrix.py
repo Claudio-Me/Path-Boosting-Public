@@ -9,6 +9,8 @@ class BoostingMatrix:
 
         self.already_selected_columns = set()
         self.matrix = matrix
+
+        # matrix header contains the label_path for each column of the matrix
         self.header = matrix_header
 
     def add_column(self, new_column, header):

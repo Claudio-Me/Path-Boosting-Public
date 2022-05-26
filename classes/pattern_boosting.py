@@ -4,7 +4,10 @@ from settings import Settings
 from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
 from collections import defaultdict
+from sklearn import metrics
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import networkx as nx
 
 
@@ -12,7 +15,7 @@ class PatternBoosting:
     def __init__(self, settings=Settings()):
         self.settings = settings
 
-    def training(self, training_dataset):
+    def training(self, training_dataset, test_dataset=None):
 
         if isinstance(training_dataset, Dataset):
             self.dataset = training_dataset
@@ -22,16 +25,32 @@ class PatternBoosting:
         else:
             raise TypeError("Input dataset not recognized")
 
-        # class to launch code in R
+        if test_dataset is not None:
+            if isinstance(test_dataset, Dataset):
+                self.test_dataset = test_dataset
+
+            elif isinstance(training_dataset, list):
+                self.test_dataset = Dataset(test_dataset)
+            else:
+                raise TypeError("Input dataset not recognized")
+
         self.gradient_boosting_step = GradientBoostingStep()
 
         self.initialize_boosting_matrix()
-
+        model = None
+        test_error = []
+        number_of_learners = []
         for iteration_number in range(self.settings.number_of_learners - 1):
 
-            selected_column_number = self.gradient_boosting_step.select_column(boosting_matrix=self.boosting_matrix,
-                                                                               labels=self.dataset.labels,
-                                                                               number_of_learners=iteration_number + 1)
+            selected_column_number, self.model = self.gradient_boosting_step.select_column(model=model,
+                                                                                           boosting_matrix=self.boosting_matrix,
+                                                                                           labels=self.dataset.labels,
+                                                                                           number_of_learners=iteration_number + 1)
+
+            if test_dataset is not None:
+                test_error.append(self.evaluate(test_dataset))
+
+            number_of_learners.append(iteration_number + 1)
 
             if not (selected_column_number in self.boosting_matrix.already_selected_columns):
                 # if the selected column has never been selected before
@@ -48,8 +67,19 @@ class PatternBoosting:
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
         self.gradient_boosting_step.plot_training_accuracy()
+        self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
+                        y_label="MSE")
 
+    def evaluate(self, dataset: Dataset):
 
+        boosting_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list]
+        error = self.model.evaluate(boosting_matrix, dataset.labels)
+        return error
+
+    def __create_boosting_vector_for_graph(self, graph: GraphPB) -> np.array:
+        boosting_vector = [graph.number_of_time_path_is_present_in_graph(path_label) for path_label in
+                           self.boosting_matrix.header]
+        return np.array(boosting_vector)
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
         """
@@ -115,3 +145,17 @@ class PatternBoosting:
                     graph.selected_paths.add_path(path_label=label, path=[node])
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
+
+    def plot_error(self, x, y, tittle: str, x_label: str = "", y_label: str = ""):
+
+        fig, ax = plt.subplots()
+
+        # Using set_dashes() to modify dashing of an existing line
+        ax.plot(x, y, label='')
+        ax.set_title(tittle)
+        ax.set_ylabel(y_label)
+        ax.set_xlabel(x_label)
+
+        # plot only integers on the x axis
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+        plt.show()
