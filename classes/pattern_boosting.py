@@ -75,6 +75,11 @@ class PatternBoosting:
             self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
                             y_label="MSE")
 
+        # -----------------------------------------------------------
+        print("temp debugging, boosting matrix header:")
+        print(self.boosting_matrix.header)
+        # -----------------------------------------------------------
+
     def evaluate(self, dataset: Dataset):
 
         boosting_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list]
