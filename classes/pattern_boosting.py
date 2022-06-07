@@ -161,7 +161,7 @@ class PatternBoosting:
         fig, ax = plt.subplots()
 
         # Using set_dashes() to modify dashing of an existing line
-        tail = 10
+        tail = 30
         if len(x) > tail:
             ax.plot(x[-tail:], y[-tail:], label='')
         else:

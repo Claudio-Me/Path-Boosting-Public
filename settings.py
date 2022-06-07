@@ -2,7 +2,9 @@ from classes.enumeration.estimation_type import EstimationType
 
 
 class Settings:
-    number_of_learners = 20
+    number_of_learners = 50 # call it maximum number of steps
+
+    n_estimators = 1000 #
 
     use_R = False
     graph_label_variable = "target_svp_homo_lumo_gap"
