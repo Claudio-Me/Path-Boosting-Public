@@ -66,16 +66,3 @@ class GradientBoostingStep:
 
         raise TypeError("Impossible to find a novel column to expand")
 
-    def plot_training_accuracy(self):
-
-        fig, ax = plt.subplots()
-
-        # Using set_dashes() to modify dashing of an existing line
-        ax.plot(self.number_of_learners, self.training_error, label='Training accuracy')
-        ax.set_title('Training accuracy')
-        ax.set_ylabel('Error')
-        ax.set_xlabel('Number of learners')
-
-        # plot only integers on the x axis
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        plt.show()

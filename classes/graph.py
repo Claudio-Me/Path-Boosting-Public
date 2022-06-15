@@ -154,7 +154,7 @@ class GraphPB:
             return 0
 
     @staticmethod
-    def from_GraphNX_to_GraphPB(nx_Graph):
+    def from_GraphNX_to_GraphPB(nx_Graph, label=None):
         # need to convert dictionary keys and values from string to integer
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}
@@ -163,8 +163,8 @@ class GraphPB:
 
         adj_list = nx.to_dict_of_lists(nx_Graph)
         adj_list = {int(k): [int(i) for i in v] for k, v in adj_list.items()}
-
-        label = nx_Graph.graph[Settings.graph_label_variable]
+        if label is None:
+            label = nx_Graph.graph[Settings.graph_label_variable]
 
         return GraphPB(adjacency_matrix=adj_matrix, node_to_labels_dictionary=n_t_l_d, label_value=label,
                        adj_list=adj_list)

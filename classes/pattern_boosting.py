@@ -4,11 +4,11 @@ from settings import Settings
 from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
 from collections import defaultdict
+from classes.enumeration.estimation_type import EstimationType
 from sklearn import metrics
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-import networkx as nx
 
 
 class PatternBoosting:
@@ -41,7 +41,7 @@ class PatternBoosting:
         test_error = []
         train_error = []
         number_of_learners = []
-        for iteration_number in range(self.settings.number_of_learners - 1):
+        for iteration_number in range(self.settings.maximum_number_of_steps - 1):
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=model,
                                                                                            boosting_matrix=self.boosting_matrix,
@@ -68,16 +68,32 @@ class PatternBoosting:
 
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
-        self.gradient_boosting_step.plot_training_accuracy()
-        self.plot_error(number_of_learners, train_error, tittle="train error", x_label="number of learners",
-                        y_label="MSE")
-        if test_dataset is not None:
-            self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
+        # -------------------------------------------------------------------------------------------------------------
+        # plots
+        if Settings.estimation_type == EstimationType.regression:
+            self.plot_error(number_of_learners, train_error, tittle="train error", x_label="number of learners",
                             y_label="MSE")
 
+            if test_dataset is not None:
+                self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
+                                y_label="MSE")
+        elif Settings.estimation_type == EstimationType.classification:
+            self.plot_error(number_of_learners, train_error, tittle="train classification",
+                            x_label="number of learners", y_label="jaccard score")
+
+            if test_dataset is not None:
+                self.plot_error(number_of_learners, test_error, tittle="test classification",
+                                x_label="number of learners", y_label="jaccard score")
+
         # -----------------------------------------------------------
-        print("temp debugging, boosting matrix header:")
+        print("Boosting matrix header:")
         print(self.boosting_matrix.header)
+        max_length = 0
+        for path in self.boosting_matrix.header:
+            if len(path) > max_length:
+                max_length = len(path)
+        print("number of explored paths: ", len(self.boosting_matrix.header))
+        print("max path length: ", max_length)
         # -----------------------------------------------------------
 
     def evaluate(self, dataset: Dataset):
@@ -161,7 +177,7 @@ class PatternBoosting:
         fig, ax = plt.subplots()
 
         # Using set_dashes() to modify dashing of an existing line
-        tail = 30
+        tail = 200
         if len(x) > tail:
             ax.plot(x[-tail:], y[-tail:], label='')
         else:
@@ -172,4 +188,5 @@ class PatternBoosting:
 
         # plot only integers on the x axis
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
         plt.show()

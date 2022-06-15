@@ -12,7 +12,12 @@ class Dataset:
         if isinstance(graphs_list[0], GraphPB):
             self.graphs_list = graphs_list
         elif isinstance(graphs_list[0], nx.classes.multigraph.MultiGraph):
-            self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in graphs_list]
+            if labels is None:
+                self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in graphs_list]
+            else:
+                self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(graph, label) for graph, label in
+                                    zip(graphs_list, labels)]
+
         else:
             raise TypeError("Graph format not recognized")
 

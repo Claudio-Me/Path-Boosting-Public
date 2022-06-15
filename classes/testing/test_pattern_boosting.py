@@ -9,7 +9,7 @@ import numpy as np
 class TestPatternBoosting:
     def __init__(self):
         # self.test_1()
-        # self.test_2()
+        self.test_2()
         # self.test_on_5k_dataset()
         self.test_on_5k_dataset_with_test_data()
 
@@ -19,7 +19,7 @@ class TestPatternBoosting:
         graph_dimension = 3
         metal_labels = [20]
         settings = Settings()
-        settings.number_of_learners = 2
+        settings.maximum_number_of_steps = 2
 
         test_dataset = [self.__create_test_fully_connected_graph(graph_dimension, metal_labels),
                         self.__create_test_fully_connected_graph(graph_dimension, metal_labels)]
