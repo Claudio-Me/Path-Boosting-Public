@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Any
 from classes.enumeration.estimation_type import EstimationType
 from classes.gradient_boosting_model import GradientBoostingModel
 from sklearn import metrics
@@ -10,6 +10,7 @@ from xgboost import XGBClassifier
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from enumeration.model_type import ModelType
 
 import random
 
@@ -22,15 +23,22 @@ class GradientBoostingStep:
     def select_column(self, model, boosting_matrix: BoostingMatrix, labels: list, number_of_learners: int = None):
         """It makes one step of gradient boosting ant it returns the selected column, with the trained model"""
         if Settings.use_R is True:
-            return self.__step_using_r(boosting_matrix, labels)
+            return self.__step_using_r(model, boosting_matrix, labels)
 
         else:
             return self.__step_using_python(boosting_matrix, labels, number_of_learners)
 
-    def __step_using_r(self, boosting_matrix: BoostingMatrix, labels) -> int:
-        r_interface = LaunchRCode()
-        selected_column_number = r_interface.launch_function(boosting_matrix.matrix, labels)
-        return selected_column_number
+    def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
+        if model is None:
+            # we are at the first step, the model is no initialized yet
+            r_function_select_column = LaunchRCode(Settings.r_code_location, "first_iteration")
+        else:
+            r_function_select_column = LaunchRCode(Settings.r_code_location, "select_column")
+        selected_column_number = r_function_select_column.r_function(np.array(boosting_matrix.matrix), np.array(labels),
+                                                                     Settings.r_mboost_model_location)
+
+        model = GradientBoostingModel(ModelType.r_model)
+        return selected_column_number, model
 
     def __step_using_python(self, boosting_matrix: BoostingMatrix, labels: list, number_of_learners: int):
 
@@ -62,7 +70,8 @@ class GradientBoostingStep:
         features_order = np.argsort(xgb_model.model.feature_importances_)
         for selected_feature_column in features_order:
             if not (selected_feature_column in boosting_matrix.already_selected_columns):
+                if not isinstance(selected_feature_column, int):
+                    raise TypeError("Debug: selected column is wrong")
                 return selected_feature_column, xgb_model
 
         raise TypeError("Impossible to find a novel column to expand")
-

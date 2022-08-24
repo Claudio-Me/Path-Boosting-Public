@@ -1,5 +1,5 @@
 import data.data_reader as dt
-from graph import GraphPB
+from classes.graph import GraphPB
 import numpy as np
 
 

@@ -10,8 +10,9 @@ class TestPatternBoosting:
     def __init__(self):
         # self.test_1()
         self.test_2()
+        #self.test_on_n_dataset(100)
         # self.test_on_5k_dataset()
-        self.test_on_5k_dataset_with_test_data()
+        # self.test_on_5k_dataset_with_test_data()
 
     def test_1(self):
         print("testing patterboosting on fully connected graphs")
@@ -40,6 +41,13 @@ class TestPatternBoosting:
         dataset = [LALMER_graph, OREDIA_graph]
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(dataset)
+
+
+    def test_on_n_dataset(self,n):
+        print("Testing patternboosting on 100 test data")
+        dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
+        pattern_boosting = PatternBoosting()
+        pattern_boosting.training(dataset[:n])
 
     def test_on_5k_dataset(self):
         print("Testing patternboosting on 5k test data")

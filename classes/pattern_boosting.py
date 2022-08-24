@@ -32,18 +32,18 @@ class PatternBoosting:
             elif isinstance(test_dataset, list):
                 self.test_dataset = Dataset(test_dataset)
             else:
-                raise TypeError("Input dataset not recognized")
+                raise TypeError("Input test dataset not recognized")
 
         self.gradient_boosting_step = GradientBoostingStep()
 
         self.initialize_boosting_matrix()
-        model = None
+        self.model = None
         test_error = []
         train_error = []
         number_of_learners = []
         for iteration_number in range(self.settings.maximum_number_of_steps - 1):
 
-            selected_column_number, self.model = self.gradient_boosting_step.select_column(model=model,
+            selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)

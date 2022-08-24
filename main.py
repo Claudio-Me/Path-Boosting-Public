@@ -5,8 +5,9 @@ from settings import Settings
 from classes.enumeration.estimation_type import EstimationType
 
 if __name__ == '__main__':
-    # Testing()
+    Testing()
 
+    '''
     if Settings.estimation_type is EstimationType.classification:
         dataset = data_reader.read_dataset_and_labels_from_csv("data/5k-selection-graphs", "tmQMg_5k_bin_class.csv")
 
@@ -19,3 +20,4 @@ if __name__ == '__main__':
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
     pattern_boosting = PatternBoosting()
     pattern_boosting.training(train_dataset, test_dataset)
+    '''
