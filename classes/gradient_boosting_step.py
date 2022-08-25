@@ -31,11 +31,13 @@ class GradientBoostingStep:
     def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
         if model is None:
             # we are at the first step, the model is no initialized yet
-            r_function_select_column = LaunchRCode(Settings.r_code_location, "first_iteration")
+            r_select_column_and_train_model = LaunchRCode(Settings.r_code_location, "first_iteration")
         else:
-            r_function_select_column = LaunchRCode(Settings.r_code_location, "select_column")
-        selected_column_number = r_function_select_column.r_function(np.array(boosting_matrix.matrix), np.array(labels),
-                                                                     Settings.r_mboost_model_location)
+            r_select_column_and_train_model = LaunchRCode(Settings.r_code_location, "select_column")
+        selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix.matrix),
+                                                                            np.array(labels),
+                                                                            Settings.r_mboost_model_location,
+                                                                            Settings.family)
 
         model = GradientBoostingModel(ModelType.r_model)
         return selected_column_number, model
