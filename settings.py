@@ -50,6 +50,6 @@ class Settings:
     # quantity not used yet
     testing = False
     evaluate_test_dataset_during_training = True
-    r_mboost_model_location = 'R_code/m_boost_model'
+    #r_mboost_model_location = 'R_code/m_boost_model'
 
-    r_function_name = 'main'
+

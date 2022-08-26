@@ -10,7 +10,7 @@ from xgboost import XGBClassifier
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
-from enumeration.model_type import ModelType
+from classes.enumeration.model_type import ModelType
 
 import random
 
@@ -32,14 +32,14 @@ class GradientBoostingStep:
         if model is None:
             # we are at the first step, the model is no initialized yet
             r_select_column_and_train_model = LaunchRCode(Settings.r_code_location, "first_iteration")
+            selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix.matrix),
+                                                                                np.array(labels),
+                                                                                Settings.r_model_name,
+                                                                                Settings.family)
+            model = GradientBoostingModel(ModelType.r_model)
         else:
-            r_select_column_and_train_model = LaunchRCode(Settings.r_code_location, "select_column")
-        selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix.matrix),
-                                                                            np.array(labels),
-                                                                            Settings.r_mboost_model_location,
-                                                                            Settings.family)
+            selected_column_number = model.fit(np.array(boosting_matrix.matrix), np.array(labels))
 
-        model = GradientBoostingModel(ModelType.r_model)
         return selected_column_number, model
 
     def __step_using_python(self, boosting_matrix: BoostingMatrix, labels: list, number_of_learners: int):
