@@ -21,9 +21,9 @@ class GradientBoostingModel:
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             return self.model.predict(dataset)
         elif self.model is ModelType.r_model:
-            r_predict_model = LaunchRCode(Settings.r_code_location, "main_predict")
+            r_predict_model = LaunchRCode(Settings.r_code_relative_location, "main_predict")
             TypeError("prediction for R not implemented yet")
-            prediction = r_predict_model.r_function(np.array(dataset), Settings.r_model_name)
+            prediction = r_predict_model.r_function(np.array(dataset), Settings.r_model_name, Settings.r_model_location)
             return prediction
 
     def evaluate(self, dataset, labels):
@@ -43,7 +43,7 @@ class GradientBoostingModel:
             model_error = metrics.mean_squared_error(labels, y_pred)
         return model_error
 
-    def fit(self, boosting_matrix, labels):
+    def fit(self, boosting_matrix: np.ndarray, labels):
         # ----------------------------------------------------------------------------------------------------------
 
         # N.B. this function returns the model in the case of XGB classifier, the selected column in case of R code
@@ -52,9 +52,10 @@ class GradientBoostingModel:
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             return self.model.fit(boosting_matrix, labels)
         elif self.model is ModelType.r_model:
-            r_select_column_and_train_model = LaunchRCode(Settings.r_code_location, "select_column")
-            selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix.matrix),
+            r_select_column_and_train_model = LaunchRCode(Settings.r_code_relative_location, "select_column")
+            selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix),
                                                                                 np.array(labels),
                                                                                 Settings.r_model_name,
+                                                                                Settings.r_model_location,
                                                                                 Settings.family)
             return selected_column_number

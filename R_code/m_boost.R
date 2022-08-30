@@ -1,74 +1,141 @@
-initialize_environment <- function() {
+initialize_environment <- function(R_code_location) {
   # set working directory as the same of this file
   # Install the this.path package.
-  if (!'this.path' %in% installed.packages()) {
-    install.packages('this.path')
-  }
-
-  library(this.path)
-
+  # if (!'this.path' %in% installed.packages()) {
+  #   install.packages('this.path')
+  # }
+  
+  # library(this.path)
+  
   # Get the directory from the path of the current file.
   # cur_dir2 = this.path()
-  cur_dir2="C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code/m_boost.R"
+  cur_dir2 = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code/m_boost.R"
   
   
-  print("qui1")
+
   
   
   # Set the working directory.
-  setwd(cur_dir2)
+  # setwd(cur_dir2)
+  R_code_location = paste(R_code_location, "/", "my_R_functions.R", sep = "")
+  source(R_code_location)
   
-
   
   #load mboost
   #install.packages("C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code/my_mboost", repos = NULL, type = "source")
   check.and.install.load.Package("mboost")
   
-  # Check that the working directory has been set as desired.
-  getwd()
-  source("my_R_functions.R")
-}
-
-
-
-first_iteration <- function(matrix, y, model_name, family_name) {
-  # it does just one iteration over the original data and initialize all the files needed
-  
-  y <- as.numeric(y)
-  initialize_environment()
-  print("matrix:   ")
-  print(matrix)
-  print(typeof(matrix))
-  print("Y:   ")
-  print(y)
-  print(typeof(y))
-  
-  
-  
-  column_and_model = fit_mboost(matrix, y, my_boost_control = boost_control(mstop = 1), family_name)
-  
-  selected_column = column_and_model$column
-  
-  trained_model = column_and_model$model
-  
-  
-  # location of the model is in the same directory as the location of this script
-  model_location = paste(this.dir(), "/", model_name, ".RData", sep = "")
-  
-  #we save the model on a file, it has to be a list because of the function "select_column"
-  base_learners_list = list(trained_model)
-  save(base_learners_list, file = model_location)
-  
-  
-  return (selected_column)
-  
   
 }
 
-main_predict <- function(matrix, model_name) {
-  initialize_environment()
+
+
+first_iteration <-
+  function(matrix,
+           y,
+           model_name,
+           model_location,
+           family_name) {
+    # it does just one iteration over the original data and initialize all the files needed
+    
+    y <- as.numeric(y)
+    initialize_environment(model_location)
+    
+    # print("matrix:   ")
+    # print(matrix)
+    # print(typeof(matrix))
+    # print("Y:   ")
+    # print(y)
+    # print(typeof(y))
+    
+    
+    
+    column_and_model = fit_mboost(matrix, y, my_boost_control = boost_control(mstop = 1), family_name)
+    
+    
+    selected_column = column_and_model$column
+    
+    trained_model = column_and_model$model
+    
+    
+    # location of the model is in the same directory as the location of this script
+    model_location = paste(model_location, "/", model_name, ".RData", sep = "")
+    
+    #we save the model on a file, it has to be a list because of the function "select_column"
+    base_learners_list = list(trained_model)
+    save(base_learners_list, file = model_location)
+    
+    
+    print("selected column:")
+    print(selected_column)
+    
+    
+    
+    return (selected_column)
+    
+    
+  }
+
+
+select_column <-
+  function(matrix,
+           y,
+           model_name,
+           model_location,
+           family_name) {
+    # it does just one iteration over the original data and initialize all the files needed
+    
+    y <- as.numeric(y)
+    initialize_environment(model_location)
+    
+    #print("matrix:   ")
+    #print(matrix)
+    #print(typeof(matrix))
+    #print("Y:   ")
+    #print(y)
+    #print(typeof(y))
+    
+    # location of the model is in the same directory as the location of this script
+    model_location = paste(model_location, "/", model_name, ".RData", sep = "")
+    
+    # load previous models
+    load(model_location)
+    
+    # compute the new target "gradient" using the negative gradient
+    
+    predictions_vector = sapply(base_learners_list, predict_mboost, matrix = matrix)
+    y_hat = rowSums(predictions_vector)
+    
+    # gradient of the loss function:
+    first_base_learner = base_learners_list[[1]]
+    negative_gradient_function = slot(first_base_learner$family, "ngradient")
+    
+    gradient = negative_gradient_function(y, y_hat)
+    
+    
+    column_and_model = fit_mboost(matrix, gradient, my_boost_control = boost_control(mstop = 1), family_name)
+    
+    selected_column = column_and_model$column
+    
+    trained_model = column_and_model$model
+    
+    base_learners_list = append(base_learners_list, list(trained_model))
+    
+    
+    save(base_learners_list, file = model_location)
+
+    
+    return (selected_column)
+
+    
+    
+}
+
+
+main_predict <- function(matrix, model_name, model_location) {
+  initialize_environment(model_location)
   # location of the model is in the same directory as the location of this script
-  model_location = paste(this.dir(), "/", model_name, ".RData", sep = "")
+  model_location = paste(model_location, "/", model_name, ".RData", sep = "")
   
   # load the model
   load(model_location)
@@ -76,60 +143,18 @@ main_predict <- function(matrix, model_name) {
   
   predictions_vector = sapply(base_learners_list, predict_mboost, matrix = matrix)
   predictions_vector = rowSums(predictions_vector)
+  
+  
+  
   return(predictions_vector)
   
 }
 
-select_column <- function(matrix, y, model_name, family_name) {
-  # it does just one iteration over the original data and initialize all the files needed
-  
-  y <- as.numeric(y)
-  initialize_environment()
-  print("matrix:   ")
-  print(matrix)
-  print(typeof(matrix))
-  print("Y:   ")
-  print(y)
-  print(typeof(y))
-  
-  # location of the model is in the same directory as the location of this script
-  model_location = paste(this.dir(), "/", model_name, ".RData", sep = "")
-  
-  # load previous models
-  load(model_location)
-  
-  # compute the new target "gradient" using the negative gradient
-  
-  predictions_vector = sapply(base_learners_list, predict_mboost, matrix = matrix)
-  y_hat = rowSums(predictions_vector)
-  
-  # gradient of the loss function:
-  first_base_learner = base_learners_list[[1]]
-  negative_gradient_function = slot(first_base_learner$family, "ngradient")
-  
-  gradient = negative_gradient_function(y, y_hat)
-  
-  
-  column_and_model = fit_mboost(matrix, gradient, my_boost_control = boost_control(mstop = 1), family_name)
-  
-  selected_column = column_and_model$column
-  
-  trained_model = column_and_model$model
-  
-  base_learners_list = append(base_learners_list, list(trained_model))
-  
-  
-  save(base_learners_list, file = model_location)
-  
-  
-  return (selected_column)
-  
-  
-}
 
 
 test <- function() {
-  initialize_environment()
+  model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
+  initialize_environment(model_location)
   n_observations = 15
   n_colums = 7
   
@@ -144,7 +169,7 @@ test <- function() {
              ncol = n_observations,
              byrow = TRUE)
   
-  result = select_column(mat1, y, "test", "Gaussian")
+  result = select_column(mat1, y, "test", model_location, "Gaussian")
   print("Result:")
   print(result)
   

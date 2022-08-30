@@ -42,6 +42,7 @@ class PatternBoosting:
         train_error = []
         number_of_learners = []
         for iteration_number in range(self.settings.maximum_number_of_steps - 1):
+            print("Step number ", iteration_number)
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,

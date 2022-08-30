@@ -14,7 +14,7 @@ class LaunchRCode:
         numpy2ri.activate()
         self.load_function(function_location, function_name)
 
-    def load_function(self, function_location, function_name, model_name=Settings.r_model_name):
+    def load_function(self, function_location, function_name):
         # Defining the R script and loading the instance in Python
         r = robjects.r
         r['source'](function_location)

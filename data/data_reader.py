@@ -16,7 +16,12 @@ def read_data_from_directory(directory):
     if directory[-1] != "/":
         directory = directory + "/"
     names = glob.glob(directory + '*.gml')
-    dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
+    dataset = [None] * len(names)
+    for i in range(len(names)):
+        dataset[i] = read_data_from_name(names[i], directory="")
+
+    # old reading version, very slow
+    # dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
     print("dataset loaded")
     return dataset
 
