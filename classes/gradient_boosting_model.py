@@ -43,7 +43,7 @@ class GradientBoostingModel:
             model_error = metrics.mean_squared_error(labels, y_pred)
         return model_error
 
-    def fit(self, boosting_matrix: np.ndarray, labels):
+    def fit_one_step(self, boosting_matrix: np.ndarray, labels):
         # ----------------------------------------------------------------------------------------------------------
 
         # N.B. this function returns the model in the case of XGB classifier, the selected column in case of R code
@@ -57,5 +57,6 @@ class GradientBoostingModel:
                                                                                 np.array(labels),
                                                                                 Settings.r_model_name,
                                                                                 Settings.r_model_location,
-                                                                                Settings.family)
+                                                                                Settings.family,
+                                                                                Settings.r_base_learner_name)
             return selected_column_number

@@ -5,6 +5,7 @@ import glob
 import csv
 import pandas as pd
 import warnings
+import pickle
 
 
 def read_data_from_name(dataset_name, directory="data/"):
@@ -59,3 +60,28 @@ def read_dataset_and_labels_from_csv(directory, file_name):
     print("dataset loaded")
 
     return dataset
+
+
+def save_dataset_in_binary_file(dataset, directory=None, filename=None):
+    if directory is None:
+        directory = "data/"
+    if directory[-1] != "/":
+        directory = directory + "/"
+    if filename is None:
+        filename = "binary_dataset"
+    with open(directory + filename+".pkl", 'wb') as outp:
+        pickle.dump(dataset, outp, pickle.HIGHEST_PROTOCOL)
+
+
+def load_dataset_from_binary(directory=None, filename=None):
+    if directory is None:
+        directory = "data/"
+    if directory[-1] != "/":
+        directory = directory + "/"
+    if filename is None:
+        filename = "binary_dataset"
+
+    with open(directory + filename+'.pkl', 'rb') as inp:
+        dataset = pickle.load(inp)
+    return dataset
+

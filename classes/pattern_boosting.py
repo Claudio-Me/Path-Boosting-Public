@@ -5,10 +5,8 @@ from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
 from collections import defaultdict
 from classes.enumeration.estimation_type import EstimationType
-from sklearn import metrics
+from classes.analysis import Analysis
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
 
 
 class PatternBoosting:
@@ -40,9 +38,11 @@ class PatternBoosting:
         self.model = None
         test_error = []
         train_error = []
+        average_path_length = []
         number_of_learners = []
-        for iteration_number in range(self.settings.maximum_number_of_steps - 1):
-            print("Step number ", iteration_number)
+        analysis=Analysis()
+        for iteration_number in range(self.settings.maximum_number_of_steps):
+            print("Step number ", iteration_number + 1)
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,
@@ -69,33 +69,36 @@ class PatternBoosting:
 
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
+            average_path_length.append(analysis.average_path_length(self.boosting_matrix))
+
         # -------------------------------------------------------------------------------------------------------------
-        # plots
+        # error plots
         if Settings.estimation_type == EstimationType.regression:
-            self.plot_error(number_of_learners, train_error, tittle="train error", x_label="number of learners",
-                            y_label="MSE")
+            analysis.plot_informations(number_of_learners, train_error, tittle="train error", x_label="number of learners",
+                                   y_label="MSE")
 
             if test_dataset is not None:
-                self.plot_error(number_of_learners, test_error, tittle="test error", x_label="number of learners",
-                                y_label="MSE")
+                analysis.plot_informations(number_of_learners, test_error, tittle="test error",
+                                       x_label="number of learners",
+                                       y_label="MSE")
         elif Settings.estimation_type == EstimationType.classification:
-            self.plot_error(number_of_learners, train_error, tittle="train classification",
-                            x_label="number of learners", y_label="jaccard score")
+            analysis.plot_informations(number_of_learners, train_error, tittle="train classification",
+                                   x_label="number of learners", y_label="jaccard score")
 
             if test_dataset is not None:
-                self.plot_error(number_of_learners, test_error, tittle="test classification",
-                                x_label="number of learners", y_label="jaccard score")
+                analysis.plot_informations(number_of_learners, test_error, tittle="test classification",
+                                       x_label="number of learners", y_label="jaccard score")
 
         # -----------------------------------------------------------
-        print("Boosting matrix header:")
-        print(self.boosting_matrix.header)
-        max_length = 0
-        for path in self.boosting_matrix.header:
-            if len(path) > max_length:
-                max_length = len(path)
-        print("number of explored paths: ", len(self.boosting_matrix.header))
-        print("max path length: ", max_length)
+        # average_path_length_plot
+        analysis.plot_informations(number_of_learners, average_path_length, tittle="Average path length",
+                               x_label="number of learners", y_label="average path length")
+
+
+        analysis.print_matrix_header(self.boosting_matrix)
+        analysis.print_info(test_dataset)
         # -----------------------------------------------------------
+
 
     def evaluate(self, dataset: Dataset):
 
@@ -173,21 +176,9 @@ class PatternBoosting:
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
 
-    def plot_error(self, x, y, tittle: str, x_label: str = "", y_label: str = ""):
 
-        fig, ax = plt.subplots()
 
-        # Using set_dashes() to modify dashing of an existing line
-        tail = 200
-        if len(x) > tail:
-            ax.plot(x[-tail:], y[-tail:], label='')
-        else:
-            ax.plot(x, y, label='')
-        ax.set_title(tittle)
-        ax.set_ylabel(y_label)
-        ax.set_xlabel(x_label)
 
-        # plot only integers on the x axis
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
-        plt.show()
+
+

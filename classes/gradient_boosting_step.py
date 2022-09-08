@@ -38,10 +38,11 @@ class GradientBoostingStep:
                                                                                 np.array(labels),
                                                                                 Settings.r_model_name,
                                                                                 Settings.r_model_location,
-                                                                                Settings.family)
+                                                                                Settings.family,
+                                                                                Settings.r_base_learner_name)
             model = GradientBoostingModel(ModelType.r_model)
         else:
-            selected_column_number = model.fit(np.array(boosting_matrix.matrix), np.array(labels))
+            selected_column_number = model.fit_one_step(np.array(boosting_matrix.matrix), np.array(labels))
 
         if isinstance(selected_column_number, Iterable):
             selected_column_number = selected_column_number[0]
@@ -58,7 +59,7 @@ class GradientBoostingStep:
             TypeError("Estimation task not recognized")
 
         xgb_model = GradientBoostingModel(xgb_model)
-        xgb_model.fit(boosting_matrix.matrix, labels)
+        xgb_model.fit_one_step(boosting_matrix.matrix, labels)
 
         """
         y_pred = xgb_model.predict(boosting_matrix.matrix)
@@ -78,8 +79,8 @@ class GradientBoostingStep:
         features_order = np.argsort(xgb_model.model.feature_importances_)
         for selected_feature_column in features_order:
             if not (selected_feature_column in boosting_matrix.already_selected_columns):
-                if not isinstance(selected_feature_column, int):
+                if not isinstance(int(selected_feature_column), int):
                     raise TypeError("Debug: selected column is wrong")
-                return selected_feature_column, xgb_model
+                return int(selected_feature_column), xgb_model
 
         raise TypeError("Impossible to find a novel column to expand")

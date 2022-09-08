@@ -53,7 +53,7 @@ select_family <- function(family_name) {
     return (NBinomial(nuirange = c(0, 100)))
     
   }  else if (family_name == "PropOdds") {
-    return (PropOdds(nuirange = c(-0.5,-1), offrange = c(-5, 5)))
+    return (PropOdds(nuirange = c(-0.5, -1), offrange = c(-5, 5)))
     
   }  else if (family_name == "Weibull") {
     return (Weibull(nuirange = c(0, 100)))
@@ -94,49 +94,67 @@ get_number_of_columns_the_model_takes_in_input <- function(model) {
   return (length(model$basemodel))
 }
 
-predict_mboost <- function(model, matrix) {
-  #convert matrix to data frame
-  data <- as.data.frame(matrix)
+predict_mboost <- function(model, data_frame_matrix = NULL) {
+  # this function returns the prediction of data_frame matrix, 
+  # if the object is null, then the prediction is done on the data used to fit the model
+  
+  if (is.null(data_frame_matrix)) {
+    return (model$predict(data_frame_matrix))
+  }
   n_columns = get_number_of_columns_the_model_takes_in_input(model)
+  data_frame_matrix = data_frame_matrix[, 1:n_columns]
   
-  matrix = matrix[, 1:n_columns]
+  #colnames(matrix)=rownames(1:n_columns,do.NULL = FALSE, prefix="V")
   
-  return (model$predict(matrix))
+  
+  
+  return (model$predict(data_frame_matrix))
+  
+  # return (# predict(model,usedonly=TRUE, newdata = data_frame_matrix))
+  # return (model$fitted(matrix))
+  # return (predict(model, newdata = matrix))
+  # return (model(matrix))
 }
 
 
 fit_mboost <-
-  function(matrix,
-           labels,
+  function(data_matrix,
+           y,
+           family_name,
            my_boost_control = boost_control(),
-           family_name) {
-    # this function calls m boost and it returns the most important feature in the m,atrix and the fitted model
+           base_learner_name) {
+    # this function calls m boost and it returns the most important feature in the matrix and the fitted model
     
     
     #convert family name (string) to family object
     family_o = select_family(family_name)
     
     #convert matrix to data frame
-    data <- as.data.frame(matrix)
+    my_data <- as.data.frame(data_matrix)
     
     
-    data$labels <- labels
+    my_data$y <- y
     
     
     m_boost_model <-
       mboost(
-        labels ~ .,
-        data = data,
-        baselearner = btree,
+        y ~ .,
+        data = my_data,
+        family = family_o,
         control = my_boost_control,
-        family = family_o
+        baselearner = base_learner_name
       )
     columns_importance <- varimp(m_boost_model)
+    
+    
     
     
     #needed do add-1 because python's arrays start from zero
     best_column = as.integer(which.max(columns_importance)) - 1
     
+    # print(varimp(m_boost_model))
+    # print("selected column:")
+    # print(best_column)
     
     
     return(list(column = best_column, model = m_boost_model))

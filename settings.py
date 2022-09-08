@@ -2,11 +2,10 @@ from classes.enumeration.estimation_type import EstimationType
 
 
 class Settings:
-    maximum_number_of_steps = 20  # call it maximum number of steps
-
+    maximum_number_of_steps = 3  # call it maximum number of steps
 
     use_R = True
-    #graph_label_variable = "target_svp_homo_lumo_gap"
+    # graph_label_variable = "target_svp_homo_lumo_gap"
     graph_label_variable = "target_tzvp_homo_lumo_gap"
 
     estimation_type = EstimationType.regression
@@ -21,6 +20,12 @@ class Settings:
     r_model_name = "my_r_model"
 
     r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
+
+    # Base Learner used by mboost
+    r_base_learner_name = "bols"  # “bbs”, “bols”, “btree”, “bss”, “bns”
+
+    # in the error graph Print only the last 20 learners
+    tail = 200
 
     # Possible family names for loss function in R mode
     family = "Gaussian"
@@ -47,8 +52,6 @@ class Settings:
     # Multinomial: Multinomial()
     # Cindex: Cindex(sigma=0.1, ipcw=1)
     # RCG: RCG(nuirange=c(0, 1), offrange=c(-5, 5))
-
-
 
     # quantity not used yet
 

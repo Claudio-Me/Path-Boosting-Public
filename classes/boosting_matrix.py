@@ -1,4 +1,5 @@
 import numpy as np
+from PyAstronomy import pyasl
 
 
 class BoostingMatrix:
@@ -32,3 +33,13 @@ class BoostingMatrix:
             new_matrix[:, -1] = new_column
             new_matrix[:, :-1] = self.matrix
             self.matrix = new_matrix
+
+    def translate_header_to_atom_symbols(self):
+        an = pyasl.AtomicNo()
+        translated_header = []
+        for path in self.header:
+            translated_path = []
+            for atomic_number in path:
+                translated_path.append(an.getElSymbol(atomic_number))
+            translated_header.append(translated_path)
+        return translated_header
