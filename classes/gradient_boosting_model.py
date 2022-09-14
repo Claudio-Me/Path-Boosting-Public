@@ -22,9 +22,8 @@ class GradientBoostingModel:
             return self.model.predict(dataset)
         elif self.model is ModelType.r_model:
             r_predict_model = LaunchRCode(Settings.r_code_relative_location, "main_predict")
-            TypeError("prediction for R not implemented yet")
-            prediction = r_predict_model.r_function(np.array(dataset), Settings.r_model_name, Settings.r_model_location)
-            return prediction
+            predictions_vector = r_predict_model.r_function(np.array(dataset), Settings.r_model_name, Settings.r_model_location)
+            return predictions_vector
 
     def evaluate(self, dataset, labels):
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
@@ -59,4 +58,5 @@ class GradientBoostingModel:
                                                                                 Settings.r_model_location,
                                                                                 Settings.family,
                                                                                 Settings.r_base_learner_name)
+            del r_select_column_and_train_model
             return selected_column_number

@@ -41,12 +41,14 @@ class GradientBoostingStep:
                                                                                 Settings.family,
                                                                                 Settings.r_base_learner_name)
             model = GradientBoostingModel(ModelType.r_model)
+            del r_select_column_and_train_model
         else:
             selected_column_number = model.fit_one_step(np.array(boosting_matrix.matrix), np.array(labels))
 
         if isinstance(selected_column_number, Iterable):
             selected_column_number = selected_column_number[0]
         selected_column_number = int(selected_column_number)
+
         return selected_column_number, model
 
     def __step_using_python(self, boosting_matrix: BoostingMatrix, labels: list, number_of_learners: int):

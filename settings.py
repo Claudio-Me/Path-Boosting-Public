@@ -2,7 +2,12 @@ from classes.enumeration.estimation_type import EstimationType
 
 
 class Settings:
-    maximum_number_of_steps = 3  # call it maximum number of steps
+    maximum_number_of_steps = 15  # call it maximum number of steps
+
+    # in the error graph Print only the last 20 learners
+    tail = 80
+
+    graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
 
     use_R = True
     # graph_label_variable = "target_svp_homo_lumo_gap"
@@ -16,16 +21,10 @@ class Settings:
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'
 
-    # name of the file .RData where the model is saved
-    r_model_name = "my_r_model"
-
     r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
 
     # Base Learner used by mboost
-    r_base_learner_name = "bols"  # “bbs”, “bols”, “btree”, “bss”, “bns”
-
-    # in the error graph Print only the last 20 learners
-    tail = 200
+    r_base_learner_name = "btree"  # “bbs”, “bols”, “btree”, “bss”, “bns”
 
     # Possible family names for loss function in R mode
     family = "Gaussian"
@@ -53,7 +52,16 @@ class Settings:
     # Cindex: Cindex(sigma=0.1, ipcw=1)
     # RCG: RCG(nuirange=c(0, 1), offrange=c(-5, 5))
 
+    # name of the file .RData where the model is saved
+    r_model_name = "my_r_model"
+    if True:
+        r_model_name = r_base_learner_name + family + str(maximum_number_of_steps) + str(tail)
+
+
     # quantity not used yet
+
+    multiple_training = True
+    training_batch_size = 10
 
     testing = False
     evaluate_test_dataset_during_training = True
