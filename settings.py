@@ -1,5 +1,5 @@
 from classes.enumeration.estimation_type import EstimationType
-
+import platform
 
 class Settings:
     maximum_number_of_steps = 15  # call it maximum number of steps
@@ -7,7 +7,11 @@ class Settings:
     # in the error graph Print only the last 20 learners
     tail = 80
 
-    graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
+    if platform.system() == 'WindowsD':
+        graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
+
+    elif platform.system() == 'Darwin':
+        pass
 
     use_R = True
     # graph_label_variable = "target_svp_homo_lumo_gap"
