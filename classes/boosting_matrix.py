@@ -3,7 +3,7 @@ from PyAstronomy import pyasl
 
 
 class BoostingMatrix:
-    def __init__(self, matrix: np.ndarray, matrix_header: list):
+    def __init__(self, matrix: np.ndarray, matrix_header: list, patterns_importance=None):
         assert len(matrix[0]) == len(matrix_header)
         assert isinstance(matrix_header, list)
         assert isinstance(matrix, np.ndarray)
@@ -13,7 +13,10 @@ class BoostingMatrix:
 
         # matrix header contains the label_path for each column of the matrix
         self.header = matrix_header
-        self.patterns_importance = [0] * len(self.header)
+        if patterns_importance is None:
+            self.patterns_importance = [0] * len(self.header)
+        else:
+            self.patterns_importance = patterns_importance
 
     def add_column(self, new_column, header):
         """"

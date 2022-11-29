@@ -50,7 +50,7 @@ class GraphPB:
 
         return nl_dict
 
-    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label):
+    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label: tuple):
         """
         it returns the possible extension of the input path that can be made in the graph
         note: if the input label is not present in the selected paths, an empty set is returned

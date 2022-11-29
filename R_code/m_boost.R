@@ -184,6 +184,13 @@ select_column <-
     print("return ")
     
     #--------------------------------------------------------------------------------------
+    
+    rm(list=setdiff(ls(), "selected_column"))
+    
+    gc()
+    
+    
+    
     return (selected_column)
     
     
@@ -257,6 +264,6 @@ test <- function() {
   print("second_column:")
   print(result2)
   
-  
   return(c(result1, result2))
 }
+

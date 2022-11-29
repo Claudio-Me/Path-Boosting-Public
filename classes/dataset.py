@@ -5,6 +5,7 @@ import networkx as nx
 import numbers
 import warnings
 
+
 class Dataset:
 
     def __init__(self, graphs_list: list, labels: list = None):
@@ -27,15 +28,11 @@ class Dataset:
         if not (isinstance(self.labels[0], numbers.Number)):
             warnings.warn("Warning, labels of the graphs are not numbers")
 
+    def get_first_n_entries(self, n):
+        return Dataset(self.graphs_list[:n], self.labels[:n])
+
     def split_dataset(self, test_size):
         x_train, x_test, y_train, y_test = train_test_split(self.graphs_list, self.labels, test_size=test_size)
         train_dataset = Dataset(x_train, y_train)
         test_dataset = Dataset(x_test, y_test)
         return train_dataset, test_dataset
-
-
-
-
-
-
-

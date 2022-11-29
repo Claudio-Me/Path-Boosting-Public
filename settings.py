@@ -2,10 +2,10 @@ from classes.enumeration.estimation_type import EstimationType
 import platform
 
 class Settings:
-    maximum_number_of_steps = 15  # call it maximum number of steps
+    maximum_number_of_steps = 50  # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
-    tail = 80
+    tail = 50
 
     if platform.system() == 'WindowsD':
         graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
@@ -13,7 +13,8 @@ class Settings:
     elif platform.system() == 'Darwin':
         pass
 
-    use_R = True
+    algorithm = "Xgb_step"  # "Full_xgb" "R"
+
     # graph_label_variable = "target_svp_homo_lumo_gap"
     graph_label_variable = "target_tzvp_homo_lumo_gap"
 
@@ -28,7 +29,7 @@ class Settings:
     r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
 
     # Base Learner used by mboost
-    r_base_learner_name = "btree"  # “bbs”, “bols”, “btree”, “bss”, “bns”
+    r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
     # Possible family names for loss function in R mode
     family = "Gaussian"
@@ -61,7 +62,6 @@ class Settings:
     if True:
         r_model_name = r_base_learner_name + family + str(maximum_number_of_steps) + str(tail)
 
-
     # quantity not used yet
 
     multiple_training = True
@@ -70,4 +70,9 @@ class Settings:
     testing = False
     evaluate_test_dataset_during_training = True
     n_estimators = 20
+
     # r_mboost_model_location = 'R_code/m_boost_model'
+
+    @staticmethod
+    def neg_gradient(y, y_hat):
+        return (y - y_hat)

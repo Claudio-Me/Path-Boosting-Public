@@ -1,8 +1,10 @@
 import data.data_reader as dt
 from classes.graph import GraphPB
 from classes.pattern_boosting import PatternBoosting
+from classes.dataset import Dataset
 from data import data_reader
 from settings import Settings
+from classes.splitted_training import SplittedTraining
 import numpy as np
 
 
@@ -13,6 +15,7 @@ class TestPatternBoosting:
         # self.test_on_n_dataset(100)
         # self.test_on_5k_dataset()
         self.test_on_5k_dataset_with_test_data()
+        # self.test_splitted_training_on_5k_dataset_with_test_data()
 
     def test_1(self):
         print("testing patterboosting on fully connected graphs")
@@ -43,11 +46,17 @@ class TestPatternBoosting:
         pattern_boosting.training(dataset)
 
     def test_on_n_dataset(self, n):
-        print("Testing patternboosting on 100 test data")
+        print("Testing patternboosting on ", n, " test data")
+        # --------------------------------------
         # dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
+        # dataset = Dataset(dataset)
+        # data_reader.save_dataset_in_binary_file(dataset)
+        # -------------------------------------
         dataset = data_reader.load_dataset_from_binary()
+        dataset = dataset.get_first_n_entries(n)
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
         pattern_boosting = PatternBoosting()
-        pattern_boosting.training(dataset[:n])
+        pattern_boosting.training(train_dataset, test_dataset)
 
     def test_on_5k_dataset(self):
         print("Testing patternboosting on 5k test data")
@@ -63,6 +72,14 @@ class TestPatternBoosting:
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(train_dataset, test_dataset)
+
+    def test_splitted_training_on_5k_dataset_with_test_data(self):
+        print("Testing splitted training of patternboosting on 5k test data, with test data")
+        # dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
+        dataset = data_reader.load_dataset_from_binary()
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
+        splitted_training = SplittedTraining()
+        splitted_training.main_train_splitted(train_dataset, test_dataset)
 
     def __create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)

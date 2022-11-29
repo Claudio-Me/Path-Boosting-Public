@@ -21,32 +21,38 @@ class PatternBoosting:
         self.analysis = Analysis()
         self.gradient_boosting_step = GradientBoostingStep()
 
-    def training(self, training_dataset=None, test_dataset=None):
+    def training(self, training_dataset, test_dataset=None):
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
         training is always the one took as input the first time the function "training" is called
         In future versions it will be possible to give as input a new dataset"""
 
+        if isinstance(training_dataset, Dataset):
+            self.training_dataset = training_dataset
+
+        elif isinstance(training_dataset, list):
+            self.training_dataset = Dataset(training_dataset)
+        else:
+            raise TypeError("Input dataset not recognized")
+
+        if test_dataset is not None:
+            if isinstance(test_dataset, Dataset):
+                self.test_dataset = test_dataset
+
+            elif isinstance(test_dataset, list):
+                self.test_dataset = Dataset(test_dataset)
+            else:
+                raise TypeError("Input test dataset not recognized")
+
+        # if it is the first time we train this model
         if self.trained is False:
             self.trained = True
-
-            if isinstance(training_dataset, Dataset):
-                self.training_dataset = training_dataset
-
-            elif isinstance(training_dataset, list):
-                self.training_dataset = Dataset(training_dataset)
-            else:
-                raise TypeError("Input dataset not recognized")
-
-            if test_dataset is not None:
-                if isinstance(test_dataset, Dataset):
-                    self.test_dataset = test_dataset
-
-                elif isinstance(test_dataset, list):
-                    self.test_dataset = Dataset(test_dataset)
-                else:
-                    raise TypeError("Input test dataset not recognized")
-
             self.__initialize_boosting_matrix()
+
+        else:
+            boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in
+                                      training_dataset.graphs_list]
+            self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
+                                                  self.boosting_matrix.patterns_importance)
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
@@ -55,6 +61,7 @@ class PatternBoosting:
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
+            print("column selected")
 
             if test_dataset is not None:
                 self.test_error.append(self.evaluate(self.test_dataset))
@@ -88,13 +95,16 @@ class PatternBoosting:
 
         # -------------------------------------------------------------------------------------------------------------
         # error plots
+        cut_point = 1
         if Settings.estimation_type == EstimationType.regression:
-            self.analysis.plot_informations(self.number_of_learners, self.train_error, tittle="train error",
+            self.analysis.plot_informations(self.number_of_learners[cut_point:], self.train_error[cut_point:],
+                                            tittle="train error",
                                             x_label="number of learners",
                                             y_label="MSE")
 
             if test_dataset is not None:
-                self.analysis.plot_informations(self.number_of_learners, self.test_error, tittle="test error",
+                self.analysis.plot_informations(self.number_of_learners[cut_point:], self.test_error[cut_point:],
+                                                tittle="test error",
                                                 x_label="number of learners",
                                                 y_label="MSE")
         elif Settings.estimation_type == EstimationType.classification:
@@ -116,14 +126,15 @@ class PatternBoosting:
         # -----------------------------------------------------------
 
     def predict(self, dataset: Dataset):
-        boosting_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list]
-        prediction = self.model.predict(boosting_matrix)
+        boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list]
+        prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
     def evaluate(self, dataset: Dataset):
 
-        boosting_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list]
-        error = self.model.evaluate(boosting_matrix, dataset.labels)
+        boosting_matrix_matrix = np.array(
+            [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list])
+        error = self.model.evaluate(boosting_matrix_matrix, dataset.labels)
         return error
 
     def __create_boosting_vector_for_graph(self, graph: GraphPB) -> np.array:

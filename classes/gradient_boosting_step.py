@@ -8,7 +8,7 @@ from R_code.interface_with_R_code import LaunchRCode
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
 from collections.abc import Iterable
-
+import gc
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -24,11 +24,27 @@ class GradientBoostingStep:
 
     def select_column(self, model, boosting_matrix: BoostingMatrix, labels: list, number_of_learners: int = None):
         """It makes one step of gradient boosting ant it returns the selected column, with the trained model"""
-        if Settings.use_R is True:
+        if Settings.algorithm == "R":
+
             return self.__step_using_r(model, boosting_matrix, labels)
 
+        elif Settings.algorithm == "Full_xgb":
+            return self.__step_training_a_whole_new_XGB_moel(boosting_matrix, labels, number_of_learners)
+
+        elif Settings.algorithm == "Xgb_step":
+
+            return self.__step_using_xgboost(model, boosting_matrix, labels)
         else:
-            return self.__step_using_python(boosting_matrix, labels, number_of_learners)
+            raise TypeError("Selected algorithm not recognized")
+
+    def __step_using_xgboost(self, model: GradientBoostingModel, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
+        if model is None:
+            model = GradientBoostingModel(ModelType.xgb_one_step)
+        selected_column = model.fit_one_step(boosting_matrix.matrix, labels)
+        # -------------------------------------------------------------------------------------------------------------
+        print("Selected column ", selected_column)
+        # -------------------------------------------------------------------------------------------------------------
+        return selected_column, model
 
     def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
         if model is None:
@@ -48,10 +64,11 @@ class GradientBoostingStep:
         if isinstance(selected_column_number, Iterable):
             selected_column_number = selected_column_number[0]
         selected_column_number = int(selected_column_number)
-
+        gc.collect()
         return selected_column_number, model
 
-    def __step_using_python(self, boosting_matrix: BoostingMatrix, labels: list, number_of_learners: int):
+    def __step_training_a_whole_new_XGB_moel(self, boosting_matrix: BoostingMatrix, labels: list,
+                                             number_of_learners: int):
 
         if Settings.estimation_type is EstimationType.regression:
             xgb_model = XGBRegressor(n_estimators=number_of_learners)
