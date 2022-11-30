@@ -13,7 +13,7 @@ class Settings:
     elif platform.system() == 'Darwin':
         pass
 
-    algorithm = "Xgb_step"  # "Full_xgb" "R"
+    algorithm = "Xgb_step"  # "Full_xgb", "R"
 
     # graph_label_variable = "target_svp_homo_lumo_gap"
     graph_label_variable = "target_tzvp_homo_lumo_gap"
