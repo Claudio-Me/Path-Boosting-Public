@@ -4,6 +4,7 @@ from classes.boosting_matrix import BoostingMatrix
 from settings import Settings
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+from collections import Counter
 import pathlib
 import os
 import sys
@@ -84,11 +85,11 @@ class Analysis:
         print("average value for test label: ", average_test_label)
 
     def analyse_path_length_distribution(self, boosting_matrix: BoostingMatrix):
-        self.__plot_histogram_of_path_length(boosting_matrix)
+        self.__plot_bar_plot_of_path_length(boosting_matrix)
         self.__plot_histogram_of_path_length_importance(boosting_matrix)
 
-    def __plot_histogram_of_path_length(self, boosting_matrix: BoostingMatrix):
-        tittle = "Histogram of path length"
+    def __plot_bar_plot_of_path_length(self, boosting_matrix: BoostingMatrix):
+        tittle = "Bar plot of path length"
         path_length_vector = np.zeros(len(boosting_matrix.header))
 
         for i in range(len(boosting_matrix.header)):
@@ -96,14 +97,20 @@ class Analysis:
 
         max_path_length = int(np.amax(path_length_vector))
 
+        path_length_counter = Counter(path_length_vector)
+
+        path_length = path_length_counter.keys()
+        path_length = [str(int(length)) for length in path_length]
+        number_of_paths = list(path_length_counter.values())
+        number_of_paths = [int(n) for n in number_of_paths]
+
         plt.style.use('ggplot')
 
         fig, ax = plt.subplots()
 
-        ax.hist(path_length_vector, bins=max_path_length, ec="k")
-
+        ax.bar(path_length, number_of_paths, color='maroon')
         # plot only integers on the x axis
-        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         # to have only integers in the y axis
         ax.locator_params(axis='y', integer=True)
@@ -138,8 +145,13 @@ class Analysis:
         plt.style.use('ggplot')
 
         fig, ax = plt.subplots()
-        ax.set_yscale('log')
-        ax.bar(range(1, max_path_length + 1), length_importance)
+
+        if True:
+            ax.set_yscale('log')
+            tittle = tittle + " (log scale)"
+        # to do: convert range to string
+        path_length_labels = [str(i) for i in range(1, max_path_length + 1)]
+        ax.bar(path_length_labels, length_importance)
 
         ax.set_xlabel('Path length')
         ax.set_ylabel('Importance')

@@ -10,11 +10,7 @@ from xgboost import XGBClassifier
 from collections.abc import Iterable
 import gc
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
 from classes.enumeration.model_type import ModelType
-
-import random
 
 
 class GradientBoostingStep:

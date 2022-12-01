@@ -6,10 +6,8 @@ from classes.enumeration.estimation_type import EstimationType
 from classes.enumeration.model_type import ModelType
 import numpy as np
 from R_code.interface_with_R_code import LaunchRCode
-
 from xgboost import plot_tree
 import matplotlib.pyplot as plt
-import graphviz
 
 
 class GradientBoostingModel:
@@ -104,7 +102,7 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             if len(self.base_learners_list) == 0:
                 # if it is the first time we launch the model
-                xgb_model = self.__create_xgb_model()
+                xgb_model = self.__create_xgb_model(np.mean(labels))
                 xgb_model.fit(boosting_matrix, labels)
                 self.base_learners_list.append(xgb_model)
                 self.base_learners_dimension.append(len(boosting_matrix[0]))
@@ -114,26 +112,27 @@ class GradientBoostingModel:
 
                 y_hat = self.predict_my(boosting_matrix)
                 neg_gradient = self.__neg_gradient(labels, y_hat)
-                #xgb_model = self.__create_xgb_model(np.mean(neg_gradient))
-                xgb_model = self.__create_xgb_model(0)
+                # xgb_model = self.__create_xgb_model(np.mean(neg_gradient))
+                xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
+                                                    estimation_type=EstimationType.regression)
 
                 xgb_model.fit(boosting_matrix, neg_gradient)
 
                 self.base_learners_list.append(xgb_model)
                 # --------------------------------------------------------------------------------------------------
                 # plot xgb model
-                plot_tree(xgb_model, num_trees=0)
-                plt.show()
+                # plot_tree(xgb_model, num_trees=0)
+                # plt.show()
                 # --------------------------------------------------------------------------------------------------
                 self.base_learners_dimension.append(len(boosting_matrix[0]))
                 selected_column = np.argsort(xgb_model.feature_importances_)
                 return selected_column[-1]
 
-    def __create_xgb_model(self,base_score=None):
+    def __create_xgb_model(self, base_score=0, estimation_type=Settings.estimation_type):
         # create a Xgb model
-        if Settings.estimation_type is EstimationType.regression:
+        if estimation_type is EstimationType.regression:
             return XGBRegressor(n_estimators=1, max_depth=1, booster="gbtree", base_score=base_score, learning_rate=0.5)
-        elif Settings.estimation_type is EstimationType.classification:
+        elif estimation_type is EstimationType.classification:
             return XGBClassifier(num_boosted_rounds=2)
         else:
             TypeError("Estimation task not recognized")

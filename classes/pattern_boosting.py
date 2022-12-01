@@ -77,19 +77,9 @@ class PatternBoosting:
 
             self.number_of_learners.append(iteration_number + 1)
 
-            if not (selected_column_number in self.boosting_matrix.already_selected_columns):
-                # if the selected column has never been selected before
-                self.boosting_matrix.already_selected_columns.add(selected_column_number)
+            # expand boosting matrix
 
-                selected_column = self.boosting_matrix.matrix[:, selected_column_number]
-                selected_path_label = self.boosting_matrix.header[selected_column_number]
-
-                graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
-
-                new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
-                new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
-
-                self.boosting_matrix.add_column(new_columns, new_paths_labels)
+            self.__expand_boosting_matrix(selected_column_number)
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
 
@@ -206,3 +196,22 @@ class PatternBoosting:
                     graph.selected_paths.add_path(path_label=label, path=[node])
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
+
+    def __expand_boosting_matrix(self, selected_column_number):
+        # Following two lines are jut to have mor readable code, everything can be grouped in one line
+        length_selected_path = len(self.boosting_matrix.header[selected_column_number])
+        path_length_condition = length_selected_path < self.settings.max_path_length
+
+        if (not (selected_column_number in self.boosting_matrix.already_selected_columns)) and path_length_condition:
+            # if the selected column has never been selected before
+            self.boosting_matrix.already_selected_columns.add(selected_column_number)
+
+            selected_column = self.boosting_matrix.matrix[:, selected_column_number]
+            selected_path_label = self.boosting_matrix.header[selected_column_number]
+
+            graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
+
+            new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
+            new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
+
+            self.boosting_matrix.add_column(new_columns, new_paths_labels)

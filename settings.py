@@ -1,22 +1,28 @@
 from classes.enumeration.estimation_type import EstimationType
 import platform
 
+
 class Settings:
     maximum_number_of_steps = 50  # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
     tail = 50
 
-    if platform.system() == 'WindowsD':
+    if platform.system() == 'Windows':
         graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
+        r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
 
     elif platform.system() == 'Darwin':
-        pass
+        graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/data"
+        r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
 
-    algorithm = "Xgb_step"  # "Full_xgb", "R"
+    algorithm = "Xgb_step"  # "Full_xgb" "R"
 
     # graph_label_variable = "target_svp_homo_lumo_gap"
     graph_label_variable = "target_tzvp_homo_lumo_gap"
+
+    # do not expand if the paths are longer than this amount
+    max_path_length = 2
 
     estimation_type = EstimationType.regression
     # estimation_type = EstimationType.classification
@@ -25,8 +31,6 @@ class Settings:
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'
-
-    r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
 
     # Base Learner used by mboost
     r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
