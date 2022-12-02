@@ -41,12 +41,6 @@ class GradientBoostingModel:
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
 
-            # ------------------------------------------------------------------------------------------------------
-
-            print("predictions ", predictions.sum(axis=0))
-
-            # -----------------------------------------------------------------------------------------------------
-
             return predictions.sum(axis=0)
 
     def evaluate(self, boosting_matrix_matrix, labels):
@@ -66,7 +60,6 @@ class GradientBoostingModel:
             model_error = metrics.mean_squared_error(labels, y_pred)
 
         elif self.model is ModelType.xgb_one_step:
-            print("Boosting matix to be evaluated\n", boosting_matrix_matrix)
             y_pred = self.predict_my(boosting_matrix_matrix)
             y_pred = list(y_pred)
             model_error = metrics.mean_squared_error(labels, y_pred)
@@ -102,7 +95,8 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             if len(self.base_learners_list) == 0:
                 # if it is the first time we launch the model
-                xgb_model = self.__create_xgb_model(np.mean(labels))
+                #xgb_model = self.__create_xgb_model(np.mean(labels))
+                xgb_model = self.__create_xgb_model(0)
                 xgb_model.fit(boosting_matrix, labels)
                 self.base_learners_list.append(xgb_model)
                 self.base_learners_dimension.append(len(boosting_matrix[0]))
@@ -113,7 +107,7 @@ class GradientBoostingModel:
                 y_hat = self.predict_my(boosting_matrix)
                 neg_gradient = self.__neg_gradient(labels, y_hat)
                 # xgb_model = self.__create_xgb_model(np.mean(neg_gradient))
-                xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
+                xgb_model = self.__create_xgb_model(base_score=0,
                                                     estimation_type=EstimationType.regression)
 
                 xgb_model.fit(boosting_matrix, neg_gradient)
@@ -131,7 +125,7 @@ class GradientBoostingModel:
     def __create_xgb_model(self, base_score=0, estimation_type=Settings.estimation_type):
         # create a Xgb model
         if estimation_type is EstimationType.regression:
-            return XGBRegressor(n_estimators=1, max_depth=1, booster="gbtree", base_score=base_score, learning_rate=0.5)
+            return XGBRegressor(n_estimators=1, max_depth=1, booster="gbtree", base_score=base_score, learning_rate=0.1)
         elif estimation_type is EstimationType.classification:
             return XGBClassifier(num_boosted_rounds=2)
         else:

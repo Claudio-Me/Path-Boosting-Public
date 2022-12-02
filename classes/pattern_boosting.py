@@ -85,6 +85,8 @@ class PatternBoosting:
 
         # -------------------------------------------------------------------------------------------------------------
         # error plots
+        # cut first point
+
         cut_point = 1
         if Settings.estimation_type == EstimationType.regression:
             self.analysis.plot_informations(self.number_of_learners[cut_point:], self.train_error[cut_point:],
@@ -110,7 +112,7 @@ class PatternBoosting:
         self.analysis.plot_informations(self.number_of_learners, self.average_path_length, tittle="Average path length",
                                         x_label="number of learners", y_label="average path length")
 
-        self.analysis.print_boosting_matrix_information(self.boosting_matrix)
+        self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error)
         self.analysis.print_test_dataset_info(test_dataset)
         self.analysis.analyse_path_length_distribution(self.boosting_matrix)
         # -----------------------------------------------------------

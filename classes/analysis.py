@@ -58,9 +58,9 @@ class Analysis:
         else:
             raise TypeError("Selected algorithm not recognized")
 
+        folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length)
         if not os.path.exists(location + folder_name):
             os.makedirs(location + folder_name)
-        print(location + folder_name)
         folder_name = folder_name + "/"
 
         if Settings.maximum_number_of_steps <= Settings.tail:
@@ -69,8 +69,13 @@ class Analysis:
             file_name = file_name.replace(" ", "_") + "_tail_" + str(Settings.tail) + file_extension
         return location + folder_name + file_name
 
-    def print_boosting_matrix_information(self, boosting_matrix: BoostingMatrix):
+    def print_performance_information(self, boosting_matrix: BoostingMatrix, train_error_vector, test_error_vector):
         print(boosting_matrix)
+        train_error_string = "achieved train error: " + str(train_error_vector[-1])
+        print(train_error_string)
+        test_error_string = "achieved test error: " + str(test_error_vector[-1])
+        print(test_error_string)
+
         saving_location = self.__get_save_location("boosting_matrix_info", '.txt')
 
         original_stdout = sys.stdout  # Save a reference to the original standard output
@@ -78,6 +83,9 @@ class Analysis:
         with open(saving_location, 'w') as f:
             sys.stdout = f  # Change the standard output to the file we created.
             print(boosting_matrix)
+            print(train_error_string)
+            print(test_error_string)
+
             sys.stdout = original_stdout  # Reset the standard output to its original value
 
     def print_test_dataset_info(self, dataset):

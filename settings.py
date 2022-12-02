@@ -3,7 +3,7 @@ import platform
 
 
 class Settings:
-    maximum_number_of_steps = 50  # call it maximum number of steps
+    maximum_number_of_steps = 70  # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
     tail = 50
@@ -22,7 +22,7 @@ class Settings:
     graph_label_variable = "target_tzvp_homo_lumo_gap"
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 2
+    max_path_length = 8
 
     estimation_type = EstimationType.regression
     # estimation_type = EstimationType.classification
