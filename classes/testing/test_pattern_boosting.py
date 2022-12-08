@@ -14,7 +14,8 @@ class TestPatternBoosting:
         # self.test_2()
         # self.test_on_n_dataset(100)
         # self.test_on_5k_dataset()
-        self.test_on_5k_dataset_with_test_data()
+        # self.test_on_5k_dataset_with_test_data()
+        self.test_on_60k_dataset_with_test_data()
         # self.test_splitted_training_on_5k_dataset_with_test_data()
 
     def test_1(self):
@@ -66,20 +67,28 @@ class TestPatternBoosting:
         pattern_boosting.training(dataset)
 
     def test_on_5k_dataset_with_test_data(self):
-        print("Testing patternboosting on 5k test data, with test data")
+        print("Testing patternboosting on 5k data, with test data")
         # dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
-        dataset = data_reader.load_dataset_from_binary()
+        # dataset = Dataset(dataset)
+        # data_reader.save_dataset_in_binary_file(dataset, filename="60k_dataset")
+        dataset = data_reader.load_dataset_from_binary(filename="5_k_selection_graphs")
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(train_dataset, test_dataset)
 
-    def test_splitted_training_on_5k_dataset_with_test_data(self):
-        print("Testing splitted training of patternboosting on 5k test data, with test data")
-        # dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
-        dataset = data_reader.load_dataset_from_binary()
+    def test_on_60k_dataset_with_test_data(self):
+        print("Testing patternboosting on 60k data, with test data")
+        # dataset = data_reader.read_data_from_directory("data/dNatQ_graphs")
+        # dataset = Dataset(dataset)
+        # data_reader.save_dataset_in_binary_file(dataset, filename="60k_dataset")
+        dataset = data_reader.load_dataset_from_binary(filename="60k_dataset")
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
-        splitted_training = SplittedTraining()
-        splitted_training.main_train_splitted(train_dataset, test_dataset)
+        pattern_boosting = PatternBoosting()
+        pattern_boosting.training(train_dataset, test_dataset)
+
+
+
+
 
     def __create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)

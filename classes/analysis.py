@@ -82,9 +82,14 @@ class Analysis:
 
         with open(saving_location, 'w') as f:
             sys.stdout = f  # Change the standard output to the file we created.
+            print("Boosting matrix:")
             print(boosting_matrix)
+            print("\n\n")
+
             print(train_error_string)
+            print(str(train_error_vector) + "\n")
             print(test_error_string)
+            print(test_error_vector)
 
             sys.stdout = original_stdout  # Reset the standard output to its original value
 

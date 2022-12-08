@@ -47,22 +47,22 @@ class GradientBoostingModel:
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             y_pred = self.predict_my(boosting_matrix_matrix)
 
-            if Settings.estimation_type is EstimationType.regression:
-                model_error = metrics.mean_squared_error(labels, y_pred)
-            elif Settings.estimation_type is EstimationType.classification:
+            if Settings.estimation_type is EstimationType.classification:
                 y_pred = [round(value) for value in y_pred]
-                model_error = metrics.accuracy_score(labels, y_pred)
-            else:
-                TypeError("Estimation task not recognized")
 
         elif self.model is ModelType.r_model:
             y_pred = list(self.predict_my(boosting_matrix_matrix))
-            model_error = metrics.mean_squared_error(labels, y_pred)
 
         elif self.model is ModelType.xgb_one_step:
             y_pred = self.predict_my(boosting_matrix_matrix)
             y_pred = list(y_pred)
+
+        if Settings.final_evaluation_error == "MSE":
             model_error = metrics.mean_squared_error(labels, y_pred)
+        elif Settings.final_evaluation_error == "absolute_mean_error":
+            model_error = metrics.mean_absolute_error(labels, y_pred)
+        else:
+            raise ValueError("measure error not found")
         return model_error
 
     def fit_one_step(self, boosting_matrix: np.ndarray, labels):
@@ -95,7 +95,7 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             if len(self.base_learners_list) == 0:
                 # if it is the first time we launch the model
-                #xgb_model = self.__create_xgb_model(np.mean(labels))
+                # xgb_model = self.__create_xgb_model(np.mean(labels))
                 xgb_model = self.__create_xgb_model(0)
                 xgb_model.fit(boosting_matrix, labels)
                 self.base_learners_list.append(xgb_model)
@@ -105,15 +105,37 @@ class GradientBoostingModel:
             else:
 
                 y_hat = self.predict_my(boosting_matrix)
+
+                # ----------------------------------------------------------------------------------------------------
+                # compute the residuals, they should coincide with the residuals of the last model
+
+                # ----------------------------------------------------------------------------------------------------
+
                 neg_gradient = self.__neg_gradient(labels, y_hat)
                 # xgb_model = self.__create_xgb_model(np.mean(neg_gradient))
-                xgb_model = self.__create_xgb_model(base_score=0,
+                xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
                                                     estimation_type=EstimationType.regression)
 
-                xgb_model.fit(boosting_matrix, neg_gradient)
+                bst = xgb_model.fit(boosting_matrix, neg_gradient)
 
                 self.base_learners_list.append(xgb_model)
                 # --------------------------------------------------------------------------------------------------
+                '''
+                print('Access logloss metric directly from evals_result:')
+                print(evals_result['eval']['logloss'])
+
+                print('')
+                print('Access metrics through a loop:')
+                for e_name, e_mtrs in evals_result.items():
+                    print('- {}'.format(e_name))
+                    for e_mtr_name, e_mtr_vals in e_mtrs.items():
+                        print('   - {}'.format(e_mtr_name))
+                        print('      - {}'.format(e_mtr_vals))
+
+                print('')
+                print('Access complete dictionary:')
+                print(evals_result)
+                '''
                 # plot xgb model
                 # plot_tree(xgb_model, num_trees=0)
                 # plt.show()

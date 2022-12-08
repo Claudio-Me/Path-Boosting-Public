@@ -85,20 +85,27 @@ class PatternBoosting:
 
         # -------------------------------------------------------------------------------------------------------------
         # error plots
-        # cut first point
 
+        # cut first point
         cut_point = 1
+
+        if Settings.final_evaluation_error == "MSE":
+            y_label = "MSE"
+        elif Settings.final_evaluation_error == "absolute_mean_error":
+            y_label = "abs mean err"
+        else:
+            raise ValueError("measure error not found")
         if Settings.estimation_type == EstimationType.regression:
             self.analysis.plot_informations(self.number_of_learners[cut_point:], self.train_error[cut_point:],
                                             tittle="train error",
                                             x_label="number of learners",
-                                            y_label="MSE")
+                                            y_label=y_label)
 
             if test_dataset is not None:
                 self.analysis.plot_informations(self.number_of_learners[cut_point:], self.test_error[cut_point:],
                                                 tittle="test error",
                                                 x_label="number of learners",
-                                                y_label="MSE")
+                                                y_label=y_label)
         elif Settings.estimation_type == EstimationType.classification:
             self.analysis.plot_informations(self.number_of_learners, self.train_error, tittle="train classification",
                                             x_label="number of learners", y_label="jaccard score")
