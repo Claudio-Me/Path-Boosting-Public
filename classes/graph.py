@@ -10,8 +10,12 @@ from classes.paths.selected_paths import SelectedPaths
 
 class GraphPB:
     # list of labels of metal center
-    metal_labels = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 57, 72, 73, 74, 75,
-                    76, 77, 78, 79, 80]
+    metal_labels = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
+                    39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
+                    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
+                    72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
+                    89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
+                    104, 105, 106, 107, 108, 109, 110, 111, 112]  # fourth block
 
     def __init__(self, adjacency_matrix: np.ndarray, node_to_labels_dictionary: dict, label_value, adj_list=None):
         # adjacency matrix is assumed to be a boolean matrix
@@ -50,7 +54,7 @@ class GraphPB:
 
         return nl_dict
 
-    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label):
+    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label: tuple):
         """
         it returns the possible extension of the input path that can be made in the graph
         note: if the input label is not present in the selected paths, an empty set is returned

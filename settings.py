@@ -1,31 +1,42 @@
 from classes.enumeration.estimation_type import EstimationType
+import platform
 
 
 class Settings:
-    maximum_number_of_steps = 3  # call it maximum number of steps
+    maximum_number_of_steps = 20  # call it maximum number of steps
 
-    use_R = True
-    # graph_label_variable = "target_svp_homo_lumo_gap"
+    # in the error graph Print only the last 20 learners
+    tail = 35
+
+    if platform.system() == 'Windows':
+        graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
+        r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
+
+    elif platform.system() == 'Darwin':
+        graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/graphs"
+        r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
+
+    algorithm = "Xgb_step"  # "Full_xgb" "R"
+
     graph_label_variable = "target_tzvp_homo_lumo_gap"
+
+    # do not expand if the paths are longer than this amount
+    max_path_length = 4
 
     estimation_type = EstimationType.regression
     # estimation_type = EstimationType.classification
 
+    # measure used for checkin the final error of the model (to plot error graphs)
+    final_evaluation_error = "absolute_mean_error"  # "MSE"
+
+    # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'
 
-    # name of the file .RData where the model is saved
-    r_model_name = "my_r_model"
-
-    r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
-
     # Base Learner used by mboost
-    r_base_learner_name = "bols"  # “bbs”, “bols”, “btree”, “bss”, “bns”
-
-    # in the error graph Print only the last 20 learners
-    tail = 200
+    r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
     # Possible family names for loss function in R mode
     family = "Gaussian"
@@ -53,9 +64,22 @@ class Settings:
     # Cindex: Cindex(sigma=0.1, ipcw=1)
     # RCG: RCG(nuirange=c(0, 1), offrange=c(-5, 5))
 
+    # name of the file .RData where the model is saved
+    r_model_name = "my_r_model"
+    if True:
+        r_model_name = r_base_learner_name + family + str(maximum_number_of_steps) + str(tail)
+
     # quantity not used yet
+
+    multiple_training = True
+    training_batch_size = 10
 
     testing = False
     evaluate_test_dataset_during_training = True
     n_estimators = 20
+
     # r_mboost_model_location = 'R_code/m_boost_model'
+
+    @staticmethod
+    def neg_gradient(y, y_hat):
+        return (y - y_hat)

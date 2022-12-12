@@ -91,7 +91,12 @@ select_column <-
            family_name,
            base_learner_name) {
     # it does just one iteration over the original data and initialize all the files needed
+    # -------------------------------------------------------------------------------------
     
+    
+    print("start_function")
+    
+    #--------------------------------------------------------------------------------------
     y <- as.numeric(y)
     initialize_environment(model_location)
     
@@ -105,10 +110,26 @@ select_column <-
     # location of the model is in the same directory as the location of this script
     model_location = paste(model_location, "/", model_name, ".RData", sep = "")
     
+    # -------------------------------------------------------------------------------------
+    
+    
+    print("load model")
+    
+    #--------------------------------------------------------------------------------------
+    
     # load previous models
     load(model_location)
     
     data_frame_matrix = as.data.frame(data_matrix)
+    
+    
+    # -------------------------------------------------------------------------------------
+    
+    
+    print("get past prediction")
+    
+    #--------------------------------------------------------------------------------------
+    
     # compute the new target "gradient" using the negative gradient
     
     #remember if dataframe is null, then it evaluates the model using the data used for training
@@ -119,7 +140,25 @@ select_column <-
     first_base_learner = base_learners_list[[1]]
     negative_gradient_function = slot(first_base_learner$family, "ngradient")
     
+    
+    # -------------------------------------------------------------------------------------
+    
+    
+    print("compute gradient")
+    
+    #--------------------------------------------------------------------------------------
+    
     gradient = negative_gradient_function(y, y_hat)
+    
+    
+    
+    # -------------------------------------------------------------------------------------
+    
+    
+    print("fit new learner")
+    
+    #--------------------------------------------------------------------------------------
+    
     
     column_and_model = fit_mboost(
       data_frame_matrix,
@@ -137,6 +176,19 @@ select_column <-
     
     
     save(base_learners_list, file = model_location)
+    
+    
+    # -------------------------------------------------------------------------------------
+    
+    
+    print("return ")
+    
+    #--------------------------------------------------------------------------------------
+    
+    rm(list=setdiff(ls(), "selected_column"))
+    
+    gc()
+    
     
     
     return (selected_column)
@@ -212,6 +264,6 @@ test <- function() {
   print("second_column:")
   print(result2)
   
-  
   return(c(result1, result2))
 }
+

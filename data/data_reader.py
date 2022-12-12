@@ -13,13 +13,16 @@ def read_data_from_name(dataset_name, directory="data/"):
 
 
 def read_data_from_directory(directory):
+    # directory can be relative directory
     print("reading dataset")
     if directory[-1] != "/":
         directory = directory + "/"
     names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
-    for i in range(len(names)):
-        dataset[i] = read_data_from_name(names[i], directory="")
+    print(len(names))
+    for i in range(0, len(names)):
+        dataset[i-60000] = read_data_from_name(names[i], directory="")
+
 
     # old reading version, very slow
     # dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
@@ -69,7 +72,7 @@ def save_dataset_in_binary_file(dataset, directory=None, filename=None):
         directory = directory + "/"
     if filename is None:
         filename = "binary_dataset"
-    with open(directory + filename+".pkl", 'wb') as outp:
+    with open(directory + filename + ".pkl", 'wb') as outp:
         pickle.dump(dataset, outp, pickle.HIGHEST_PROTOCOL)
 
 
@@ -81,7 +84,6 @@ def load_dataset_from_binary(directory=None, filename=None):
     if filename is None:
         filename = "binary_dataset"
 
-    with open(directory + filename+'.pkl', 'rb') as inp:
+    with open(directory + filename + '.pkl', 'rb') as inp:
         dataset = pickle.load(inp)
     return dataset
-
