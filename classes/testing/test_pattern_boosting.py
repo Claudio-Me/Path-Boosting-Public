@@ -82,6 +82,7 @@ class TestPatternBoosting:
         # dataset = Dataset(dataset)
         # data_reader.save_dataset_in_binary_file(dataset, filename="60k_dataset")
         dataset = data_reader.load_dataset_from_binary(filename="60k_dataset")
+        print(len(dataset.labels))
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(train_dataset, test_dataset)

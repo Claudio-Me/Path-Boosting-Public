@@ -1,3 +1,5 @@
+import numpy as np
+
 from classes.graph import GraphPB
 from settings import Settings
 from sklearn.model_selection import train_test_split
@@ -35,6 +37,7 @@ class Dataset:
         x_train, x_test, y_train, y_test = train_test_split(self.graphs_list, self.labels, test_size=test_size)
         train_dataset = Dataset(x_train, y_train)
         test_dataset = Dataset(x_test, y_test)
+
         return train_dataset, test_dataset
 
     def merge_datasets(self, new_dataset):

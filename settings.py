@@ -3,7 +3,7 @@ import platform
 
 
 class Settings:
-    maximum_number_of_steps = 50  # call it maximum number of steps
+    maximum_number_of_steps = 20  # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
     tail = 35
