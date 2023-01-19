@@ -43,3 +43,6 @@ class Dataset:
     def merge_datasets(self, new_dataset):
         self.graphs_list = self.graphs_list + new_dataset.graphs_list
         self.labels = self.labels + new_dataset.labels
+
+    def get_graphs_list(self):
+        return self.graphs_list

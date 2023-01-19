@@ -3,10 +3,20 @@ import platform
 
 
 class Settings:
-    maximum_number_of_steps = 20  # call it maximum number of steps
+    maximum_number_of_steps = 100  # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
-    tail = 35
+    tail = 900
+
+    # do not expand if the paths are longer than this amount
+    max_path_length = 6
+
+    xgb_model_parameters = {
+        'max_depth': 1,
+        'n_estimators': 1,
+        'booster': 'gbtree',
+        'learning_rate': 0.1
+    }
 
     if platform.system() == 'Windows':
         graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
@@ -16,18 +26,19 @@ class Settings:
         graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/graphs"
         r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
 
+    elif platform.system() == "Linux":
+        graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/graphs"
+        r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
+
     algorithm = "Xgb_step"  # "Full_xgb" "R"
 
     graph_label_variable = "target_tzvp_homo_lumo_gap"
-
-    # do not expand if the paths are longer than this amount
-    max_path_length = 4
 
     estimation_type = EstimationType.regression
     # estimation_type = EstimationType.classification
 
     # measure used for checkin the final error of the model (to plot error graphs)
-    final_evaluation_error = "absolute_mean_error"  # "MSE"
+    final_evaluation_error =   "absolute_mean_error" #"MSE"
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2

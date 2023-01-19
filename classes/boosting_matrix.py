@@ -76,17 +76,23 @@ class BoostingMatrix:
                 max_length = len(path)
         return max_length
 
+    def get_header(self):
+        return self.header
+
     def __str__(self):
         string = "Boosting matrix header:\n"
         string = string + str(self.header) + '\n\n'
         string = string + "Selected Paths:\n"
         string = string + str(self.translate_header_to_atom_symbols()) + '\n\n'
 
-        string = string + "number of explored paths: " + str(len(self.header)) + '\n'
+        string = string + "number of added paths: " + str(len(self.header)) + '\n'
+        string = string + "Number of selected paths " + str(np.count_nonzero(self.patterns_importance)) + '\n'
+
         string = string + "max path length: " + str(self.__max_path_length()) + '\n'
         string = string + "average path length: " + str(self.average_path_length()) + '\n\n'
 
         string = string + "Paths sorted by importance: \n"
         string = string + str(
-            sorted(zip(self.patterns_importance, self.translate_header_to_atom_symbols()), reverse=True))
+            sorted(zip(self.patterns_importance, self.translate_header_to_atom_symbols()), reverse=True)) + '\n'
+        string = string + str(sorted(zip(self.patterns_importance, self.get_header()), reverse=True))
         return string

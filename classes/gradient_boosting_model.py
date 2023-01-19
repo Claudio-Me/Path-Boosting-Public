@@ -1,3 +1,6 @@
+import copy
+
+import xgboost
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
 from sklearn import metrics
@@ -37,6 +40,8 @@ class GradientBoostingModel:
             return predictions_vector
 
         elif self.model is ModelType.xgb_one_step:
+            for xgb_model, matrix_dimension in zip(self.base_learners_list, self.base_learners_dimension):
+                xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension])
             predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
@@ -56,7 +61,6 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             y_pred = self.predict_my(boosting_matrix_matrix)
             y_pred = list(y_pred)
-
         if Settings.final_evaluation_error == "MSE":
             model_error = metrics.mean_squared_error(labels, y_pred)
         elif Settings.final_evaluation_error == "absolute_mean_error":
@@ -95,10 +99,10 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             if len(self.base_learners_list) == 0:
                 # if it is the first time we launch the model
-                # xgb_model = self.__create_xgb_model(np.mean(labels))
-                xgb_model = self.__create_xgb_model(0)
+                # xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
+                xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
                 xgb_model.fit(boosting_matrix, labels)
-                self.base_learners_list.append(xgb_model)
+                self.base_learners_list.append(copy.deepcopy(xgb_model))
                 self.base_learners_dimension.append(len(boosting_matrix[0]))
                 selected_column = np.argsort(xgb_model.feature_importances_)
                 return selected_column[-1]
@@ -113,12 +117,15 @@ class GradientBoostingModel:
 
                 neg_gradient = self.__neg_gradient(labels, y_hat)
                 # xgb_model = self.__create_xgb_model(np.mean(neg_gradient))
-                xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
+
+                xgb_model = self.__create_xgb_model(base_score=0,
                                                     estimation_type=EstimationType.regression)
 
-                bst = xgb_model.fit(boosting_matrix, neg_gradient)
+                eval_set = [(boosting_matrix, neg_gradient)]
+                progress = dict()
+                xgb_model.fit(boosting_matrix, neg_gradient, eval_set=eval_set, verbose=True)
 
-                self.base_learners_list.append(xgb_model)
+                self.base_learners_list.append(copy.deepcopy(xgb_model))
                 # --------------------------------------------------------------------------------------------------
                 '''
                 print('Access logloss metric directly from evals_result:')
@@ -142,14 +149,34 @@ class GradientBoostingModel:
                 # --------------------------------------------------------------------------------------------------
                 self.base_learners_dimension.append(len(boosting_matrix[0]))
                 selected_column = np.argsort(xgb_model.feature_importances_)
+
+                # --------------------------------------------------------------------------------------------------
+                # debug
+                # look at the error of the last base model
+                tmp_new_predicted_y = xgb_model.predict(boosting_matrix)
+
+                model_error = metrics.mean_squared_error(tmp_new_predicted_y, neg_gradient)
+                model_error = np.sqrt(model_error)
+                print("Base learner rmse: ", model_error)
+
+                # -------------------------------------------------------------------------------------------------
+
                 return selected_column[-1]
 
     def __create_xgb_model(self, base_score=0, estimation_type=Settings.estimation_type):
         # create a Xgb model
+        param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
-            return XGBRegressor(n_estimators=1, max_depth=1, booster="gbtree", base_score=base_score, learning_rate=0.1)
+
+            return XGBRegressor(max_depth=1,
+                                n_estimators=1,
+                                booster='gbtree',
+                                learning_rate=0.1,
+                                base_score=base_score,
+                                eval_metric="rmse"
+                                )
         elif estimation_type is EstimationType.classification:
-            return XGBClassifier(num_boosted_rounds=2)
+            return XGBClassifier(param, num_boosted_rounds=2)
         else:
             TypeError("Estimation task not recognized")
 

@@ -97,9 +97,32 @@ class Analysis:
         average_test_label = np.mean(dataset.labels)
         print("average value for test label: ", average_test_label)
 
+
+
     def analyse_path_length_distribution(self, boosting_matrix: BoostingMatrix):
         self.__plot_bar_plot_of_path_length(boosting_matrix)
         self.__plot_histogram_of_path_length_importance(boosting_matrix)
+
+
+    def plot_labels_histogram(self,train_labels,test_labels=None,tittle=None):
+        kwargs = dict(alpha=0.5,histtype='bar',density=True, stacked=False)
+        plt.style.use('ggplot')
+
+        fig, ax = plt.subplots()
+        ax.hist((train_labels,test_labels),**kwargs,label=("train","test"),color=('g','r'))
+        if test_labels is not None:
+            pass
+            # ax.hist(test_labels,**kwargs,label="test",color= 'r')
+
+
+        # ax.set_ylabel('Importance')
+        ax.set_title(tittle)
+        ax.legend()
+        saving_location = self.__get_save_location(tittle, '.png')
+
+        plt.savefig(saving_location)
+
+        plt.show()
 
     def __plot_bar_plot_of_path_length(self, boosting_matrix: BoostingMatrix):
         tittle = "Bar plot of path length"
@@ -159,12 +182,14 @@ class Analysis:
 
         fig, ax = plt.subplots()
 
-        if True:
+        if False:
             ax.set_yscale('log')
             tittle = tittle + " (log scale)"
         # to do: convert range to string
         path_length_labels = [str(i) for i in range(1, max_path_length + 1)]
-        ax.bar(path_length_labels, length_importance)
+
+        cut_point=1
+        ax.bar(path_length_labels[cut_point:], length_importance[cut_point:])
 
         ax.set_xlabel('Path length')
         ax.set_ylabel('Importance')
