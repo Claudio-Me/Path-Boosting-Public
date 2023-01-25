@@ -46,3 +46,16 @@ class Dataset:
 
     def get_graphs_list(self):
         return self.graphs_list
+
+    def get_labels(self):
+        return  self.labels
+
+    def get_dimension(self):
+        # note: I use len of graph list instead of len labels because sometimes the dataset may have None as labels
+        return len(self.graphs_list)
+
+    def __str__(self):
+        average_test_label = np.mean(self.labels)
+        string="Average value for test label: "+ str( average_test_label)+"\n"
+        string = string + "Dataset dimension: " + str(self.get_dimension())+ "\n"
+        return string

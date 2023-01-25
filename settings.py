@@ -3,13 +3,15 @@ import platform
 
 
 class Settings:
-    maximum_number_of_steps = 100  # call it maximum number of steps
+    maximum_number_of_steps = 50 # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
-    tail = 900
+    tail = 100
 
     # do not expand if the paths are longer than this amount
     max_path_length = 6
+
+    target_test_error= 1.5
 
     xgb_model_parameters = {
         'max_depth': 1,

@@ -18,6 +18,15 @@ class BoostingMatrix:
         else:
             self.patterns_importance = patterns_importance
 
+    def get_path_column(self, path: tuple) -> int:
+        header = self.get_header()
+        column = header.index(path)
+        return column
+
+    def get_path_importance(self, path: tuple) -> float:
+        column = self.get_path_column(path)
+        return self.patterns_importance[column]
+
     def add_column(self, new_column, header):
         """"
         given a list of columns and their header adds them to the main matrix
@@ -76,7 +85,7 @@ class BoostingMatrix:
                 max_length = len(path)
         return max_length
 
-    def get_header(self):
+    def get_header(self) -> list:
         return self.header
 
     def __str__(self):
@@ -89,10 +98,52 @@ class BoostingMatrix:
         string = string + "Number of selected paths " + str(np.count_nonzero(self.patterns_importance)) + '\n'
 
         string = string + "max path length: " + str(self.__max_path_length()) + '\n'
-        string = string + "average path length: " + str(self.average_path_length()) + '\n\n'
+        string = string + "average path length: " + str(self.average_path_length()) + '\n'
+
+        string = string + "Repeated rows in boosting matrix" + str(self.count_repeated_rows()) + "\n"
+        string = string + "Different rows in boosting matrix: " + str(self.different_rows()) + "\n\n"
 
         string = string + "Paths sorted by importance: \n"
         string = string + str(
             sorted(zip(self.patterns_importance, self.translate_header_to_atom_symbols()), reverse=True)) + '\n'
         string = string + str(sorted(zip(self.patterns_importance, self.get_header()), reverse=True))
         return string
+
+    def count_repeated_rows(self):
+        # Create a set to store the rows that have already been seen
+        seen_rows = set()
+
+        # Initialize a counter for the number of repeated rows
+        repeated_rows = 0
+
+        # Iterate through the rows of the matrix
+        for row in self.get_matrix():
+            # If the row has already been seen, increment the counter
+            if tuple(row) in seen_rows:
+                repeated_rows += 1
+            # Otherwise, add the row to the set of seen rows
+            else:
+                seen_rows.add(tuple(row))
+
+        return repeated_rows
+
+    def different_rows(self):
+        # Create a set to store the rows that have already been seen
+        seen_rows = set()
+
+        # Initialize a counter for the number of repeated rows
+        repeated_rows = 0
+
+        # Iterate through the rows of the matrix
+        for row in self.get_matrix():
+            # If the row has already been seen, increment the counter
+            if tuple(row) in seen_rows:
+                repeated_rows += 1
+            # Otherwise, add the row to the set of seen rows
+            else:
+                seen_rows.add(tuple(row))
+
+        return len(seen_rows)
+
+    def get_matrix(self):
+        return self.matrix

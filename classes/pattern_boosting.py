@@ -5,12 +5,13 @@ from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
 from collections import defaultdict
 from classes.enumeration.estimation_type import EstimationType
+from classes.gradient_boosting_model import GradientBoostingModel
 from classes.analysis import Analysis
 import numpy as np
 
 
 class PatternBoosting:
-    def __init__(self, settings=Settings(), model=None):
+    def __init__(self, settings=Settings(), model: GradientBoostingModel = None):
         self.settings = settings
         self.model = model
         self.trained = False
@@ -20,6 +21,7 @@ class PatternBoosting:
         self.number_of_learners = []
         self.analysis = Analysis()
         self.gradient_boosting_step = GradientBoostingStep()
+        self.n_iterations = None
 
     def training(self, training_dataset, test_dataset=None):
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
@@ -56,6 +58,7 @@ class PatternBoosting:
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
+            self.n_iterations = iteration_number + 1
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,
@@ -67,11 +70,8 @@ class PatternBoosting:
             self.train_error.append(self.evaluate(self.training_dataset))
             # -------------------------------------------------------------------------------------------------------
             # debug
-            if len(self.train_error) > 2:
-                if self.train_error[-1] > self.train_error[-2]:
-                    print("Train Error is increasing")
 
-            print("Rmse totale: ", np.sqrt(self.train_error[-1]))
+            print("Error: ", self.train_error[-1])
             # --------------------------------------------------------------------------------------------------------
 
             if len(self.train_error) <= 1:
@@ -85,10 +85,14 @@ class PatternBoosting:
             self.number_of_learners.append(iteration_number + 1)
 
             # expand boosting matrix
-
+            print("------")
             self.__expand_boosting_matrix(selected_column_number)
+            print("expanded boosting")
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
+
+            if self.train_error[-1] < Settings.target_test_error:
+                break
 
         # -------------------------------------------------------------------------------------------------------------
         # error plots
@@ -126,16 +130,14 @@ class PatternBoosting:
         self.analysis.plot_informations(self.number_of_learners, self.average_path_length, tittle="Average path length",
                                         x_label="number of learners", y_label="average path length")
 
-        self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error)
-        self.analysis.print_test_dataset_info(test_dataset)
+        self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error,
+                                                    self.training_dataset)
         self.analysis.analyse_path_length_distribution(self.boosting_matrix)
         if test_dataset is not None:
-            self.analysis.plot_labels_histogram(self.training_dataset.labels, self.test_dataset.labels,
-                                                tittle="Real labels")
-            self.analysis.plot_labels_histogram(self.predict(training_dataset), self.predict(test_dataset),
-                                                tittle="Predicted Labels")
+            # self.analysis.plot_labels_histogram(self.training_dataset.labels, self.test_dataset.labels, tittle="Real labels")
+            # self.analysis.plot_labels_histogram(self.predict(training_dataset), self.predict(test_dataset), tittle="Predicted Labels")
             self.analysis.plot_labels_histogram(self.test_dataset.labels, self.predict(test_dataset),
-                                                tittle=" Labels")
+                                                tittle="Predicted vs real y", legend1="real", legend2="predicted")
         # -----------------------------------------------------------
 
     def predict(self, dataset):
@@ -155,14 +157,7 @@ class PatternBoosting:
     def evaluate(self, dataset: Dataset):
 
         boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
-        # -------------------------------------------------------------------------------------
-        if len(self.boosting_matrix.matrix) == len(boosting_matrix_matrix):
-            a = self.boosting_matrix.matrix - boosting_matrix_matrix
-            b = np.sum(a)
-            if b > 0:
-                print("difference of two boosting matrix", b)
 
-        # -------------------------------------------------------------------------------------
         error = self.model.evaluate(boosting_matrix_matrix, dataset.labels)
         return error
 
@@ -260,3 +255,6 @@ class PatternBoosting:
                 new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
 
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
+
+    def get_n_iterations(self):
+        return self.n_iterations
