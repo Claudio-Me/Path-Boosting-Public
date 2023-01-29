@@ -12,14 +12,26 @@ from classes.analysis import Analysis
 if __name__ == '__main__':
     # Testing()
 
-    synthetic_dataset = SyntheticDataset()
-    synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True, new_file_name="5k_synthetic_dataset")
+    generate_new_dataset=False
+    if generate_new_dataset is True:
+        synthetic_dataset = SyntheticDataset()
+        synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True, new_file_name="5k_synthetic_dataset")
+        data_reader.save_dataset_in_binary_file(synthetic_dataset,filename="synthetic_dataset")
+    synthetic_dataset=data_reader.load_dataset_from_binary(filename="synthetic_dataset")
 
-    dataset_filename = "5k_synthetic_dataset"
-    # dataset_filename = "5_k_selection_graphs"
-    # dataset_filename = "60k_dataset"
-    dataset = data_reader.load_dataset_from_binary(filename=dataset_filename)
-    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
+    if generate_new_dataset is True:
+        dataset_filename = "5k_synthetic_dataset"
+        # dataset_filename = "5_k_selection_graphs"
+        # dataset_filename = "60k_dataset"
+        dataset = data_reader.load_dataset_from_binary(filename=dataset_filename)
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
+
+        data_reader.save_dataset_in_binary_file(train_dataset, filename="synthetic_train_dataset")
+        data_reader.save_dataset_in_binary_file(test_dataset, filename="synthetic_test_dataset")
+
+    train_dataset=data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
+    test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
+
 
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))

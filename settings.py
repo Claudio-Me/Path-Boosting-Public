@@ -3,21 +3,24 @@ import platform
 
 
 class Settings:
-    maximum_number_of_steps = 50 # call it maximum number of steps
+    maximum_number_of_steps = 100  # call it maximum number of steps
 
     # in the error graph Print only the last 20 learners
-    tail = 100
+    tail = 900
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 6
+    max_path_length = 10
 
-    target_test_error= 1.5
+    target_test_error = 1.5
 
     xgb_model_parameters = {
         'max_depth': 1,
         'n_estimators': 1,
         'booster': 'gbtree',
-        'learning_rate': 0.1
+        'learning_rate': 0.2,
+        "eval_metric": "rmse",
+        "objective": 'reg:squarederror',
+        "reg_lambda": 0
     }
 
     if platform.system() == 'Windows':
@@ -40,7 +43,7 @@ class Settings:
     # estimation_type = EstimationType.classification
 
     # measure used for checkin the final error of the model (to plot error graphs)
-    final_evaluation_error =   "absolute_mean_error" #"MSE"
+    final_evaluation_error = "absolute_mean_error"  # "MSE"
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2

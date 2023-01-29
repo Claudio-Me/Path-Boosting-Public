@@ -10,22 +10,25 @@ class BoostingMatrix:
 
         self.already_selected_columns = set()
         self.matrix = matrix
-
+        self.number_of_times_column_is_selected = np.zeros(len(matrix_header), dtype=int)
         # matrix header contains the label_path for each column of the matrix
         self.header = matrix_header
         if patterns_importance is None:
-            self.patterns_importance = [0] * len(self.header)
+            self.columns_importance = [0] * len(self.header)
         else:
-            self.patterns_importance = patterns_importance
+            self.columns_importance = patterns_importance
 
     def get_path_column(self, path: tuple) -> int:
         header = self.get_header()
         column = header.index(path)
         return column
 
+    def get_number_of_times_path_has_been_selected(self, path: tuple) -> int:
+        column = self.get_path_column(path)
+        return self.number_of_times_column_is_selected[column]
     def get_path_importance(self, path: tuple) -> float:
         column = self.get_path_column(path)
-        return self.patterns_importance[column]
+        return self.columns_importance[column]
 
     def add_column(self, new_column, header):
         """"
@@ -51,13 +54,19 @@ class BoostingMatrix:
             self.matrix = new_matrix
             new_cells_for_importance_list = [0]
 
-        self.patterns_importance = self.patterns_importance + new_cells_for_importance_list
+        self.columns_importance = self.columns_importance + new_cells_for_importance_list
 
     def update_pattern_importance_of_column(self, column: int, train_error: list, default_value=0):
+        '''
+        It updates the importance of the column taken in input, and it registers how many times this column has been selected
+        that is the number of times column's importance has been update
+        :return:
+        '''
+        self.number_of_times_column_is_selected[column] += 1
         if len(train_error) <= 1:
-            self.patterns_importance[column] += default_value
+            self.columns_importance[column] += default_value
         else:
-            self.patterns_importance[column] += train_error[-2] - train_error[-1]
+            self.columns_importance[column] += train_error[-2] - train_error[-1]
 
     def translate_header_to_atom_symbols(self):
         an = pyasl.AtomicNo()
@@ -95,7 +104,7 @@ class BoostingMatrix:
         string = string + str(self.translate_header_to_atom_symbols()) + '\n\n'
 
         string = string + "number of added paths: " + str(len(self.header)) + '\n'
-        string = string + "Number of selected paths " + str(np.count_nonzero(self.patterns_importance)) + '\n'
+        string = string + "Number of selected paths " + str(np.count_nonzero(self.columns_importance)) + '\n'
 
         string = string + "max path length: " + str(self.__max_path_length()) + '\n'
         string = string + "average path length: " + str(self.average_path_length()) + '\n'
@@ -105,8 +114,8 @@ class BoostingMatrix:
 
         string = string + "Paths sorted by importance: \n"
         string = string + str(
-            sorted(zip(self.patterns_importance, self.translate_header_to_atom_symbols()), reverse=True)) + '\n'
-        string = string + str(sorted(zip(self.patterns_importance, self.get_header()), reverse=True))
+            sorted(zip(self.columns_importance, self.translate_header_to_atom_symbols()), reverse=True)) + '\n'
+        string = string + str(sorted(zip(self.columns_importance, self.get_header()), reverse=True))
         return string
 
     def count_repeated_rows(self):
@@ -126,6 +135,13 @@ class BoostingMatrix:
                 seen_rows.add(tuple(row))
 
         return repeated_rows
+
+    def get_importance_of(self, path):
+        if path not in self.header:
+            return None
+        else:
+            index = self.header.index(path)
+            return self.columns_importance[index]
 
     def different_rows(self):
         # Create a set to store the rows that have already been seen

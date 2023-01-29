@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from classes.analysis import Analysis
 from classes.pattern_boosting import PatternBoosting
+import random
 import sys
 
 
@@ -14,18 +15,37 @@ class SyntheticDataset:
     '''
 
     def __init__(self):
-        self.target_paths = list({(28,), (28, 7), (28, 7, 6)})
-
-        a = [(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)]  # it spots all 4 paths very quickly
-
-        b = [(47, 7), (42, 7, 6), (75, 8), (29,), (75, 17), (78, 7, 6), (47,), (79, 17), (40,), (28, 7),
-             (28, 16), (46, 6), (23, 7, 6), (28, 7, 7), (79, 6, 6), (75, 7, 6), (75, 7), (75, 16),
-             (79, 7), (46, 6, 7), (79, 16), (23, 8), (42, 6), (42, 15), (45, 6, 7), (42, 8), (28, 7, 6),
+        self.target_paths = [(47, 7), (42, 7, 6), (75, 8), (29,), (75, 17), (47,), (79, 17), (40,), (28, 7),
+             (28, 16), (46, 6), (23, 7, 6), (28, 7, 7), (75, 7, 6), (75, 7), (75, 16),
+             (79, 7), (46, 6, 7), (79, 16), (23, 8), (42, 6), (42, 15), (42, 8), (28, 7, 6),
              (30, 8), (30, 17), (75, 6), (42, 7, 7), (79, 6), (79, 15), (23, 7), (78, 16),
-             (28, 6), (28, 15), (28, 16, 6), (22, 6, 6), (44, 15, 6), (28, 8), (42, 7), (28, 17),
+             (28, 6), (28, 15), (28, 16, 6), (28, 8), (42, 7), (28, 17),
              (28, 35), (30, 7), (79, 7, 6), (30, 16), (75, 15), (46, 6, 6), (75,), (77,), (27,), (22,), (30,),
              (23,), (24,), (79,), (74,), (28,), (46,), (73,), (45,), (48,),
              (42,), (26,), (44,), (25,), (78,), (80,)]
+
+        self.variance = 1
+        self.keep_probability = 0.01
+        self.new_graphs_list = []
+        self.new_labels_list = []
+        self.number_paths_counting = None
+
+        simple = list({(28,), (28, 7), (28, 7, 6)})
+        a = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
+
+        b = [(47, 7), (42, 7, 6), (75, 8), (29,), (75, 17), (47,), (79, 17), (40,), (28, 7), # all connected
+             (28, 16), (46, 6), (23, 7, 6), (28, 7, 7), (75, 7, 6), (75, 7), (75, 16),
+             (79, 7), (46, 6, 7), (79, 16), (23, 8), (42, 6), (42, 15), (42, 8), (28, 7, 6),
+             (30, 8), (30, 17), (75, 6), (42, 7, 7), (79, 6), (79, 15), (23, 7), (78, 16),
+             (28, 6), (28, 15), (28, 16, 6), (28, 8), (42, 7), (28, 17),
+             (28, 35), (30, 7), (79, 7, 6), (30, 16), (75, 15), (46, 6, 6), (75,), (77,), (27,), (22,), (30,),
+             (23,), (24,), (79,), (74,), (28,), (46,), (73,), (45,), (48,),
+             (42,), (26,), (44,), (25,), (78,), (80,)]
+
+        b2 = [(42, 7, 6), (29,), (47,), (40,), (23, 7, 6), (28, 7, 7), (75, 7, 6), (46, 6, 7),
+              (28, 7, 6), (42, 7, 7), (28, 16, 6), (79, 7, 6), (46, 6, 6), (75,),
+              (77,), (27,), (22,), (30,), (23,), (24,), (79,), (74,), (28,), (46,), (73,), (45,), (48,), (42,), (26,),
+              (44,), (25,), (78,), (80,)]
 
         c = [
             (28,), (28, 7),  # only variations of
@@ -43,12 +63,6 @@ class SyntheticDataset:
 
         ]
 
-        self.variance = 1
-
-        self.new_graphs_list = []
-        self.new_labels_list = []
-        self.number_paths_counting = None
-
     def create_dataset_from_5k_selection_graph(self, save_on_file=True, filename: str = "5_k_selection_graphs",
                                                new_file_name="5k_synthetic_dataset"):
         dataset = data_reader.load_dataset_from_binary(filename=filename)
@@ -62,12 +76,16 @@ class SyntheticDataset:
         dataset.labels = list(new_labels)
 
         a = self.number_paths_counting.sum(axis=1)
-        z = np.count_nonzero(a)
+        self.number_of_paths_that_contains_target_path = np.count_nonzero(a)
 
         for i in range(len(a)):
             if a[i] != 0:
                 self.new_graphs_list.append(dataset.graphs_list[i])
                 self.new_labels_list.append(new_labels[i])
+            else:
+                if random.uniform(0, 1) < self.keep_probability:
+                    self.new_graphs_list.append(dataset.graphs_list[i])
+                    self.new_labels_list.append(new_labels[i])
 
         new_dataset = Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
         if save_on_file is True:
@@ -104,19 +122,33 @@ class SyntheticDataset:
                     }
         else:
             est_coeff = self.get_estimated_coefficients(pattern_boosting)
+            patterns_importance = self.get_patterns_importance(pattern_boosting)
+            times_selected=self.get_times_paths_are_selected(pattern_boosting)
             data = {"Path": self.target_paths,
                     "Real Coeff": self.coefficients,
                     "Est Coeff": est_coeff,
+                    "Importance": patterns_importance,
+                    "Times selected": times_selected,
                     "Times is present": total_number_of_times_a_path_is_present,
                     "Number of graph is present": number_of_graph_is_present
                     }
         table = pd.DataFrame(data)
+        if not (pattern_boosting is None):
+            table = table.sort_values(by=['Importance'], ascending=False)
         return table
+
+    def get_times_paths_are_selected(self, pattern_boosting: PatternBoosting):
+        matrix = pattern_boosting.boosting_matrix
+        return [matrix.get_number_of_times_path_has_been_selected(path) for path in self.target_paths]
+    def get_patterns_importance(self, pattern_boosting: PatternBoosting):
+        matrix = pattern_boosting.boosting_matrix
+        return [matrix.get_importance_of(path) for path in self.target_paths]
 
     def get_table_dataset_info(self) -> pd.DataFrame:
 
         data = {"Mean y": [np.mean(self.new_labels_list)],
-                "Number of observations": [len(self.new_labels_list)]
+                "Number of observations": [len(self.new_labels_list)],
+                "Obs containing target path": [self.number_of_paths_that_contains_target_path]
                 }
 
         table = pd.DataFrame(data)
@@ -175,17 +207,14 @@ class SyntheticDataset:
 
         # count the number of really important paths that have been selected by the algorithm
         counter = 0
-        selected_paths = set(selected_paths)
-        for target_path in self.target_paths:
+
+        for target_path in set(self.target_paths):
             if target_path in selected_paths:
                 counter += 1
-        print("Number of target paths that have been spotted")
-        print(counter)
-
         print("Total number of target paths: ", len(self.target_paths))
 
         data = {"Target paths spotted": [counter],
-                "selected paths": [len(self.target_paths)],
+                "selected paths": [len(selected_paths)],
                 "Steps": [pattern_boosting.get_n_iterations()]
                 }
         return pd.DataFrame(data)

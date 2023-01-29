@@ -166,7 +166,7 @@ class GradientBoostingModel:
         # create a Xgb model
         param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
-
+            '''
             return XGBRegressor(max_depth=1,
                                 n_estimators=1,
                                 booster='gbtree',
@@ -175,6 +175,10 @@ class GradientBoostingModel:
                                 eval_metric="rmse",
                                 objective='reg:squarederror',
                                 reg_lambda= 0
+                                )'''
+            return XGBRegressor(**Settings.xgb_model_parameters,
+                                base_score=base_score,
+
                                 )
         elif estimation_type is EstimationType.classification:
             return XGBClassifier(param, num_boosted_rounds=2)

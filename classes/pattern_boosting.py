@@ -54,7 +54,7 @@ class PatternBoosting:
             boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in
                                       training_dataset.graphs_list]
             self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
-                                                  self.boosting_matrix.patterns_importance)
+                                                  self.boosting_matrix.columns_importance)
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
@@ -237,7 +237,6 @@ class PatternBoosting:
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
 
     def __expand_boosting_matrix(self, selected_column_number):
-        '''To do: adding new column should give also add the features coming from that new selected path'''
         # Following two lines are jut to have mor readable code, everything can be grouped in one line
         length_selected_path = len(self.boosting_matrix.header[selected_column_number])
         path_length_condition = length_selected_path < self.settings.max_path_length

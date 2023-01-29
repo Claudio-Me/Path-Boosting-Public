@@ -65,7 +65,7 @@ def read_dataset_and_labels_from_csv(directory, file_name):
     return dataset
 
 
-def save_dataset_in_binary_file(dataset, directory=None, filename=None):
+def save_dataset_in_binary_file(dataset, directory=None, filename: str=None):
     if directory is None:
         directory = "data/"
     if directory[-1] != "/":
