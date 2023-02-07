@@ -32,8 +32,8 @@ class Settings:
         r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
 
     elif platform.system() == "Linux":
-        graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/graphs"
-        r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
+        graphs_folder = "/mn/sarpanitu/ansatte-u6/claudm/PycharmProjects/pattern_boosting/graphs"
+        r_model_location = "/mn/sarpanitu/ansatte-u6/claudm/PycharmProjects/pattern_boosting/R_code"
 
     algorithm = "Xgb_step"  # "Full_xgb" "R"
 
