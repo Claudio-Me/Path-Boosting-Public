@@ -1,11 +1,12 @@
 from classes.enumeration.estimation_type import EstimationType
 import platform
+import pandas as pd
 
 
 class Settings:
-    maximum_number_of_steps = 100  # call it maximum number of steps
+    maximum_number_of_steps = 1000  # call it maximum number of steps
 
-    # in the error graph Print only the last 20 learners
+    # in the error graph Print only the last N learners
     tail = 900
 
     # do not expand if the paths are longer than this amount
@@ -14,14 +15,20 @@ class Settings:
     target_test_error = 1.5
 
     xgb_model_parameters = {
-        'max_depth': 1,
         'n_estimators': 1,
-        'booster': 'gbtree',
-        'learning_rate': 0.2,
+        'booster': 'gbtree',  # gbtree # gblinear
+        'learning_rate': 0.3,
         "eval_metric": "rmse",
         "objective": 'reg:squarederror',
         "reg_lambda": 0
     }
+    if xgb_model_parameters['booster']=='gblinear':
+        xgb_model_parameters['updater']= 'coord_descent' #shotgun
+        xgb_model_parameters['feature_selector'] ='greedy' # cyclic # greedy # thrifty
+        xgb_model_parameters['top_k'] = 0
+
+    else:
+        xgb_model_parameters['max_depth']= 1
 
     if platform.system() == 'Windows':
         graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
@@ -43,7 +50,7 @@ class Settings:
     # estimation_type = EstimationType.classification
 
     # measure used for checkin the final error of the model (to plot error graphs)
-    final_evaluation_error = "absolute_mean_error"  # "MSE"
+    final_evaluation_error = "MSE"  # "absolute_mean_error"
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
@@ -99,3 +106,5 @@ class Settings:
     @staticmethod
     def neg_gradient(y, y_hat):
         return (y - y_hat)
+
+    pd.set_option('display.max_columns', None)

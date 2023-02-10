@@ -18,17 +18,24 @@ class BoostingMatrix:
         else:
             self.columns_importance = patterns_importance
 
-    def get_path_column(self, path: tuple) -> int:
+    def __get_path_column(self, path: tuple) -> int:
+        '''
+        It returns none if it is not present
+        '''
         header = self.get_header()
-        column = header.index(path)
+        try:
+            column = header.index(path)
+        except ValueError:
+            column = None
         return column
 
-    def get_number_of_times_path_has_been_selected(self, path: tuple) -> int:
-        column = self.get_path_column(path)
-        return self.number_of_times_column_is_selected[column]
+
     def get_path_importance(self, path: tuple) -> float:
-        column = self.get_path_column(path)
-        return self.columns_importance[column]
+        column = self.__get_path_column(path)
+        if column is None:
+            return 0
+        else:
+            return self.columns_importance[column]
 
     def add_column(self, new_column, header):
         """"
@@ -45,6 +52,7 @@ class BoostingMatrix:
             self.matrix = np.concatenate((self.matrix, new_column), axis=1)
 
             new_cells_for_importance_list = [0] * len(header)
+            new_cells_number_of_times_column_is_selected = np.zeros(len(header), dtype=int)
         else:
             # very complicate way to add a new column
             self.header.append(header)
@@ -53,7 +61,10 @@ class BoostingMatrix:
             new_matrix[:, :-1] = self.matrix
             self.matrix = new_matrix
             new_cells_for_importance_list = [0]
+            new_cells_number_of_times_column_is_selected = np.zeros(1, dtype=int)
 
+        self.number_of_times_column_is_selected = np.concatenate([self.number_of_times_column_is_selected,
+                                                                  new_cells_number_of_times_column_is_selected])
         self.columns_importance = self.columns_importance + new_cells_for_importance_list
 
     def update_pattern_importance_of_column(self, column: int, train_error: list, default_value=0):
@@ -160,6 +171,20 @@ class BoostingMatrix:
                 seen_rows.add(tuple(row))
 
         return len(seen_rows)
+
+    def get_number_of_times_path_has_been_selected(self, path) -> int:
+        if isinstance(path, int):
+            return self.number_of_times_column_is_selected[path]
+        elif isinstance(path, tuple):
+            column = self.__get_path_column(path)
+            if column is None:
+                return 0
+            else:
+                return self.number_of_times_column_is_selected[column]
+
+    def get_selected_paths(self) -> list:
+        header = self.get_header()
+        return [header[c] for c in self.already_selected_columns]
 
     def get_matrix(self):
         return self.matrix

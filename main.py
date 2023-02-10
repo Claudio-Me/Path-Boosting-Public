@@ -12,7 +12,7 @@ from classes.analysis import Analysis
 if __name__ == '__main__':
     # Testing()
 
-    generate_new_dataset=False
+    generate_new_dataset=True
     if generate_new_dataset is True:
         synthetic_dataset = SyntheticDataset()
         synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True, new_file_name="5k_synthetic_dataset")
@@ -32,7 +32,8 @@ if __name__ == '__main__':
     train_dataset=data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
     test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
 
-
+    print(np.count_nonzero([graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in train_dataset.graphs_list]))
+    print(np.count_nonzero([graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in test_dataset.graphs_list]))
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)

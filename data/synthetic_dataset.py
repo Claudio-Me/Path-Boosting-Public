@@ -15,14 +15,7 @@ class SyntheticDataset:
     '''
 
     def __init__(self):
-        self.target_paths = [(47, 7), (42, 7, 6), (75, 8), (29,), (75, 17), (47,), (79, 17), (40,), (28, 7),
-             (28, 16), (46, 6), (23, 7, 6), (28, 7, 7), (75, 7, 6), (75, 7), (75, 16),
-             (79, 7), (46, 6, 7), (79, 16), (23, 8), (42, 6), (42, 15), (42, 8), (28, 7, 6),
-             (30, 8), (30, 17), (75, 6), (42, 7, 7), (79, 6), (79, 15), (23, 7), (78, 16),
-             (28, 6), (28, 15), (28, 16, 6), (28, 8), (42, 7), (28, 17),
-             (28, 35), (30, 7), (79, 7, 6), (30, 16), (75, 15), (46, 6, 6), (75,), (77,), (27,), (22,), (30,),
-             (23,), (24,), (79,), (74,), (28,), (46,), (73,), (45,), (48,),
-             (42,), (26,), (44,), (25,), (78,), (80,)]
+        self.target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
         self.variance = 1
         self.keep_probability = 0.01
@@ -33,7 +26,7 @@ class SyntheticDataset:
         simple = list({(28,), (28, 7), (28, 7, 6)})
         a = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
-        b = [(47, 7), (42, 7, 6), (75, 8), (29,), (75, 17), (47,), (79, 17), (40,), (28, 7), # all connected
+        b = [(47, 7), (42, 7, 6), (75, 8), (29,), (75, 17), (47,), (79, 17), (40,), (28, 7),  # all connected
              (28, 16), (46, 6), (23, 7, 6), (28, 7, 7), (75, 7, 6), (75, 7), (75, 16),
              (79, 7), (46, 6, 7), (79, 16), (23, 8), (42, 6), (42, 15), (42, 8), (28, 7, 6),
              (30, 8), (30, 17), (75, 6), (42, 7, 7), (79, 6), (79, 15), (23, 7), (78, 16),
@@ -76,7 +69,7 @@ class SyntheticDataset:
         dataset.labels = list(new_labels)
 
         a = self.number_paths_counting.sum(axis=1)
-        self.number_of_paths_that_contains_target_path = np.count_nonzero(a)
+        self.number_of_graphs_that_contains_target_path = np.count_nonzero(a)
 
         for i in range(len(a)):
             if a[i] != 0:
@@ -110,6 +103,16 @@ class SyntheticDataset:
         # ------------------------------------------------------------------------------------------
         return y
 
+    def get_number_of_times_all_path_are_selected(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
+        matrix = pattern_boosting.boosting_matrix
+        n_times_path_is_selected = [matrix.get_number_of_times_path_has_been_selected(path) for path in
+                                    matrix.get_selected_paths()]
+        data = {
+            "Selected Path": matrix.get_selected_paths(),
+            "n times has been selected": n_times_path_is_selected
+        }
+        return pd.DataFrame(data)
+
     def get_target_paths_table(self, pattern_boosting: PatternBoosting = None) -> pd.DataFrame:
         # it creates a pandas dataset containing all the info
         total_number_of_times_a_path_is_present = self.number_paths_counting.sum(axis=0)
@@ -123,23 +126,24 @@ class SyntheticDataset:
         else:
             est_coeff = self.get_estimated_coefficients(pattern_boosting)
             patterns_importance = self.get_patterns_importance(pattern_boosting)
-            times_selected=self.get_times_paths_are_selected(pattern_boosting)
+            times_selected = self.get_times_paths_are_selected(pattern_boosting)
             data = {"Path": self.target_paths,
                     "Real Coeff": self.coefficients,
                     "Est Coeff": est_coeff,
                     "Importance": patterns_importance,
                     "Times selected": times_selected,
-                    "Times is present": total_number_of_times_a_path_is_present,
-                    "Number of graph is present": number_of_graph_is_present
+                    "N° is present": total_number_of_times_a_path_is_present,
+                    "Graphs present in": number_of_graph_is_present
                     }
         table = pd.DataFrame(data)
         if not (pattern_boosting is None):
             table = table.sort_values(by=['Importance'], ascending=False)
         return table
 
-    def get_times_paths_are_selected(self, pattern_boosting: PatternBoosting):
+    def get_times_paths_are_selected(self, pattern_boosting: PatternBoosting) -> list:
         matrix = pattern_boosting.boosting_matrix
         return [matrix.get_number_of_times_path_has_been_selected(path) for path in self.target_paths]
+
     def get_patterns_importance(self, pattern_boosting: PatternBoosting):
         matrix = pattern_boosting.boosting_matrix
         return [matrix.get_importance_of(path) for path in self.target_paths]
@@ -148,7 +152,7 @@ class SyntheticDataset:
 
         data = {"Mean y": [np.mean(self.new_labels_list)],
                 "Number of observations": [len(self.new_labels_list)],
-                "Obs containing target path": [self.number_of_paths_that_contains_target_path]
+                "Obs containing target path": [self.number_of_graphs_that_contains_target_path]
                 }
 
         table = pd.DataFrame(data)
@@ -177,6 +181,11 @@ class SyntheticDataset:
             table_synthetic_dataset_results = self.table_synthetic_dataset_results(pattern_boosting_model)
             print(table_synthetic_dataset_results)
             table_synthetic_dataset_results = self.get_latex_code_for(table_synthetic_dataset_results)
+
+            table_all_selected_paths=self.get_number_of_times_all_path_are_selected(pattern_boosting=pattern_boosting_model)
+            print(table_all_selected_paths)
+            table_all_selected_paths=self.get_latex_code_for(table_all_selected_paths)
+
         dataset_info_table = self.get_table_dataset_info()
         print(dataset_info_table)
         dataset_info_table = self.get_latex_code_for(dataset_info_table)
@@ -185,6 +194,7 @@ class SyntheticDataset:
 
         if pattern_boosting_model is not None:
             string = string + table_synthetic_dataset_results + "\n\n"
+            string = string + table_all_selected_paths + "\n\n"
 
         string = string + dataset_info_table + "\n\n"
 
@@ -198,7 +208,7 @@ class SyntheticDataset:
 
             sys.stdout = original_stdout  # Reset the standard output to its original value
 
-    def table_synthetic_dataset_results(self, pattern_boosting):
+    def table_synthetic_dataset_results(self, pattern_boosting: PatternBoosting):
         assert (pattern_boosting is not None)
         boosting_matrix = pattern_boosting.boosting_matrix
         selected_paths = []
@@ -215,8 +225,11 @@ class SyntheticDataset:
 
         data = {"Target paths spotted": [counter],
                 "selected paths": [len(selected_paths)],
-                "Steps": [pattern_boosting.get_n_iterations()]
+                "Steps": [pattern_boosting.get_n_iterations()],
+                "train err":[pattern_boosting.train_error[-1]]
                 }
+        if pattern_boosting.test_error is not None:
+            data["test err"]=[pattern_boosting.test_error[-1]]
         return pd.DataFrame(data)
 
     def get_estimated_coefficients(self, pattern_boosting: PatternBoosting):

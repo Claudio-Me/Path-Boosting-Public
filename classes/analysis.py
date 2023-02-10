@@ -104,6 +104,8 @@ class Analysis:
         self.__plot_bar_plot_of_path_length(boosting_matrix)
         self.__plot_histogram_of_path_length_importance(boosting_matrix)
 
+
+
     def plot_labels_histogram(self, train_labels, test_labels=None, tittle=None, legend1="train", legend2="test"):
         kwargs = dict(alpha=0.5, histtype='bar', density=True, stacked=False)
         plt.style.use('ggplot')

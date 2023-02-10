@@ -121,7 +121,6 @@ class GradientBoostingModel:
                 xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
                                                     estimation_type=EstimationType.regression)
                 eval_set = [(boosting_matrix, neg_gradient)]
-                progress = dict()
                 xgb_model.fit(boosting_matrix, neg_gradient, eval_set=eval_set, verbose=True)
 
                 self.base_learners_list.append(copy.deepcopy(xgb_model))
@@ -166,19 +165,8 @@ class GradientBoostingModel:
         # create a Xgb model
         param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
-            '''
-            return XGBRegressor(max_depth=1,
-                                n_estimators=1,
-                                booster='gbtree',
-                                learning_rate=0.1,
-                                base_score=base_score,
-                                eval_metric="rmse",
-                                objective='reg:squarederror',
-                                reg_lambda= 0
-                                )'''
             return XGBRegressor(**Settings.xgb_model_parameters,
-                                base_score=base_score,
-
+                                base_score=base_score
                                 )
         elif estimation_type is EstimationType.classification:
             return XGBClassifier(param, num_boosted_rounds=2)
