@@ -1,5 +1,5 @@
 import copy
-
+import os
 import xgboost
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
@@ -35,7 +35,7 @@ class GradientBoostingModel:
         elif self.model is ModelType.r_model:
             r_predict_model = LaunchRCode(Settings.r_code_relative_location, "main_predict")
             predictions_vector = r_predict_model.r_function(np.array(boosting_matrix_matrix), Settings.r_model_name,
-                                                            Settings.r_model_location)
+                                                            os.path.join(os.getcwd(), "R_code"))
             del r_predict_model
             return predictions_vector
 
@@ -90,7 +90,8 @@ class GradientBoostingModel:
             selected_column_number = self.r_select_column_and_train_model.r_function(np.array(boosting_matrix),
                                                                                      np.array(labels),
                                                                                      Settings.r_model_name,
-                                                                                     Settings.r_model_location,
+                                                                                     os.path.join(os.getcwd(),
+                                                                                                  "R_code"),
                                                                                      Settings.family,
                                                                                      Settings.r_base_learner_name)
             del self.r_select_column_and_train_model

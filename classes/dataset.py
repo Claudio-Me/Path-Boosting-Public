@@ -55,7 +55,7 @@ class Dataset:
         return len(self.graphs_list)
 
     def __str__(self):
-        average_test_label = np.mean(self.labels)
-        string="Average value for test label: "+ str( average_test_label)+"\n"
+        average_label = np.mean(self.labels)
+        string="Average value of label: "+ str( average_label)+"\n"
         string = string + "Dataset dimension: " + str(self.get_dimension())+ "\n"
         return string

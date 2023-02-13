@@ -1,11 +1,13 @@
-from data import data_reader
-from classes.dataset import Dataset
-import numpy as np
-import pandas as pd
-from classes.analysis import Analysis
-from classes.pattern_boosting import PatternBoosting
+
 import random
 import sys
+
+import numpy as np
+import pandas as pd
+
+import classes.dataset
+from data import data_reader
+from classes.pattern_boosting import PatternBoosting
 
 
 class SyntheticDataset:
@@ -80,7 +82,7 @@ class SyntheticDataset:
                     self.new_graphs_list.append(dataset.graphs_list[i])
                     self.new_labels_list.append(new_labels[i])
 
-        new_dataset = Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
+        new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
         if save_on_file is True:
             data_reader.save_dataset_in_binary_file(new_dataset, filename=new_file_name)
         return new_dataset
@@ -172,22 +174,27 @@ class SyntheticDataset:
         )
 
     def create_and_save_tables_in_latex(self, pattern_boosting_model: PatternBoosting = None,
-                                        writing_method: str = 'w'):
+                                        writing_method: str = 'w', show=True, save=True):
 
         target_paths_table = self.get_target_paths_table(pattern_boosting_model)
-        print(target_paths_table)
+        if show is True:
+            print(target_paths_table)
         target_paths_table = self.get_latex_code_for(target_paths_table)
         if pattern_boosting_model is not None:
             table_synthetic_dataset_results = self.table_synthetic_dataset_results(pattern_boosting_model)
-            print(table_synthetic_dataset_results)
+            if show is True:
+                print(table_synthetic_dataset_results)
             table_synthetic_dataset_results = self.get_latex_code_for(table_synthetic_dataset_results)
 
-            table_all_selected_paths=self.get_number_of_times_all_path_are_selected(pattern_boosting=pattern_boosting_model)
-            print(table_all_selected_paths)
-            table_all_selected_paths=self.get_latex_code_for(table_all_selected_paths)
+            table_all_selected_paths = self.get_number_of_times_all_path_are_selected(
+                pattern_boosting=pattern_boosting_model)
+            if show is True:
+                print(table_all_selected_paths)
+            table_all_selected_paths = self.get_latex_code_for(table_all_selected_paths)
 
         dataset_info_table = self.get_table_dataset_info()
-        print(dataset_info_table)
+        if show is True:
+            print(dataset_info_table)
         dataset_info_table = self.get_latex_code_for(dataset_info_table)
 
         string = target_paths_table + "\n\n"
@@ -198,15 +205,16 @@ class SyntheticDataset:
 
         string = string + dataset_info_table + "\n\n"
 
-        saving_location = Analysis.get_save_location("Synthetic_dataset_info", '.txt')
+        saving_location = data_reader.get_save_location("Synthetic_dataset_info", '.txt')
         original_stdout = sys.stdout  # Save a reference to the original standard output
+        if save is True:
+            with open(saving_location,
+                      writing_method) as f:  # change 'w' with 'a' to append text at the end of the file
+                sys.stdout = f  # Change the standard output to the file we created.
 
-        with open(saving_location, writing_method) as f:  # change 'w' with 'a' to append text at the end of the file
-            sys.stdout = f  # Change the standard output to the file we created.
+                print(string)
 
-            print(string)
-
-            sys.stdout = original_stdout  # Reset the standard output to its original value
+                sys.stdout = original_stdout  # Reset the standard output to its original value
 
     def table_synthetic_dataset_results(self, pattern_boosting: PatternBoosting):
         assert (pattern_boosting is not None)
@@ -226,10 +234,10 @@ class SyntheticDataset:
         data = {"Target paths spotted": [counter],
                 "selected paths": [len(selected_paths)],
                 "Steps": [pattern_boosting.get_n_iterations()],
-                "train err":[pattern_boosting.train_error[-1]]
+                "train err": [pattern_boosting.train_error[-1]]
                 }
         if pattern_boosting.test_error is not None:
-            data["test err"]=[pattern_boosting.test_error[-1]]
+            data["test err"] = [pattern_boosting.test_error[-1]]
         return pd.DataFrame(data)
 
     def get_estimated_coefficients(self, pattern_boosting: PatternBoosting):

@@ -1,10 +1,11 @@
 from classes.enumeration.estimation_type import EstimationType
 import platform
 import pandas as pd
+import os
 
 
 class Settings:
-    maximum_number_of_steps = 1000  # call it maximum number of steps
+    maximum_number_of_steps = 10  # call it maximum number of steps
 
     # in the error graph Print only the last N learners
     tail = 900
@@ -30,17 +31,6 @@ class Settings:
     else:
         xgb_model_parameters['max_depth']= 1
 
-    if platform.system() == 'Windows':
-        graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
-        r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
-
-    elif platform.system() == 'Darwin':
-        graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/graphs"
-        r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
-
-    elif platform.system() == "Linux":
-        graphs_folder = "/mn/sarpanitu/ansatte-u6/claudm/PycharmProjects/pattern_boosting/graphs"
-        r_model_location = "/mn/sarpanitu/ansatte-u6/claudm/PycharmProjects/pattern_boosting/R_code"
 
     algorithm = "Xgb_step"  # "Full_xgb" "R"
 

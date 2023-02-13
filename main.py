@@ -12,12 +12,13 @@ from classes.analysis import Analysis
 if __name__ == '__main__':
     # Testing()
 
-    generate_new_dataset=True
+    generate_new_dataset = True
     if generate_new_dataset is True:
         synthetic_dataset = SyntheticDataset()
-        synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True, new_file_name="5k_synthetic_dataset")
-        data_reader.save_dataset_in_binary_file(synthetic_dataset,filename="synthetic_dataset")
-    synthetic_dataset=data_reader.load_dataset_from_binary(filename="synthetic_dataset")
+        synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True,
+                                                                 new_file_name="5k_synthetic_dataset")
+        data_reader.save_dataset_in_binary_file(synthetic_dataset, filename="synthetic_dataset")
+    synthetic_dataset = data_reader.load_dataset_from_binary(filename="synthetic_dataset")
 
     if generate_new_dataset is True:
         dataset_filename = "5k_synthetic_dataset"
@@ -29,22 +30,41 @@ if __name__ == '__main__':
         data_reader.save_dataset_in_binary_file(train_dataset, filename="synthetic_train_dataset")
         data_reader.save_dataset_in_binary_file(test_dataset, filename="synthetic_test_dataset")
 
-    train_dataset=data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
+    train_dataset = data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
     test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
 
-    print(np.count_nonzero([graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in train_dataset.graphs_list]))
-    print(np.count_nonzero([graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in test_dataset.graphs_list]))
+    print(np.count_nonzero(
+        [graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in train_dataset.graphs_list]))
+    print(np.count_nonzero(
+        [graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in test_dataset.graphs_list]))
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
 
+
+    analysis = Analysis()
+    analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=True, save=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # ------------------------------------------------------------------------------------------------------------------
 
-    synthetic_dataset.create_and_save_tables_in_latex(pattern_boosting_model=pattern_boosting)
-
+    # additional analysis
     # check number of repeated rows
     train_boosting_matrix = pattern_boosting.create_boosting_matrix_for(train_dataset)
     test_boosting_matrix = pattern_boosting.create_boosting_matrix_for(test_dataset)
+
 
 
     def count_repeated_rows(matrix):
@@ -86,8 +106,6 @@ if __name__ == '__main__':
 
 
     print("--------------------------------------------------------------------------------")
-    print("Training dataset dimension: ", train_dataset.get_dimension())
-    print("Test dataset dimension: ", test_dataset.get_dimension())
     print("Repeated rows in final training boosting matrix")
     print(count_repeated_rows(train_boosting_matrix))
     print("Different rows in train matrix: ", different_rows(train_boosting_matrix))
@@ -107,7 +125,6 @@ if __name__ == '__main__':
 
     print("Repeated rows in big boosting matrix")
     print(count_repeated_rows(big_matrix))
-
 
     # ------------------------------------------------------------------------------------------------------------------
 

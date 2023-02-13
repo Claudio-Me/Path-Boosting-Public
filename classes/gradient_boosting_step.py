@@ -9,6 +9,7 @@ from xgboost import XGBRegressor
 from xgboost import XGBClassifier
 from collections.abc import Iterable
 import gc
+import os
 import numpy as np
 from classes.enumeration.model_type import ModelType
 
@@ -49,7 +50,7 @@ class GradientBoostingStep:
             selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix.matrix),
                                                                                 np.array(labels),
                                                                                 Settings.r_model_name,
-                                                                                Settings.r_model_location,
+                                                                                os.path.join(os.getcwd(),"R_code"),
                                                                                 Settings.family,
                                                                                 Settings.r_base_learner_name)
             model = GradientBoostingModel(ModelType.r_model)

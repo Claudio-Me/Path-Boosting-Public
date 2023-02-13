@@ -6,7 +6,6 @@ from classes.dataset import Dataset
 from collections import defaultdict
 from classes.enumeration.estimation_type import EstimationType
 from classes.gradient_boosting_model import GradientBoostingModel
-from classes.analysis import Analysis
 import numpy as np
 
 
@@ -19,9 +18,9 @@ class PatternBoosting:
         self.train_error = []
         self.average_path_length = []
         self.number_of_learners = []
-        self.analysis = Analysis()
         self.gradient_boosting_step = GradientBoostingStep()
         self.n_iterations = None
+
 
     def training(self, training_dataset, test_dataset=None):
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
@@ -44,6 +43,8 @@ class PatternBoosting:
                 self.test_dataset = Dataset(test_dataset)
             else:
                 raise TypeError("Input test dataset not recognized")
+        else:
+            self.test_dataset = None
 
         # if it is the first time we train this model
         if self.trained is False:
@@ -96,8 +97,10 @@ class PatternBoosting:
 
         # -------------------------------------------------------------------------------------------------------------
         # error plots
-
+        # Delete here
         # cut first point
+        # can be deleted, it is all inserted in the analysis class
+        '''
         cut_point = 1
 
         if Settings.final_evaluation_error == "MSE":
@@ -107,28 +110,28 @@ class PatternBoosting:
         else:
             raise ValueError("measure error not found")
         if Settings.estimation_type == EstimationType.regression:
-            self.analysis.plot_informations(self.number_of_learners[cut_point:], self.train_error[cut_point:],
-                                            tittle="train error",
-                                            x_label="number of learners",
-                                            y_label=y_label)
+            self.analysis.plot_graphs(self.number_of_learners[cut_point:], self.train_error[cut_point:],
+                                      tittle="train error",
+                                      x_label="number of learners",
+                                      y_label=y_label)
 
             if test_dataset is not None:
-                self.analysis.plot_informations(self.number_of_learners[cut_point:], self.test_error[cut_point:],
-                                                tittle="test error",
-                                                x_label="number of learners",
-                                                y_label=y_label)
+                self.analysis.plot_graphs(self.number_of_learners[cut_point:], self.test_error[cut_point:],
+                                          tittle="test error",
+                                          x_label="number of learners",
+                                          y_label=y_label)
         elif Settings.estimation_type == EstimationType.classification:
-            self.analysis.plot_informations(self.number_of_learners, self.train_error, tittle="train classification",
-                                            x_label="number of learners", y_label="jaccard score")
+            self.analysis.plot_graphs(self.number_of_learners, self.train_error, tittle="train classification",
+                                      x_label="number of learners", y_label="jaccard score")
 
             if test_dataset is not None:
-                self.analysis.plot_informations(self.number_of_learners, self.test_error, tittle="test classification",
-                                                x_label="number of learners", y_label="jaccard score")
+                self.analysis.plot_graphs(self.number_of_learners, self.test_error, tittle="test classification",
+                                          x_label="number of learners", y_label="jaccard score")
 
         # -----------------------------------------------------------
         # average_path_length_plot
-        self.analysis.plot_informations(self.number_of_learners, self.average_path_length, tittle="Average path length",
-                                        x_label="number of learners", y_label="average path length")
+        self.analysis.plot_graphs(self.number_of_learners, self.average_path_length, tittle="Average path length",
+                                  x_label="number of learners", y_label="average path length")
 
         self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error,
                                                     self.training_dataset)
@@ -139,6 +142,7 @@ class PatternBoosting:
             self.analysis.plot_labels_histogram(self.test_dataset.labels, self.predict(test_dataset),
                                                 tittle="Predicted vs real y", legend1="real", legend2="predicted")
         # -----------------------------------------------------------
+        '''
 
     def predict(self, dataset):
         if not isinstance(dataset, Dataset):
