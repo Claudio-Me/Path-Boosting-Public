@@ -4,7 +4,8 @@ from classes.gradient_boosting_model import GradientBoostingModel
 from sklearn import metrics
 from settings import Settings
 from classes.boosting_matrix import BoostingMatrix
-from R_code.interface_with_R_code import LaunchRCode
+if Settings.algorithm=="R":
+    from R_code.interface_with_R_code import LaunchRCode
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
 from collections.abc import Iterable
