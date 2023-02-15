@@ -35,7 +35,7 @@ class GradientBoostingStep:
         else:
             raise TypeError("Selected algorithm not recognized")
 
-    def __step_using_xgboost(self, model: GradientBoostingModel, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
+    def __step_using_xgboost(self, model: GradientBoostingModel, boosting_matrix: BoostingMatrix, labels):
         if model is None:
             model = GradientBoostingModel(ModelType.xgb_one_step)
         selected_column = model.fit_one_step(boosting_matrix.matrix, labels)
@@ -44,7 +44,7 @@ class GradientBoostingStep:
         # -------------------------------------------------------------------------------------------------------------
         return selected_column, model
 
-    def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
+    def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels):
         if model is None:
             # we are at the first step, the model is no initialized yet
             r_select_column_and_train_model = LaunchRCode(Settings.r_code_relative_location, "first_iteration")
