@@ -19,8 +19,15 @@ import sys
 
 class Analysis:
 
-    def load_and_analyze(self,filepath):
-        pass
+    def load_and_analyze(self, directory):
+
+        pattern_boosting = data_reader.load_data(directory=directory, filename="pattern_boosting")
+        try:
+            synthetic_dataset = data_reader.load_data(directory=directory, filename="synthetic_dataset")
+        except:
+            synthetic_dataset = None
+        self.all_analysis(pattern_boosting, synthetic_dataset)
+
     def all_analysis(self, pattern_boosting: PatternBoosting, synthetic_dataset=None, show=True, save=True):
         self.errors_plots(pattern_boosting, show=show, save=save)
         self.average_path_length_plot(pattern_boosting, show=show, save=save)
@@ -255,7 +262,7 @@ class Analysis:
         ax.set_ylabel('Importance')
         ax.set_title(tittle)
 
-        saving_location = data_reader.get_save_location(tittle, '.png')
+        saving_location = data_reader.get_save_location(file_name=tittle,file_extension= '.png')
 
         if save is True:
             plt.savefig(saving_location)

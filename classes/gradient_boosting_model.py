@@ -152,11 +152,11 @@ class GradientBoostingModel:
                 # --------------------------------------------------------------------------------------------------
                 # debug
                 # look at the error of the last base model
-                tmp_new_predicted_y = xgb_model.predict(boosting_matrix)
+                #tmp_new_predicted_y = xgb_model.predict(boosting_matrix)
 
-                model_error = metrics.mean_squared_error(tmp_new_predicted_y, neg_gradient)
-                model_error = np.sqrt(model_error)
-                print("Base learner rmse: ", model_error)
+                #model_error = metrics.mean_squared_error(tmp_new_predicted_y, neg_gradient)
+                #model_error = np.sqrt(model_error)
+                #print("Base learner rmse: ", model_error)
 
                 # -------------------------------------------------------------------------------------------------
 

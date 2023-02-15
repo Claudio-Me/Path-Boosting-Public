@@ -98,16 +98,24 @@ def load_data(filename, directory=None):
     if directory[-1] != "/":
         directory = directory + "/"
 
-
     with open(directory + filename + '.pkl', 'rb') as inp:
         data = pickle.load(inp)
     return data
 
 
-def get_save_location(file_name: str, file_extension: str, folder_path="graphs") -> str:
-    # it creates a new folder and returns the location of a graph file with name tittle
-    location = os.path.join(os.getcwd(), folder_path)
-    if file_extension[0] != '.':
+def save_data(data, filename, directory="results"):
+    if not (os.getcwd() in directory):
+        directory = get_save_location(file_name=filename, file_extension=".pkl", folder_relative_path=directory)
+
+    if not '.' in directory:
+        directory = directory + filename + ".pkl"
+    with open(directory, 'wb') as outp:
+        pickle.dump(data, outp, pickle.HIGHEST_PROTOCOL)
+
+
+def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results") -> str:
+    location = os.path.join(os.getcwd(), folder_relative_path)
+    if len(file_extension)>0 and file_extension[0] != '.':
         raise TypeError("File extension must start with a dot")
 
     if location[-1] != '/':
@@ -128,8 +136,5 @@ def get_save_location(file_name: str, file_extension: str, folder_path="graphs")
         os.makedirs(location + folder_name)
     folder_name = folder_name + "/"
 
-    if Settings.maximum_number_of_steps <= Settings.tail:
-        file_name = file_name.replace(" ", "_") + file_extension
-    else:
-        file_name = file_name.replace(" ", "_") + "_tail_" + str(Settings.tail) + file_extension
+    file_name = file_name.replace(" ", "_") + file_extension
     return location + folder_name + file_name
