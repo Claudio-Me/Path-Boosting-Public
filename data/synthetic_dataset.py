@@ -8,6 +8,7 @@ import pandas as pd
 import classes.dataset
 from data import data_reader
 from classes.pattern_boosting import PatternBoosting
+from classes.graph import GraphPB
 
 
 class SyntheticDataset:
@@ -104,6 +105,13 @@ class SyntheticDataset:
 
         # ------------------------------------------------------------------------------------------
         return y
+
+
+    def oracle_model_predict(self, graph: GraphPB):
+        pass
+
+
+
 
     def get_number_of_times_all_path_are_selected(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
         matrix = pattern_boosting.boosting_matrix

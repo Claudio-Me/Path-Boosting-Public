@@ -17,7 +17,7 @@ class Settings:
 
     xgb_model_parameters = {
         'n_estimators': 1,
-        'booster': 'gbtree',  # gbtree # gblinear
+        'booster': 'gblinear',  # gbtree # gblinear
         'learning_rate': 0.3,
         "eval_metric": "rmse",
         "objective": 'reg:squarederror',
@@ -25,8 +25,8 @@ class Settings:
     }
     if xgb_model_parameters['booster']=='gblinear':
         xgb_model_parameters['updater']= 'coord_descent' #shotgun
-        xgb_model_parameters['feature_selector'] ='greedy' # cyclic # greedy # thrifty
-        xgb_model_parameters['top_k'] = 0
+        xgb_model_parameters['feature_selector'] ='thrifty' # cyclic # greedy # thrifty
+        xgb_model_parameters['top_k'] = 1
 
     else:
         xgb_model_parameters['max_depth']= 1
