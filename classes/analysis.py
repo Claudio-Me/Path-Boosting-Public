@@ -19,14 +19,14 @@ import sys
 
 class Analysis:
 
-    def load_and_analyze(self, directory):
+    def load_and_analyze(self, directory, show=True, save=True):
 
         pattern_boosting = data_reader.load_data(directory=directory, filename="pattern_boosting")
         try:
             synthetic_dataset = data_reader.load_data(directory=directory, filename="synthetic_dataset")
         except:
             synthetic_dataset = None
-        self.all_analysis(pattern_boosting, synthetic_dataset)
+        self.all_analysis(pattern_boosting, synthetic_dataset, show=show, save=save)
 
     def all_analysis(self, pattern_boosting: PatternBoosting, synthetic_dataset=None, show=True, save=True):
         self.errors_plots(pattern_boosting, show=show, save=save)
@@ -136,7 +136,7 @@ class Analysis:
 
         string += "Number of iterations: " + str(len(train_error_vector)) + '\n'
         string += "Number of iterations: " + str(len(train_error_vector)) + '\n'
-        string += "Boosting Matrix:\n" + repr(pattern_boosting.boosting_matrix) + '\n'
+        string += "Boosting Matrix:\n" + str(pattern_boosting.boosting_matrix) + '\n'
         string += "achieved train error: " + str(train_error_vector[-1])
         string += "achieved test error: " + str(test_error_vector[-1])
         string += repr(dataset)
@@ -262,7 +262,7 @@ class Analysis:
         ax.set_ylabel('Importance')
         ax.set_title(tittle)
 
-        saving_location = data_reader.get_save_location(file_name=tittle,file_extension= '.png')
+        saving_location = data_reader.get_save_location(file_name=tittle, file_extension='.png')
 
         if save is True:
             plt.savefig(saving_location)

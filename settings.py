@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100  # call it maximum number of steps
+    maximum_number_of_steps = 3  # call it maximum number of steps
 
     # in the error graph Print only the last N learners
     tail = 900
@@ -17,7 +17,7 @@ class Settings:
 
     xgb_model_parameters = {
         'n_estimators': 1,
-        'booster': 'gblinear',  # gbtree # gblinear
+        'booster': 'gbtree',  # gbtree # gblinear
         'learning_rate': 0.3,
         "eval_metric": "rmse",
         "objective": 'reg:squarederror',
@@ -31,7 +31,7 @@ class Settings:
     else:
         xgb_model_parameters['max_depth']= 1
 
-    parallelization=True
+    parallelization=False
 
     algorithm = "Xgb_step"  # "Full_xgb" "R"
 

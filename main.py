@@ -41,28 +41,15 @@ if __name__ == '__main__':
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
 
-
     data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
     try:
         data_reader.save_data(synthetic_dataset, filename="synthetic_dataset", directory="results")
     except:
         pass
     analysis = Analysis()
-    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"))
-    analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=True, save=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
+    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"), show=False,
+                              save=True)
+    # analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False, save=True)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -70,7 +57,6 @@ if __name__ == '__main__':
     # check number of repeated rows
     train_boosting_matrix = pattern_boosting.create_boosting_matrix_for(train_dataset)
     test_boosting_matrix = pattern_boosting.create_boosting_matrix_for(test_dataset)
-
 
 
     def count_repeated_rows(matrix):

@@ -1,4 +1,3 @@
-
 import random
 import sys
 
@@ -9,6 +8,8 @@ import classes.dataset
 from data import data_reader
 from classes.pattern_boosting import PatternBoosting
 from classes.graph import GraphPB
+from settings import Settings
+from sklearn import metrics
 
 
 class SyntheticDataset:
@@ -21,6 +22,7 @@ class SyntheticDataset:
         self.target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
         self.variance = 1
+        self.coefficients = np.random.uniform(10, 20, len(self.target_paths))
         self.keep_probability = 0.01
         self.new_graphs_list = []
         self.new_labels_list = []
@@ -86,10 +88,12 @@ class SyntheticDataset:
         new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
         if save_on_file is True:
             data_reader.save_dataset_in_binary_file(new_dataset, filename=new_file_name)
+
+
         return new_dataset
 
-    def __formula_new_labels(self, number_paths_counting):
-        self.coefficients = np.random.uniform(10, 20, len(self.target_paths))
+    def __formula_new_labels(self, number_paths_counting, add_noise=True):
+
         assert len(self.coefficients) == len(self.target_paths)
 
         # ------------------------------------------------------------------------------------------
@@ -99,19 +103,41 @@ class SyntheticDataset:
         y = np.matmul(number_paths_counting, self.coefficients)
 
         # add random noise
-
-        noise = np.random.normal(0, self.variance, len(y))
-        y = y + noise
+        if add_noise is True:
+            noise = np.random.normal(0, self.variance, len(y))
+            y = y + noise
 
         # ------------------------------------------------------------------------------------------
         return y
 
+    def oracle_model_evaluate(self, graphs_list: list[GraphPB], labels):
+        if not hasattr(graphs_list, '__iter__'):
+            # if graph_list is not a list then I assume it is a singe graph
+            graphs_list = [graphs_list]
+            labels = [labels]
 
-    def oracle_model_predict(self, graph: GraphPB):
-        pass
+        y_pred = self.oracle_model_predict(graphs_list)
+        if Settings.final_evaluation_error == "MSE":
+            model_error = metrics.mean_squared_error(labels, y_pred)
+        elif Settings.final_evaluation_error == "absolute_mean_error":
+            model_error = metrics.mean_absolute_error(labels, y_pred)
+        else:
+            raise ValueError("measure error not found")
+        return model_error
+
+    def oracle_model_predict(self, graphs_list: list[GraphPB]):
+        if not hasattr(graphs_list, '__iter__'):
+            # if graph_list is not a list then I assume it is a singe graph
+            graphs_list = [graphs_list]
+
+            # each row is a different graph, each column is a different path
+        graphs_counting_target_paths = np.array(
+            [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for graph in
+             graphs_list])
 
 
-
+        predicted_labels = self.__formula_new_labels(graphs_counting_target_paths, add_noise=False)
+        return predicted_labels
 
     def get_number_of_times_all_path_are_selected(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
         matrix = pattern_boosting.boosting_matrix
@@ -158,11 +184,14 @@ class SyntheticDataset:
         matrix = pattern_boosting.boosting_matrix
         return [matrix.get_importance_of(path) for path in self.target_paths]
 
-    def get_table_dataset_info(self) -> pd.DataFrame:
+    def get_table_dataset_info(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
 
+        oracle_error = self.oracle_model_evaluate(graphs_list=pattern_boosting.test_dataset.get_graphs_list(),
+                                                  labels=pattern_boosting.test_dataset.get_labels())
         data = {"Mean y": [np.mean(self.new_labels_list)],
                 "Number of observations": [len(self.new_labels_list)],
-                "Obs containing target path": [self.number_of_graphs_that_contains_target_path]
+                "Obs containing target path": [self.number_of_graphs_that_contains_target_path],
+                "Oracle error": [oracle_error]
                 }
 
         table = pd.DataFrame(data)
@@ -200,7 +229,7 @@ class SyntheticDataset:
                 print(table_all_selected_paths)
             table_all_selected_paths = self.get_latex_code_for(table_all_selected_paths)
 
-        dataset_info_table = self.get_table_dataset_info()
+        dataset_info_table = self.get_table_dataset_info(pattern_boosting_model)
         if show is True:
             print(dataset_info_table)
         dataset_info_table = self.get_latex_code_for(dataset_info_table)
@@ -264,7 +293,12 @@ class SyntheticDataset:
         matrix = np.zeros((len(self.target_paths), len(header)), dtype=np.int8)
         for i in range(len(self.target_paths)):
             if self.target_paths[i] in header:
-                column = header.index(self.target_paths[i])
-                matrix[i, column] = 1
+                checking_path = self.target_paths[i]
+                for j in range(len(self.target_paths[i])-1):
+                    last_index=len(self.target_paths[i])-(j+1)
+
+                    path=checking_path[:last_index]
+                    column = header.index(path)
+                    matrix[i, column] = 1
 
         return matrix
