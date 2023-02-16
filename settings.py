@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 3  # call it maximum number of steps
+    maximum_number_of_steps = 4  # call it maximum number of steps
 
     # in the error graph Print only the last N learners
     tail = 900
