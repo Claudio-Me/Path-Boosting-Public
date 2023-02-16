@@ -5,12 +5,16 @@ from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
 from collections import defaultdict
 from classes.enumeration.estimation_type import EstimationType
-from classes.analysis import Analysis
+from classes.gradient_boosting_model import GradientBoostingModel
 import numpy as np
+import multiprocessing
+import functools
+import itertools
+from mpi4py import MPI
 
 
 class PatternBoosting:
-    def __init__(self, settings=Settings(), model=None):
+    def __init__(self, settings=Settings(), model: GradientBoostingModel = None):
         self.settings = settings
         self.model = model
         self.trained = False
@@ -18,8 +22,8 @@ class PatternBoosting:
         self.train_error = []
         self.average_path_length = []
         self.number_of_learners = []
-        self.analysis = Analysis()
         self.gradient_boosting_step = GradientBoostingStep()
+        self.n_iterations = None
 
     def training(self, training_dataset, test_dataset=None):
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
@@ -42,6 +46,8 @@ class PatternBoosting:
                 self.test_dataset = Dataset(test_dataset)
             else:
                 raise TypeError("Input test dataset not recognized")
+        else:
+            self.test_dataset = None
 
         # if it is the first time we train this model
         if self.trained is False:
@@ -52,20 +58,25 @@ class PatternBoosting:
             boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in
                                       training_dataset.graphs_list]
             self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
-                                                  self.boosting_matrix.patterns_importance)
+                                                  self.boosting_matrix.columns_importance)
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
+            self.n_iterations = iteration_number + 1
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
-            print("column selected")
 
             if test_dataset is not None:
                 self.test_error.append(self.evaluate(self.test_dataset))
             self.train_error.append(self.evaluate(self.training_dataset))
+            # -------------------------------------------------------------------------------------------------------
+            # debug
+
+            print("Error: ", self.train_error[-1])
+            # --------------------------------------------------------------------------------------------------------
 
             if len(self.train_error) <= 1:
                 default_importance_value = np.var(training_dataset.labels)
@@ -78,15 +89,21 @@ class PatternBoosting:
             self.number_of_learners.append(iteration_number + 1)
 
             # expand boosting matrix
-
+            print("------")
             self.__expand_boosting_matrix(selected_column_number)
+            print("expanded boosting")
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
 
+            if self.train_error[-1] < Settings.target_test_error:
+                break
+
         # -------------------------------------------------------------------------------------------------------------
         # error plots
-
+        # Delete here
         # cut first point
+        # can be deleted, it is all inserted in the analysis class
+        '''
         cut_point = 1
 
         if Settings.final_evaluation_error == "MSE":
@@ -96,49 +113,69 @@ class PatternBoosting:
         else:
             raise ValueError("measure error not found")
         if Settings.estimation_type == EstimationType.regression:
-            self.analysis.plot_informations(self.number_of_learners[cut_point:], self.train_error[cut_point:],
-                                            tittle="train error",
-                                            x_label="number of learners",
-                                            y_label=y_label)
+            self.analysis.plot_graphs(self.number_of_learners[cut_point:], self.train_error[cut_point:],
+                                      tittle="train error",
+                                      x_label="number of learners",
+                                      y_label=y_label)
 
             if test_dataset is not None:
-                self.analysis.plot_informations(self.number_of_learners[cut_point:], self.test_error[cut_point:],
-                                                tittle="test error",
-                                                x_label="number of learners",
-                                                y_label=y_label)
+                self.analysis.plot_graphs(self.number_of_learners[cut_point:], self.test_error[cut_point:],
+                                          tittle="test error",
+                                          x_label="number of learners",
+                                          y_label=y_label)
         elif Settings.estimation_type == EstimationType.classification:
-            self.analysis.plot_informations(self.number_of_learners, self.train_error, tittle="train classification",
-                                            x_label="number of learners", y_label="jaccard score")
+            self.analysis.plot_graphs(self.number_of_learners, self.train_error, tittle="train classification",
+                                      x_label="number of learners", y_label="jaccard score")
 
             if test_dataset is not None:
-                self.analysis.plot_informations(self.number_of_learners, self.test_error, tittle="test classification",
-                                                x_label="number of learners", y_label="jaccard score")
+                self.analysis.plot_graphs(self.number_of_learners, self.test_error, tittle="test classification",
+                                          x_label="number of learners", y_label="jaccard score")
 
         # -----------------------------------------------------------
         # average_path_length_plot
-        self.analysis.plot_informations(self.number_of_learners, self.average_path_length, tittle="Average path length",
-                                        x_label="number of learners", y_label="average path length")
+        self.analysis.plot_graphs(self.number_of_learners, self.average_path_length, tittle="Average path length",
+                                  x_label="number of learners", y_label="average path length")
 
-        self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error)
-        self.analysis.print_test_dataset_info(test_dataset)
+        self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error,
+                                                    self.training_dataset)
         self.analysis.analyse_path_length_distribution(self.boosting_matrix)
+        if test_dataset is not None:
+            # self.analysis.plot_labels_histogram(self.training_dataset.labels, self.test_dataset.labels, tittle="Real labels")
+            # self.analysis.plot_labels_histogram(self.predict(training_dataset), self.predict(test_dataset), tittle="Predicted Labels")
+            self.analysis.plot_labels_histogram(self.test_dataset.labels, self.predict(test_dataset),
+                                                tittle="Predicted vs real y", legend1="real", legend2="predicted")
         # -----------------------------------------------------------
+        '''
 
-    def predict(self, dataset: Dataset):
-        boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list]
+    def predict(self, dataset):
+        if not isinstance(dataset, Dataset):
+            dataset = Dataset(dataset)
+        boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
-    def evaluate(self, dataset: Dataset):
-
+    def create_boosting_matrix_for(self, dataset):
+        if not isinstance(dataset, Dataset):
+            dataset = Dataset(dataset)
         boosting_matrix_matrix = np.array(
             [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list])
+        return boosting_matrix_matrix
+
+    def evaluate(self, dataset: Dataset):
+
+        boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
+
         error = self.model.evaluate(boosting_matrix_matrix, dataset.labels)
         return error
 
+    def generate_boosting_matrix(self, dataset: Dataset) -> np.array:
+        boosting_matrix_matrix = np.array(
+            [self.__create_boosting_vector_for_graph(graph) for graph in dataset.get_graphs_list()])
+        return boosting_matrix_matrix
+
     def __create_boosting_vector_for_graph(self, graph: GraphPB) -> np.array:
         boosting_vector = [graph.number_of_time_path_is_present_in_graph(path_label) for path_label in
-                           self.boosting_matrix.header]
+                           self.boosting_matrix.get_header()]
         return np.array(boosting_vector)
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
@@ -165,17 +202,56 @@ class PatternBoosting:
         given one path it returns the list of all the possible extension of the input path
         If the path is not present in the graph an empty list is returned for that extension
         """
+        if Settings.parallelization is False:
+            new_paths = [list(
+                self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+                    selected_path_label))
+                for graph_number in graphs_that_contain_selected_column_path]
+        else:
 
-        new_paths = [list(
-            self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
-                selected_path_label))
-            for graph_number in graphs_that_contain_selected_column_path]
+
+
+            #------------------------------------------------------------------------------------------------------------
+
+            comm = MPI.COMM_WORLD
+            size = comm.Get_size()
+            rank = comm.Get_rank()
+            print(size)
+            print(rank)
+            if rank==0:
+                split_graphs_list = self.__split(graphs_that_contain_selected_column_path,size)
+
+            graph_number_list = comm.scatter(split_graphs_list, root=0)
+
+            new_paths_for_specific_graph_list =[list(
+                self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+                    selected_path_label))
+                for graph_number in graph_number_list]
+
+            new_paths = comm.gather(new_paths_for_specific_graph_list, root=0)
+
+            #-----------------------------------------------------------------------------------------------------------
+            new_paths=[item for sublist in new_paths for item in sublist]
+
+
+
+
+
         new_paths = list(set([path for paths_list in new_paths for path in paths_list]))
         return new_paths
 
+    @staticmethod
+    def __split(list, n):
+        k, m = divmod(len(list), n)
+        return (list[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+    def __get_new_paths_labels_for_graph_number(self,graph_number, selected_path_label):
+        return list(
+            self.training_dataset.graphs_list[
+                graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+                selected_path_label))
     def __initialize_boosting_matrix(self):
         """
-        it initialize the attribute boosting_matrix by searching in all the dataset all the metal atoms present in the
+        it initializes the attribute boosting_matrix by searching in all the dataset all the metal atoms present in the
          graphs
          Note it handle also the case in which more than in one graph are present multiple metal atoms
         """
@@ -211,16 +287,22 @@ class PatternBoosting:
         length_selected_path = len(self.boosting_matrix.header[selected_column_number])
         path_length_condition = length_selected_path < self.settings.max_path_length
 
-        if (not (selected_column_number in self.boosting_matrix.already_selected_columns)) and path_length_condition:
+        if not (selected_column_number in self.boosting_matrix.already_selected_columns):
             # if the selected column has never been selected before
             self.boosting_matrix.already_selected_columns.add(selected_column_number)
+            if path_length_condition is True:
+                selected_column = self.boosting_matrix.matrix[:, selected_column_number]
+                selected_path_label = self.boosting_matrix.header[selected_column_number]
 
-            selected_column = self.boosting_matrix.matrix[:, selected_column_number]
-            selected_path_label = self.boosting_matrix.header[selected_column_number]
+                graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
 
-            graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
+                new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
+                new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
 
-            new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
-            new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
+                self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
-            self.boosting_matrix.add_column(new_columns, new_paths_labels)
+    def get_n_iterations(self):
+        return self.n_iterations
+
+
+

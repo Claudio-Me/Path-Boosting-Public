@@ -4,11 +4,13 @@ from classes.gradient_boosting_model import GradientBoostingModel
 from sklearn import metrics
 from settings import Settings
 from classes.boosting_matrix import BoostingMatrix
-from R_code.interface_with_R_code import LaunchRCode
+if Settings.algorithm=="R":
+    from R_code.interface_with_R_code import LaunchRCode
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
 from collections.abc import Iterable
 import gc
+import os
 import numpy as np
 from classes.enumeration.model_type import ModelType
 
@@ -33,7 +35,7 @@ class GradientBoostingStep:
         else:
             raise TypeError("Selected algorithm not recognized")
 
-    def __step_using_xgboost(self, model: GradientBoostingModel, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
+    def __step_using_xgboost(self, model: GradientBoostingModel, boosting_matrix: BoostingMatrix, labels):
         if model is None:
             model = GradientBoostingModel(ModelType.xgb_one_step)
         selected_column = model.fit_one_step(boosting_matrix.matrix, labels)
@@ -42,14 +44,14 @@ class GradientBoostingStep:
         # -------------------------------------------------------------------------------------------------------------
         return selected_column, model
 
-    def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels) -> tuple[int, ModelType.r_model]:
+    def __step_using_r(self, model, boosting_matrix: BoostingMatrix, labels):
         if model is None:
             # we are at the first step, the model is no initialized yet
             r_select_column_and_train_model = LaunchRCode(Settings.r_code_relative_location, "first_iteration")
             selected_column_number = r_select_column_and_train_model.r_function(np.array(boosting_matrix.matrix),
                                                                                 np.array(labels),
                                                                                 Settings.r_model_name,
-                                                                                Settings.r_model_location,
+                                                                                os.path.join(os.getcwd(),"R_code"),
                                                                                 Settings.family,
                                                                                 Settings.r_base_learner_name)
             model = GradientBoostingModel(ModelType.r_model)

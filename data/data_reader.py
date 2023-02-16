@@ -1,5 +1,9 @@
 from classes.dataset import Dataset
+from settings import Settings
 
+import pathlib
+import os
+import sys
 import networkx as nx
 import glob
 import csv
@@ -21,8 +25,7 @@ def read_data_from_directory(directory):
     dataset = [None] * len(names)
     print(len(names))
     for i in range(0, len(names)):
-        dataset[i-60000] = read_data_from_name(names[i], directory="")
-
+        dataset[i - 60000] = read_data_from_name(names[i], directory="")
 
     # old reading version, very slow
     # dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
@@ -65,7 +68,7 @@ def read_dataset_and_labels_from_csv(directory, file_name):
     return dataset
 
 
-def save_dataset_in_binary_file(dataset, directory=None, filename=None):
+def save_dataset_in_binary_file(dataset, directory=None, filename: str = None):
     if directory is None:
         directory = "data/"
     if directory[-1] != "/":
@@ -87,3 +90,51 @@ def load_dataset_from_binary(directory=None, filename=None):
     with open(directory + filename + '.pkl', 'rb') as inp:
         dataset = pickle.load(inp)
     return dataset
+
+
+def load_data(filename, directory=None):
+    if directory is None:
+        directory = "data/"
+    if directory[-1] != "/":
+        directory = directory + "/"
+
+    with open(directory + filename + '.pkl', 'rb') as inp:
+        data = pickle.load(inp)
+    return data
+
+
+def save_data(data, filename, directory="results"):
+    if not (os.getcwd() in directory):
+        directory = get_save_location(file_name=filename, file_extension=".pkl", folder_relative_path=directory)
+
+    if not '.' in directory:
+        directory = directory + filename + ".pkl"
+    with open(directory, 'wb') as outp:
+        pickle.dump(data, outp, pickle.HIGHEST_PROTOCOL)
+
+
+def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results") -> str:
+    location = os.path.join(os.getcwd(), folder_relative_path)
+    if len(file_extension)>0 and file_extension[0] != '.':
+        raise TypeError("File extension must start with a dot")
+
+    if location[-1] != '/':
+        location = location + '/'
+
+    if Settings.algorithm == "R":
+        folder_name = "R_" + str(
+            Settings.maximum_number_of_steps) + '_' + Settings.r_base_learner_name + '_' + Settings.family
+    elif Settings.algorithm == "Full_xgb":
+        folder_name = "Xgb_" + str(Settings.maximum_number_of_steps)
+    elif Settings.algorithm == "Xgb_step":
+        folder_name = "Xgb_step_" + str(Settings.maximum_number_of_steps)
+    else:
+        raise TypeError("Selected algorithm not recognized")
+
+    folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length)
+    if not os.path.exists(location + folder_name):
+        os.makedirs(location + folder_name)
+    folder_name = folder_name + "/"
+
+    file_name = file_name.replace(" ", "_") + file_extension
+    return location + folder_name + file_name

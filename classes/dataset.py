@@ -43,3 +43,19 @@ class Dataset:
     def merge_datasets(self, new_dataset):
         self.graphs_list = self.graphs_list + new_dataset.graphs_list
         self.labels = self.labels + new_dataset.labels
+
+    def get_graphs_list(self):
+        return self.graphs_list
+
+    def get_labels(self):
+        return  self.labels
+
+    def get_dimension(self):
+        # note: I use len of graph list instead of len labels because sometimes the dataset may have None as labels
+        return len(self.graphs_list)
+
+    def __str__(self):
+        average_label = np.mean(self.labels)
+        string="Average value of label: "+ str( average_label)+"\n"
+        string = string + "Dataset dimension: " + str(self.get_dimension())+ "\n"
+        return string

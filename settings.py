@@ -1,33 +1,47 @@
 from classes.enumeration.estimation_type import EstimationType
 import platform
+import pandas as pd
+import os
 
 
 class Settings:
-    maximum_number_of_steps = 20  # call it maximum number of steps
+    maximum_number_of_steps = 4  # call it maximum number of steps
 
-    # in the error graph Print only the last 20 learners
-    tail = 35
+    # in the error graph Print only the last N learners
+    tail = 900
 
-    if platform.system() == 'Windows':
-        graphs_folder = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/graphs"
-        r_model_location = "C:/Users/popcorn/Desktop/0/UiO/PhD/code/pattern_boosting/R_code"
+    # do not expand if the paths are longer than this amount
+    max_path_length = 10
 
-    elif platform.system() == 'Darwin':
-        graphs_folder = "/Users/popcorn/PycharmProjects/pattern_boosting/graphs"
-        r_model_location = "/Users/popcorn/PycharmProjects/pattern_boosting/R_code"
+    target_test_error = 1.5
+
+    xgb_model_parameters = {
+        'n_estimators': 1,
+        'booster': 'gbtree',  # gbtree # gblinear
+        'learning_rate': 0.3,
+        "eval_metric": "rmse",
+        "objective": 'reg:squarederror',
+        "reg_lambda": 0
+    }
+    if xgb_model_parameters['booster']=='gblinear':
+        xgb_model_parameters['updater']= 'coord_descent' #shotgun
+        xgb_model_parameters['feature_selector'] ='thrifty' # cyclic # greedy # thrifty
+        xgb_model_parameters['top_k'] = 1
+
+    else:
+        xgb_model_parameters['max_depth']= 1
+
+    parallelization=False
 
     algorithm = "Xgb_step"  # "Full_xgb" "R"
 
     graph_label_variable = "target_tzvp_homo_lumo_gap"
 
-    # do not expand if the paths are longer than this amount
-    max_path_length = 4
-
     estimation_type = EstimationType.regression
     # estimation_type = EstimationType.classification
 
     # measure used for checkin the final error of the model (to plot error graphs)
-    final_evaluation_error = "absolute_mean_error"  # "MSE"
+    final_evaluation_error = "MSE"  # "absolute_mean_error"
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
@@ -83,3 +97,5 @@ class Settings:
     @staticmethod
     def neg_gradient(y, y_hat):
         return (y - y_hat)
+
+    pd.set_option('display.max_columns', None)

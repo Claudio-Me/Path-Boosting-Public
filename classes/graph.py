@@ -63,6 +63,8 @@ class GraphPB:
                                                                                        self.node_to_label)
 
     def number_of_times_selected_path_is_present(self, path_label):
+        """N.B. this function search only in "selected_paths" if the goal is to search in the whole graph then
+        check the function number_of_time_path_is_present_in_graph implemented below"""
         return self.selected_paths.get_number_of_times_path_is_present(path_label)
 
     def get_label_of_node(self, node):
@@ -88,7 +90,6 @@ class GraphPB:
         return metal_center_labels
 
     def get_metal_center_labels(self):
-        warnings.warn("Metal list not initialized yet")
         metal_center_labels = []
         warning = True
         for metal_label in self.metal_labels:
@@ -126,7 +127,10 @@ class GraphPB:
         return adj_list
 
     def number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
-        """takes in input a path label and returns the number of times this path is present in the graph"""
+        """
+        Takes in input a path label and returns the number of times this path is present in the graph not to be
+        confused with the function "number_of_times_selected_path_is_present" that count only the already selected paths
+        """
         starting_point = path_label[0]
         if not (starting_point in self.label_to_node):
             return 0
@@ -134,24 +138,21 @@ class GraphPB:
             result = [self.__find_path([], path_label, start_node) for start_node in self.label_to_node[starting_point]]
             return sum(result)
 
-    def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node):
+    def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node) -> int:
         visited_nodes = copy.deepcopy(old_visited_nodes)
         visited_nodes.append(current_node)
         if len(path_label) == len(visited_nodes):
             # we covered all the path_label
             return 1
         elif (current_node, path_label[len(visited_nodes)]) in self.neighbours_with_label:
+            new_nodes_list: list = []
             for new_node in self.neighbours_with_label[(current_node, path_label[len(visited_nodes)])]:
-                new_nodes_list: list = []
+
                 if not (new_node in visited_nodes):
                     new_nodes_list.append(new_node)
-                if not new_nodes_list:
-                    # it means the list is empty
-                    return 0
-                else:
 
-                    result = [self.__find_path(visited_nodes, path_label, new_node) for new_node in new_nodes_list]
-                    return sum(result)
+            result = [self.__find_path(visited_nodes, path_label, new_node) for new_node in new_nodes_list]
+            return sum(result)
         else:
             return 0
 
