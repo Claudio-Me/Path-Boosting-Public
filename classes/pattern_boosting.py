@@ -154,6 +154,10 @@ class PatternBoosting:
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
+    def predict_boosting_matrix(self, boosting_matrix_matrix: np.ndarray):
+        prediction = self.model.predict_my(boosting_matrix_matrix)
+        return prediction
+
     def create_boosting_matrix_for(self, dataset):
         if not isinstance(dataset, Dataset):
             dataset = Dataset(dataset)
@@ -209,33 +213,27 @@ class PatternBoosting:
                 for graph_number in graphs_that_contain_selected_column_path]
         else:
 
-
-
-            #------------------------------------------------------------------------------------------------------------
+            # ------------------------------------------------------------------------------------------------------------
 
             comm = MPI.COMM_WORLD
             size = comm.Get_size()
             rank = comm.Get_rank()
             print(size)
             print(rank)
-            if rank==0:
-                split_graphs_list = self.__split(graphs_that_contain_selected_column_path,size)
+            if rank == 0:
+                split_graphs_list = self.__split(graphs_that_contain_selected_column_path, size)
 
             graph_number_list = comm.scatter(split_graphs_list, root=0)
 
-            new_paths_for_specific_graph_list =[list(
+            new_paths_for_specific_graph_list = [list(
                 self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
                     selected_path_label))
                 for graph_number in graph_number_list]
 
             new_paths = comm.gather(new_paths_for_specific_graph_list, root=0)
 
-            #-----------------------------------------------------------------------------------------------------------
-            new_paths=[item for sublist in new_paths for item in sublist]
-
-
-
-
+            # -----------------------------------------------------------------------------------------------------------
+            new_paths = [item for sublist in new_paths for item in sublist]
 
         new_paths = list(set([path for paths_list in new_paths for path in paths_list]))
         return new_paths
@@ -244,11 +242,13 @@ class PatternBoosting:
     def __split(list, n):
         k, m = divmod(len(list), n)
         return (list[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
-    def __get_new_paths_labels_for_graph_number(self,graph_number, selected_path_label):
+
+    def __get_new_paths_labels_for_graph_number(self, graph_number, selected_path_label):
         return list(
             self.training_dataset.graphs_list[
                 graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
                 selected_path_label))
+
     def __initialize_boosting_matrix(self):
         """
         it initializes the attribute boosting_matrix by searching in all the dataset all the metal atoms present in the
@@ -303,6 +303,3 @@ class PatternBoosting:
 
     def get_n_iterations(self):
         return self.n_iterations
-
-
-

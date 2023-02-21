@@ -162,12 +162,15 @@ class GraphPB:
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}
 
-        adj_matrix = np.array(nx.to_numpy_matrix(nx_Graph))
+        adj_matrix = np.array(nx.to_numpyx_matrix(nx_Graph))
 
         adj_list = nx.to_dict_of_lists(nx_Graph)
         adj_list = {int(k): [int(i) for i in v] for k, v in adj_list.items()}
         if label is None:
-            label = nx_Graph.graph[Settings.graph_label_variable]
+            try:
+                label = nx_Graph.graph[Settings.graph_label_variable]
+            except:
+                label = None
 
         return GraphPB(adjacency_matrix=adj_matrix, node_to_labels_dictionary=n_t_l_d, label_value=label,
                        adj_list=adj_list)
@@ -193,3 +196,6 @@ class GraphPB:
             new_dict[key].append(value)
 
         return new_dict
+
+    def set_label(self, label):
+        self.label = label

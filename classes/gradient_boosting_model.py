@@ -19,6 +19,7 @@ class GradientBoostingModel:
         # note: this two 'if' are useless since they are doing the same operation, I leave them there just in case I want to modify the code later
         if isinstance(model, XGBClassifier) or isinstance(model, XGBRegressor):
             self.model = model
+            self.n_features = None
         elif model is ModelType.r_model:
             # function that call R script, it will be allocated later
             self.r_select_column_and_train_model = None
@@ -31,7 +32,7 @@ class GradientBoostingModel:
 
     def predict_my(self, boosting_matrix_matrix: np.ndarray):
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
-            return self.model.predict(boosting_matrix_matrix)
+            return self.model.predict(boosting_matrix_matrix[:, :self.n_features])
         elif self.model is ModelType.r_model:
             r_predict_model = LaunchRCode(Settings.r_code_relative_location, "main_predict")
             predictions_vector = r_predict_model.r_function(np.array(boosting_matrix_matrix), Settings.r_model_name,
@@ -40,12 +41,13 @@ class GradientBoostingModel:
             return predictions_vector
 
         elif self.model is ModelType.xgb_one_step:
+
             for xgb_model, matrix_dimension in zip(self.base_learners_list, self.base_learners_dimension):
                 xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension])
+
             predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
-
             return predictions.sum(axis=0)
 
     def evaluate(self, boosting_matrix_matrix, labels):
@@ -78,7 +80,7 @@ class GradientBoostingModel:
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
 
             self.model.fit(boosting_matrix, labels)
-
+            self.n_features = len(boosting_matrix[0])
             return np.argsort(self.model.feature_importances_)[0]
 
         elif self.model is ModelType.r_model:
@@ -103,6 +105,13 @@ class GradientBoostingModel:
                 # xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
                 xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
                 xgb_model.fit(boosting_matrix, labels)
+
+                # plot single tree
+                if Settings.plot_tree is True:
+                    plot_tree(xgb_model)
+                    plt.show()
+
+
                 self.base_learners_list.append(copy.deepcopy(xgb_model))
                 self.base_learners_dimension.append(len(boosting_matrix[0]))
                 selected_column = np.argsort(xgb_model.feature_importances_)
@@ -123,6 +132,11 @@ class GradientBoostingModel:
                                                     estimation_type=EstimationType.regression)
                 eval_set = [(boosting_matrix, neg_gradient)]
                 xgb_model.fit(boosting_matrix, neg_gradient, eval_set=eval_set, verbose=True)
+
+                # plot single tree
+                if Settings.plot_tree is True:
+                    plot_tree(xgb_model)
+                    plt.show()
 
                 self.base_learners_list.append(copy.deepcopy(xgb_model))
                 # --------------------------------------------------------------------------------------------------
@@ -152,18 +166,20 @@ class GradientBoostingModel:
                 # --------------------------------------------------------------------------------------------------
                 # debug
                 # look at the error of the last base model
-                #tmp_new_predicted_y = xgb_model.predict(boosting_matrix)
+                # tmp_new_predicted_y = xgb_model.predict(boosting_matrix)
 
-                #model_error = metrics.mean_squared_error(tmp_new_predicted_y, neg_gradient)
-                #model_error = np.sqrt(model_error)
-                #print("Base learner rmse: ", model_error)
+                # model_error = metrics.mean_squared_error(tmp_new_predicted_y, neg_gradient)
+                # model_error = np.sqrt(model_error)
+                # print("Base learner rmse: ", model_error)
 
                 # -------------------------------------------------------------------------------------------------
 
                 return selected_column[-1]
 
     def __create_xgb_model(self, base_score=0, estimation_type=Settings.estimation_type):
+
         # create a Xgb model
+
         param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
             return XGBRegressor(**Settings.xgb_model_parameters,

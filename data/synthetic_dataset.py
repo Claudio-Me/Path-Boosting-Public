@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import pandas as pd
 
+import networkx as nx
+
 import classes.dataset
 from data import data_reader
 from classes.pattern_boosting import PatternBoosting
@@ -22,7 +24,7 @@ class SyntheticDataset:
         self.target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
         self.variance = 1
-        self.coefficients = np.random.uniform(10, 20, len(self.target_paths))
+        self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
         self.keep_probability = 0.01
         self.new_graphs_list = []
         self.new_labels_list = []
@@ -89,7 +91,6 @@ class SyntheticDataset:
         if save_on_file is True:
             data_reader.save_dataset_in_binary_file(new_dataset, filename=new_file_name)
 
-
         return new_dataset
 
     def __formula_new_labels(self, number_paths_counting, add_noise=True):
@@ -110,7 +111,7 @@ class SyntheticDataset:
         # ------------------------------------------------------------------------------------------
         return y
 
-    def oracle_model_evaluate(self, graphs_list, labels): #graphs_list: list[GraphPB]
+    def oracle_model_evaluate(self, graphs_list, labels):  # graphs_list: list[GraphPB]
         if not hasattr(graphs_list, '__iter__'):
             # if graph_list is not a list then I assume it is a singe graph
             graphs_list = [graphs_list]
@@ -125,7 +126,7 @@ class SyntheticDataset:
             raise ValueError("measure error not found")
         return model_error
 
-    def oracle_model_predict(self, graphs_list): #graphs_list: list[GraphPB]
+    def oracle_model_predict(self, graphs_list):  # graphs_list: list[GraphPB]
         if not hasattr(graphs_list, '__iter__'):
             # if graph_list is not a list then I assume it is a singe graph
             graphs_list = [graphs_list]
@@ -134,7 +135,6 @@ class SyntheticDataset:
         graphs_counting_target_paths = np.array(
             [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for graph in
              graphs_list])
-
 
         predicted_labels = self.__formula_new_labels(graphs_counting_target_paths, add_noise=False)
         return predicted_labels
@@ -294,11 +294,18 @@ class SyntheticDataset:
         for i in range(len(self.target_paths)):
             if self.target_paths[i] in header:
                 checking_path = self.target_paths[i]
-                for j in range(len(self.target_paths[i])-1):
-                    last_index=len(self.target_paths[i])-(j+1)
+                for j in range(len(self.target_paths[i]) - 1):
+                    last_index = len(self.target_paths[i]) - (j + 1)
 
-                    path=checking_path[:last_index]
+                    path = checking_path[:last_index]
                     column = header.index(path)
                     matrix[i, column] = 1
 
         return matrix
+
+    @staticmethod
+    def generate_random_graph(dimension):
+        graph = nx.gaussian_random_partition_graph(n=dimension, s=dimension, v=dimension, p_in=0.4, p_out=1)
+        graph = GraphPB.from_GraphNX_to_GraphPB(graph)
+
+        return graph

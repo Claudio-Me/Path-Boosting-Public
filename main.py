@@ -8,6 +8,51 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
+from mpi4py import MPI
+
+
+
+def different_rows(matrix):
+    # Create a set to store the rows that have already been seen
+    seen_rows = set()
+
+    # Initialize a counter for the number of repeated rows
+    repeated_rows = 0
+
+    # Iterate through the rows of the matrix
+    for row in matrix:
+        # If the row has already been seen, increment the counter
+        if tuple(row) in seen_rows:
+            repeated_rows += 1
+        # Otherwise, add the row to the set of seen rows
+        else:
+            seen_rows.add(tuple(row))
+
+    return len(seen_rows)
+
+
+def count_repeated_rows(matrix):
+    # Create a set to store the rows that have already been seen
+    seen_rows = set()
+
+    # Initialize a counter for the number of repeated rows
+    repeated_rows = 0
+
+    # Iterate through the rows of the matrix
+    for row in matrix:
+        # If the row has already been seen, increment the counter
+        if tuple(row) in seen_rows:
+            repeated_rows += 1
+        # Otherwise, add the row to the set of seen rows
+        else:
+            seen_rows.add(tuple(row))
+
+    return repeated_rows
+
+
+def append_matrix_rows(matrix1, matrix2):
+    # Check that the matrices have the same number of columns
+    return np.vstack((matrix1, matrix2))
 
 if __name__ == '__main__':
     # Testing()
@@ -33,10 +78,6 @@ if __name__ == '__main__':
     train_dataset = data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
     test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
 
-    print(np.count_nonzero(
-        [graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in train_dataset.graphs_list]))
-    print(np.count_nonzero(
-        [graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in test_dataset.graphs_list]))
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
@@ -47,8 +88,9 @@ if __name__ == '__main__':
     except:
         pass
     analysis = Analysis()
-    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"), show=False,
-                              save=True)
+    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
+                              show=Settings.show_analysis,
+                              save=Settings.save_analysis)
     # analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False, save=True)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -57,45 +99,6 @@ if __name__ == '__main__':
     # check number of repeated rows
     train_boosting_matrix = pattern_boosting.create_boosting_matrix_for(train_dataset)
     test_boosting_matrix = pattern_boosting.create_boosting_matrix_for(test_dataset)
-
-
-    def count_repeated_rows(matrix):
-        # Create a set to store the rows that have already been seen
-        seen_rows = set()
-
-        # Initialize a counter for the number of repeated rows
-        repeated_rows = 0
-
-        # Iterate through the rows of the matrix
-        for row in matrix:
-            # If the row has already been seen, increment the counter
-            if tuple(row) in seen_rows:
-                repeated_rows += 1
-            # Otherwise, add the row to the set of seen rows
-            else:
-                seen_rows.add(tuple(row))
-
-        return repeated_rows
-
-
-    def different_rows(matrix):
-        # Create a set to store the rows that have already been seen
-        seen_rows = set()
-
-        # Initialize a counter for the number of repeated rows
-        repeated_rows = 0
-
-        # Iterate through the rows of the matrix
-        for row in matrix:
-            # If the row has already been seen, increment the counter
-            if tuple(row) in seen_rows:
-                repeated_rows += 1
-            # Otherwise, add the row to the set of seen rows
-            else:
-                seen_rows.add(tuple(row))
-
-        return len(seen_rows)
-
 
     print("--------------------------------------------------------------------------------")
     print("Repeated rows in final training boosting matrix")
@@ -106,12 +109,6 @@ if __name__ == '__main__':
     print(count_repeated_rows(test_boosting_matrix))
 
     print("Different rows in test matrix: ", different_rows(test_boosting_matrix))
-
-
-    def append_matrix_rows(matrix1, matrix2):
-        # Check that the matrices have the same number of columns
-        return np.vstack((matrix1, matrix2))
-
 
     big_matrix = append_matrix_rows(train_boosting_matrix, test_boosting_matrix)
 
@@ -134,3 +131,6 @@ if __name__ == '__main__':
     pattern_boosting = PatternBoosting()
     pattern_boosting.training(train_dataset, test_dataset)
     '''
+
+
+

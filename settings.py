@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 4  # call it maximum number of steps
+    maximum_number_of_steps = 200  # call it maximum number of steps
 
     # in the error graph Print only the last N learners
     tail = 900
@@ -23,17 +23,22 @@ class Settings:
         "objective": 'reg:squarederror',
         "reg_lambda": 0
     }
-    if xgb_model_parameters['booster']=='gblinear':
-        xgb_model_parameters['updater']= 'coord_descent' #shotgun
-        xgb_model_parameters['feature_selector'] ='thrifty' # cyclic # greedy # thrifty
+    if xgb_model_parameters['booster'] == 'gblinear':
+        xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
+        xgb_model_parameters['feature_selector'] = 'thrifty'  # cyclic # greedy # thrifty
         xgb_model_parameters['top_k'] = 1
 
     else:
-        xgb_model_parameters['max_depth']= 1
+        xgb_model_parameters['max_depth'] = 1
 
-    parallelization=False
+    save_analysis = False
+    show_analysis = True
 
-    algorithm = "Xgb_step"  # "Full_xgb" "R"
+    plot_tree = False
+
+    parallelization = False
+
+    algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step"
 
     graph_label_variable = "target_tzvp_homo_lumo_gap"
 
