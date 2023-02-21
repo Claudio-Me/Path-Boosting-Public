@@ -8,8 +8,6 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
-from mpi4py import MPI
-
 
 
 def different_rows(matrix):

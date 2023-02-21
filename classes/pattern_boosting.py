@@ -10,7 +10,9 @@ import numpy as np
 import multiprocessing
 import functools
 import itertools
-from mpi4py import MPI
+
+if Settings.parallelization is True:
+    from mpi4py import MPI
 
 
 class PatternBoosting:
