@@ -2,7 +2,6 @@ import numpy as np
 
 from classes.testing.testing import Testing
 from classes.pattern_boosting import PatternBoosting
-print("2")
 from data import data_reader
 from settings import Settings
 from data.synthetic_dataset import SyntheticDataset
@@ -55,7 +54,7 @@ def append_matrix_rows(matrix1, matrix2):
 
 if __name__ == '__main__':
     # Testing()
-
+    print("1")
     generate_new_dataset = True
     if generate_new_dataset is True:
         synthetic_dataset = SyntheticDataset()

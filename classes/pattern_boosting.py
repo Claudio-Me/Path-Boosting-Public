@@ -1,5 +1,4 @@
 import warnings
-print("1")
 from classes.graph import GraphPB
 from classes.boosting_matrix import BoostingMatrix
 from settings import Settings
@@ -12,11 +11,11 @@ import numpy as np
 import multiprocessing
 import functools
 import itertools
-print("1.5")
+
 if Settings.parallelization is True:
     from mpi4py import MPI
 
-print("1.7")
+
 class PatternBoosting:
     def __init__(self, settings=Settings(), model: GradientBoostingModel = None):
         self.settings = settings
