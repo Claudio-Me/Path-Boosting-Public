@@ -34,6 +34,8 @@ class Dataset:
         return Dataset(self.graphs_list[:n], self.labels[:n])
 
     def split_dataset(self, test_size):
+        if test_size == 0:
+            return self, None
         x_train, x_test, y_train, y_test = train_test_split(self.graphs_list, self.labels, test_size=test_size)
         train_dataset = Dataset(x_train, y_train)
         test_dataset = Dataset(x_test, y_test)
@@ -48,7 +50,7 @@ class Dataset:
         return self.graphs_list
 
     def get_labels(self):
-        return  self.labels
+        return self.labels
 
     def get_dimension(self):
         # note: I use len of graph list instead of len labels because sometimes the dataset may have None as labels
@@ -56,6 +58,6 @@ class Dataset:
 
     def __str__(self):
         average_label = np.mean(self.labels)
-        string="Average value of label: "+ str( average_label)+"\n"
-        string = string + "Dataset dimension: " + str(self.get_dimension())+ "\n"
+        string = "Average value of label: " + str(average_label) + "\n"
+        string = string + "Dataset dimension: " + str(self.get_dimension()) + "\n"
         return string

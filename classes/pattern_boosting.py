@@ -1,3 +1,5 @@
+import warnings
+
 from classes.graph import GraphPB
 from classes.boosting_matrix import BoostingMatrix
 from settings import Settings
@@ -71,13 +73,16 @@ class PatternBoosting:
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
 
+            warnings.warn("Delete this, selection of the coulumn is made just to find all the paths")
+            selected_column_number=iteration_number
+
             if test_dataset is not None:
                 self.test_error.append(self.evaluate(self.test_dataset))
-            self.train_error.append(self.evaluate(self.training_dataset))
+            # self.train_error.append(self.evaluate(self.training_dataset))
             # -------------------------------------------------------------------------------------------------------
             # debug
 
-            print("Error: ", self.train_error[-1])
+            #print("Error: ", self.train_error[-1])
             # --------------------------------------------------------------------------------------------------------
 
             if len(self.train_error) <= 1:
@@ -88,6 +93,7 @@ class PatternBoosting:
                                                                      train_error=self.train_error,
                                                                      default_value=default_importance_value)
 
+
             self.number_of_learners.append(iteration_number + 1)
 
             # expand boosting matrix
@@ -96,58 +102,11 @@ class PatternBoosting:
             print("expanded boosting")
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
-
-            if self.train_error[-1] < Settings.target_test_error:
+            '''
+            if self.train_error[-1] < Settings.target_test_error and test_dataset is not None:
                 break
+                '''
 
-        # -------------------------------------------------------------------------------------------------------------
-        # error plots
-        # Delete here
-        # cut first point
-        # can be deleted, it is all inserted in the analysis class
-        '''
-        cut_point = 1
-
-        if Settings.final_evaluation_error == "MSE":
-            y_label = "MSE"
-        elif Settings.final_evaluation_error == "absolute_mean_error":
-            y_label = "abs mean err"
-        else:
-            raise ValueError("measure error not found")
-        if Settings.estimation_type == EstimationType.regression:
-            self.analysis.plot_graphs(self.number_of_learners[cut_point:], self.train_error[cut_point:],
-                                      tittle="train error",
-                                      x_label="number of learners",
-                                      y_label=y_label)
-
-            if test_dataset is not None:
-                self.analysis.plot_graphs(self.number_of_learners[cut_point:], self.test_error[cut_point:],
-                                          tittle="test error",
-                                          x_label="number of learners",
-                                          y_label=y_label)
-        elif Settings.estimation_type == EstimationType.classification:
-            self.analysis.plot_graphs(self.number_of_learners, self.train_error, tittle="train classification",
-                                      x_label="number of learners", y_label="jaccard score")
-
-            if test_dataset is not None:
-                self.analysis.plot_graphs(self.number_of_learners, self.test_error, tittle="test classification",
-                                          x_label="number of learners", y_label="jaccard score")
-
-        # -----------------------------------------------------------
-        # average_path_length_plot
-        self.analysis.plot_graphs(self.number_of_learners, self.average_path_length, tittle="Average path length",
-                                  x_label="number of learners", y_label="average path length")
-
-        self.analysis.print_performance_information(self.boosting_matrix, self.train_error, self.test_error,
-                                                    self.training_dataset)
-        self.analysis.analyse_path_length_distribution(self.boosting_matrix)
-        if test_dataset is not None:
-            # self.analysis.plot_labels_histogram(self.training_dataset.labels, self.test_dataset.labels, tittle="Real labels")
-            # self.analysis.plot_labels_histogram(self.predict(training_dataset), self.predict(test_dataset), tittle="Predicted Labels")
-            self.analysis.plot_labels_histogram(self.test_dataset.labels, self.predict(test_dataset),
-                                                tittle="Predicted vs real y", legend1="real", legend2="predicted")
-        # -----------------------------------------------------------
-        '''
 
     def predict(self, dataset):
         if not isinstance(dataset, Dataset):

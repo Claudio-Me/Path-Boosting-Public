@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 2  # call it maximum number of steps
+    maximum_number_of_steps = 200  # call it maximum number of steps
 
     # in the error graph Print only the last N learners
     tail = 900
@@ -49,7 +49,7 @@ class Settings:
     final_evaluation_error = "MSE"  # "absolute_mean_error"
 
     # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0.2
+    test_size = 0
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'

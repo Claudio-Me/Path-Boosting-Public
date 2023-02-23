@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     if generate_new_dataset is True:
         dataset_filename = "5k_synthetic_dataset"
-        # dataset_filename = "5_k_selection_graphs"
+        dataset_filename = "5_k_selection_graphs"
         # dataset_filename = "60k_dataset"
         dataset = data_reader.load_dataset_from_binary(filename=dataset_filename)
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
@@ -86,6 +86,7 @@ if __name__ == '__main__':
     except:
         pass
     analysis = Analysis()
+    '''
     analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
                               show=Settings.show_analysis,
                               save=Settings.save_analysis)
@@ -114,6 +115,7 @@ if __name__ == '__main__':
     print(count_repeated_rows(big_matrix))
 
     # ------------------------------------------------------------------------------------------------------------------
+    '''
 
     '''
     if Settings.estimation_type is EstimationType.classification:
