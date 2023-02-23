@@ -55,7 +55,7 @@ def append_matrix_rows(matrix1, matrix2):
 if __name__ == '__main__':
     # Testing()
     print("1")
-    generate_new_dataset = True
+    generate_new_dataset = False
     if generate_new_dataset is True:
         synthetic_dataset = SyntheticDataset()
         synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True,
