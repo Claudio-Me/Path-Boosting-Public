@@ -62,7 +62,7 @@ if __name__ == '__main__':
                                                                  new_file_name="5k_synthetic_dataset")
         data_reader.save_dataset_in_binary_file(synthetic_dataset, filename="synthetic_dataset")
     synthetic_dataset = data_reader.load_dataset_from_binary(filename="synthetic_dataset")
-
+    print("2")
     if generate_new_dataset is True:
         dataset_filename = "5k_synthetic_dataset"
         dataset_filename = "5_k_selection_graphs"
@@ -73,9 +73,10 @@ if __name__ == '__main__':
         data_reader.save_dataset_in_binary_file(train_dataset, filename="synthetic_train_dataset")
         data_reader.save_dataset_in_binary_file(test_dataset, filename="synthetic_test_dataset")
 
+    print("3")
     train_dataset = data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
     test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
-
+    print("4")
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
