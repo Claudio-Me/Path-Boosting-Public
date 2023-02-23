@@ -2,6 +2,7 @@ import numpy as np
 
 from classes.testing.testing import Testing
 from classes.pattern_boosting import PatternBoosting
+print("2")
 from data import data_reader
 from settings import Settings
 from data.synthetic_dataset import SyntheticDataset
