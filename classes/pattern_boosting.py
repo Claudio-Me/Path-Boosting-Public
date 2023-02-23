@@ -174,7 +174,7 @@ class PatternBoosting:
         else:
 
             # ------------------------------------------------------------------------------------------------------------
-
+            '''
             comm = MPI.COMM_WORLD
             size = comm.Get_size()
             rank = comm.Get_rank()
@@ -194,6 +194,7 @@ class PatternBoosting:
 
             # -----------------------------------------------------------------------------------------------------------
             new_paths = [item for sublist in new_paths for item in sublist]
+            '''
 
         new_paths = list(set([path for paths_list in new_paths for path in paths_list]))
         return new_paths
