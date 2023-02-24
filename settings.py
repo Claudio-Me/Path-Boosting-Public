@@ -10,7 +10,7 @@ class Settings:
     save_analysis = False
     show_analysis = True
 
-    dataset_name="5k_synthetic_dataset" #"60k_dataset" "5_k_selection_graphs"
+    dataset_name="5_k_selection_graphs" # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset=True
 
     # in the error graph Print only the last N learners
