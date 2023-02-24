@@ -12,6 +12,7 @@ import warnings
 import pickle
 from data.synthetic_dataset import SyntheticDataset
 
+
 def read_data_from_name(dataset_name, directory="data/"):
     return nx.read_gml(directory + dataset_name)
 
@@ -24,7 +25,7 @@ def read_data_from_directory(directory):
     names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
     print(len(names))
-    for i,name in enumerate(names):
+    for i, name in enumerate(names):
         dataset[i] = read_data_from_name(name, directory="")
 
     # old reading version, very slow
@@ -115,7 +116,7 @@ def save_data(data, filename, directory="results"):
 
 def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results") -> str:
     location = os.path.join(os.getcwd(), folder_relative_path)
-    if len(file_extension)>0 and file_extension[0] != '.':
+    if len(file_extension) > 0 and file_extension[0] != '.':
         raise TypeError("File extension must start with a dot")
 
     if location[-1] != '/':
@@ -131,7 +132,7 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     else:
         raise TypeError("Selected algorithm not recognized")
 
-    folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length)
+    folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length) + "_" + Settings.dataset_name
     if not os.path.exists(location + folder_name):
         os.makedirs(location + folder_name)
     folder_name = folder_name + "/"
@@ -139,10 +140,11 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     file_name = file_name.replace(" ", "_") + file_extension
     return location + folder_name + file_name
 
+
 def load_dataset():
-    if Settings.dataset_name=="5_k_selection_graphs":
+    if Settings.dataset_name == "5_k_selection_graphs":
         if Settings.generate_new_dataset is False:
-            dataset=load_dataset_from_binary(filename="5_k_selection_graphs")
+            dataset = load_dataset_from_binary(filename="5_k_selection_graphs")
         else:
             print("Creating 5k dataset")
             dataset = read_data_from_directory("data/5k-selection-graphs")
@@ -151,7 +153,7 @@ def load_dataset():
             return dataset
 
         return dataset
-    elif Settings.dataset_name=="60k_dataset":
+    elif Settings.dataset_name == "60k_dataset":
         if Settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(filename="60k_dataset")
         else:
@@ -161,7 +163,7 @@ def load_dataset():
             save_dataset_in_binary_file(dataset, filename="60k_dataset")
         return dataset
 
-    elif Settings.dataset_name=="5k_synthetic_dataset":
+    elif Settings.dataset_name == "5k_synthetic_dataset":
         if Settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(filename="5k_synthetic_dataset")
 

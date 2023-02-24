@@ -74,7 +74,7 @@ class GraphPB:
         return self.label_to_node[label]
 
     def get_metal_center_label_and_add_metal_center_to_selected_paths(self):
-        warnings.warn("Metal list not initialized yet")
+
         metal_center_labels = []
         warning = True
         for metal_label in self.metal_labels:
