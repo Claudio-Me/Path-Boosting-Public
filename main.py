@@ -70,6 +70,7 @@ if __name__ == '__main__':
     # Testing()
 
     dataset = data_reader.load_dataset()
+
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
 
     save_split_test_and_train=False

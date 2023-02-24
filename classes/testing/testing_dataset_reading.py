@@ -15,7 +15,7 @@ class TestDatasetReading:
     def test_create_synthetic_dataset_from_5k_selection_graphs(self):
         print("Testing creating a new labels for 5k dataset")
         create_dataset = SyntheticDataset()
-        new_dataset = create_dataset.crate_dataset_from_5k_selection_graph()
+        new_dataset = create_dataset.create_dataset_from_5k_selection_graph()
         data_reader.save_dataset_in_binary_file(new_dataset, filename="5k_synthetic_dataset")
         return new_dataset
 

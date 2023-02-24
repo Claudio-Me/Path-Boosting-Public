@@ -159,15 +159,15 @@ def load_dataset():
             dataset = read_data_from_directory("data/dNatQ_graphs")
             dataset = Dataset(dataset)
             save_dataset_in_binary_file(dataset, filename="60k_dataset")
-            return dataset
-
         return dataset
+
     elif Settings.dataset_name=="5k_synthetic_dataset":
         if Settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(filename="5k_synthetic_dataset")
+
         else:
             print("Creating a new labels for 5k dataset")
             create_dataset = SyntheticDataset()
-            new_dataset = create_dataset.crate_dataset_from_5k_selection_graph()
-            save_dataset_in_binary_file(new_dataset, filename="5k_synthetic_dataset")
-            return new_dataset
+            dataset = create_dataset.create_dataset_from_5k_selection_graph()
+            save_dataset_in_binary_file(dataset, filename="5k_synthetic_dataset")
+        return dataset
