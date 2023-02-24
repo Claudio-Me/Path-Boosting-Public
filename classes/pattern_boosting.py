@@ -66,12 +66,12 @@ class PatternBoosting:
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
             self.n_iterations = iteration_number + 1
-
+            '''
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
-
+            '''
             warnings.warn("Delete this, selection of the coulumn is made just to find all the paths")
             selected_column_number=iteration_number
 
