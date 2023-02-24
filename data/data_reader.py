@@ -10,7 +10,7 @@ import csv
 import pandas as pd
 import warnings
 import pickle
-
+from data.synthetic_dataset import SyntheticDataset
 
 def read_data_from_name(dataset_name, directory="data/"):
     return nx.read_gml(directory + dataset_name)
@@ -24,8 +24,8 @@ def read_data_from_directory(directory):
     names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
     print(len(names))
-    for i in range(0, len(names)):
-        dataset[i - 60000] = read_data_from_name(names[i], directory="")
+    for i,name in enumerate(names):
+        dataset[i] = read_data_from_name(name, directory="")
 
     # old reading version, very slow
     # dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
@@ -138,3 +138,36 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
 
     file_name = file_name.replace(" ", "_") + file_extension
     return location + folder_name + file_name
+
+def load_dataset():
+    if Settings.dataset_name=="5_k_selection_graphs":
+        if Settings.generate_new_dataset is False:
+            dataset=load_dataset_from_binary(filename="5_k_selection_graphs")
+        else:
+            print("Creating 5k dataset")
+            dataset = read_data_from_directory("data/5k-selection-graphs")
+            dataset = Dataset(dataset)
+            save_dataset_in_binary_file(dataset, filename="5_k_selection_graphs")
+            return dataset
+
+        return dataset
+    elif Settings.dataset_name=="60k_dataset":
+        if Settings.generate_new_dataset is False:
+            dataset = load_dataset_from_binary(filename="60k_dataset")
+        else:
+            print("Creating 60k dataset")
+            dataset = read_data_from_directory("data/dNatQ_graphs")
+            dataset = Dataset(dataset)
+            save_dataset_in_binary_file(dataset, filename="60k_dataset")
+            return dataset
+
+        return dataset
+    elif Settings.dataset_name=="5k_synthetic_dataset":
+        if Settings.generate_new_dataset is False:
+            dataset = load_dataset_from_binary(filename="5k_synthetic_dataset")
+        else:
+            print("Creating a new labels for 5k dataset")
+            create_dataset = SyntheticDataset()
+            new_dataset = create_dataset.crate_dataset_from_5k_selection_graph()
+            save_dataset_in_binary_file(new_dataset, filename="5k_synthetic_dataset")
+            return new_dataset

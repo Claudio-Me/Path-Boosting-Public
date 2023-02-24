@@ -34,6 +34,9 @@ class Settings:
     save_analysis = False
     show_analysis = True
 
+    dataset_name="5_k_selection_graphs" #"60k_dataset" "5_k_selection_graphs"
+    generate_new_dataset=True
+
     plot_tree = False
 
     parallelization = False
