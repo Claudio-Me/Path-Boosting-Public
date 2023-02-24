@@ -5,13 +5,13 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 1904  # call it maximum number of steps
+    maximum_number_of_steps = 10000  # call it maximum number of steps
 
     # in the error graph Print only the last N learners
     tail = 900
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 10
+    max_path_length = 100
 
     target_test_error = 1.5
 

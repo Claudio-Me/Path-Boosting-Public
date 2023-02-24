@@ -88,10 +88,12 @@ class PatternBoosting:
                 default_importance_value = np.var(training_dataset.labels)
             else:
                 default_importance_value = None
-            self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
+            try:
+                self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
                                                                      train_error=self.train_error,
                                                                      default_value=default_importance_value)
-
+            except:
+                break
 
             self.number_of_learners.append(iteration_number + 1)
 
