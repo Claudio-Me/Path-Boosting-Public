@@ -52,31 +52,55 @@ def append_matrix_rows(matrix1, matrix2):
     # Check that the matrices have the same number of columns
     return np.vstack((matrix1, matrix2))
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     # Testing()
-
 
     dataset = data_reader.load_dataset()
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
 
+    save_split_test_and_train=False
+    load_split_test_and_train=False
+
     # save
-    data_reader.save_dataset_in_binary_file(train_dataset, filename="synthetic_train_dataset")
-    data_reader.save_dataset_in_binary_file(test_dataset, filename="synthetic_test_dataset")
+    if save_split_test_and_train is True:
+        data_reader.save_dataset_in_binary_file(train_dataset, filename=Settings.dataset_name+"_train")
+        data_reader.save_dataset_in_binary_file(test_dataset, filename=Settings.dataset_name+"_test")
 
     # load
-    train_dataset = data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
-    test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
-    
+    if load_split_test_and_train is True:
+        train_dataset = data_reader.load_dataset_from_binary(filename=Settings.dataset_name + "_train")
+        test_dataset = data_reader.load_dataset_from_binary(filename=Settings.dataset_name + "_train")
 
     pattern_boosting = PatternBoosting()
     pattern_boosting.training(train_dataset, test_dataset)
 
     data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
-    try:
-        data_reader.save_data(synthetic_dataset, filename="synthetic_dataset", directory="results")
-    except:
-        pass
+
     analysis = Analysis()
+
+
+
+
+
+
+
+
+
+
     '''
     analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
                               show=Settings.show_analysis,
@@ -122,6 +146,6 @@ if __name__ == '__main__':
     pattern_boosting = PatternBoosting()
     pattern_boosting.training(train_dataset, test_dataset)
     '''
-
+    print("End")
 
 
