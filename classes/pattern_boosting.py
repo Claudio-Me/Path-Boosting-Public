@@ -66,34 +66,29 @@ class PatternBoosting:
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
             self.n_iterations = iteration_number + 1
-            '''
+
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
-            '''
-            warnings.warn("Delete this, selection of the coulumn is made just to find all the paths")
-            selected_column_number=iteration_number
 
             if test_dataset is not None:
                 self.test_error.append(self.evaluate(self.test_dataset))
-            # self.train_error.append(self.evaluate(self.training_dataset))
+            self.train_error.append(self.evaluate(self.training_dataset))
             # -------------------------------------------------------------------------------------------------------
             # debug
 
-            #print("Error: ", self.train_error[-1])
+            # print("Error: ", self.train_error[-1])
             # --------------------------------------------------------------------------------------------------------
 
             if len(self.train_error) <= 1:
                 default_importance_value = np.var(training_dataset.labels)
             else:
                 default_importance_value = None
-            try:
-                self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
+
+            self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
                                                                      train_error=self.train_error,
                                                                      default_value=default_importance_value)
-            except:
-                break
 
             self.number_of_learners.append(iteration_number + 1)
 
@@ -103,11 +98,9 @@ class PatternBoosting:
             print("expanded boosting")
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
-            '''
-            if self.train_error[-1] < Settings.target_test_error and test_dataset is not None:
-                break
-                '''
 
+            if self.train_error[-1] < Settings.target_train_error:
+                break
 
     def predict(self, dataset):
         if not isinstance(dataset, Dataset):

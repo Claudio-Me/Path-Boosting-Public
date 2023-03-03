@@ -19,7 +19,7 @@ class Settings:
     # do not expand if the paths are longer than this amount
     max_path_length = 100
 
-    target_test_error = 1.5
+    target_train_error = 1.5
 
     xgb_model_parameters = {
         'n_estimators': 1,
@@ -52,7 +52,7 @@ class Settings:
     final_evaluation_error = "MSE"  # "absolute_mean_error"
 
     # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0
+    test_size = 0.2
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'

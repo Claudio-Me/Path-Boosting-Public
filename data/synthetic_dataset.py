@@ -24,7 +24,11 @@ class SyntheticDataset:
         self.target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
         self.variance = 1
-        self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
+        self.coefficients = np.random.uniform(1, 2, len(self.target_paths))
+        # we multiply the coefficients in a way such that the longer paths have lower coefficients
+        for index, path in self.target_paths:
+            self.coefficients[index]=self.coefficients[index]*pow(10,1-len(path))
+
         self.keep_probability = 0.01
         self.new_graphs_list = []
         self.new_labels_list = []

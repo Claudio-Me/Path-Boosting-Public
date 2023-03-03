@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
 
 
-    '''
+
     analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
                               show=Settings.show_analysis,
                               save=Settings.save_analysis)
@@ -131,22 +131,8 @@ if __name__ == '__main__':
     print(count_repeated_rows(big_matrix))
 
     # ------------------------------------------------------------------------------------------------------------------
-    '''
 
-    '''
-    if Settings.estimation_type is EstimationType.classification:
-        dataset = data_reader.read_dataset_and_labels_from_csv("data/5k-selection-graphs", "tmQMg_5k_bin_class.csv")
 
-    elif Settings.estimation_type is EstimationType.regression:
-        dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
-
-    else:
-        raise TypeError("Wrong estimation type")
-
-    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
-    pattern_boosting = PatternBoosting()
-    pattern_boosting.training(train_dataset, test_dataset)
-    '''
     print("End")
 
 
