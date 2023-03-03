@@ -7,7 +7,7 @@ import pandas as pd
 import networkx as nx
 
 import classes.dataset
-from data import data_reader
+from data.data_reader import load_dataset_from_binary, save_dataset_in_binary_file, get_save_location
 from classes.pattern_boosting import PatternBoosting
 from classes.graph import GraphPB
 from settings import Settings
@@ -21,14 +21,28 @@ class SyntheticDataset:
     '''
 
     def __init__(self):
-        self.target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
+        self.target_paths = list({(57, 7, 7), (57, 7), (57,),
+                                (72, 7, 14), (72, 7), (72,),
+                                (78, 6, 7), (78, 6), (78,),
+                                (47, 7, 7), (47, 7), (47,),
+                                (74, 15, 8), (74, 15), (74,),
+                                (80, 7, 7), (80, 7), (80,),
+                                (77, 7, 7), (77, 7), (77,),
+                                (40, 7, 14), (40, 7), (40,),
+                                (21, 7, 14), (21, 7), (21,),
+                                (27, 6, 5), (27, 6), (27),
+                                (27, 6, 8),
+                                (42, 7, 7), (42, 7), (42,),
+                                (39, 7, 7), (39, 7), (39,),
+                                (39, 7, 14),
+                                (39, 6, 7), (39, 6),
+                                (39, 6, 14),
+                                (39, 6, 5),
+                                (45, 7, 7), (45, 7), (45,),
+                                (48, 8, 7), (48, 8), (48,)})
 
         self.variance = 1
-        self.coefficients = np.random.uniform(1, 2, len(self.target_paths))
-        # we multiply the coefficients in a way such that the longer paths have lower coefficients
-        for index, path in self.target_paths:
-            self.coefficients[index]=self.coefficients[index]*pow(10,1-len(path))
-
+        self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
         self.keep_probability = 0.01
         self.new_graphs_list = []
         self.new_labels_list = []
@@ -67,9 +81,48 @@ class SyntheticDataset:
 
         ]
 
+        right_ratio = [(57, 7, 7),
+                       (72, 7, 14),
+                       (78, 6, 7),
+                       (47, 7, 7),
+                       (74, 15, 8),
+                       (80, 7, 7),
+                       (77, 7, 7),
+                       (40, 7, 14),
+                       (21, 7, 14),
+                       (27, 6, 5),
+                       (27, 6, 8),
+                       (42, 7, 7),
+                       (39, 7, 7),
+                       (39, 7, 14),
+                       (39, 6, 7),
+                       (39, 6, 14),
+                       (39, 6, 5),
+                       (45, 7, 7),
+                       (48, 8, 7)]
+        right_ratio_expanded = [(57, 7, 7), (57, 7), (57,),
+                                (72, 7, 14), (72, 7), (72,),
+                                (78, 6, 7), (78, 6), (78,),
+                                (47, 7, 7), (47, 7), (47,),
+                                (74, 15, 8), (74, 15), (74,),
+                                (80, 7, 7), (80, 7), (80,),
+                                (77, 7, 7), (77, 7), (77,),
+                                (40, 7, 14), (40, 7), (40,),
+                                (21, 7, 14), (21, 7), (21,),
+                                (27, 6, 5), (27, 6), (27),
+                                (27, 6, 8),
+                                (42, 7, 7), (42, 7), (42,),
+                                (39, 7, 7), (39, 7), (39,),
+                                (39, 7, 14),
+                                (39, 6, 7), (39, 6),
+                                (39, 6, 14),
+                                (39, 6, 5),
+                                (45, 7, 7), (45, 7), (45,),
+                                (48, 8, 7), (48, 8), (48,)]
+
     def create_dataset_from_5k_selection_graph(self, save_on_file=True, filename: str = "5_k_selection_graphs",
                                                new_file_name="5k_synthetic_dataset"):
-        dataset = data_reader.load_dataset_from_binary(filename=filename)
+        dataset = load_dataset_from_binary(filename=filename)
 
         # each row is a different graph, each column is a different path
         self.number_paths_counting = np.array(
@@ -93,7 +146,7 @@ class SyntheticDataset:
 
         new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
         if save_on_file is True:
-            data_reader.save_dataset_in_binary_file(new_dataset, filename=new_file_name)
+            save_dataset_in_binary_file(new_dataset, filename=new_file_name)
 
         return new_dataset
 
@@ -246,7 +299,7 @@ class SyntheticDataset:
 
         string = string + dataset_info_table + "\n\n"
 
-        saving_location = data_reader.get_save_location("Synthetic_dataset_info", '.txt')
+        saving_location = get_save_location("Synthetic_dataset_info", '.txt')
         original_stdout = sys.stdout  # Save a reference to the original standard output
         if save is True:
             with open(saving_location,

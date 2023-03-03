@@ -10,7 +10,6 @@ import csv
 import pandas as pd
 import warnings
 import pickle
-from data.synthetic_dataset import SyntheticDataset
 
 
 def read_data_from_name(dataset_name, directory="data/"):
@@ -115,7 +114,19 @@ def save_data(data, filename, directory="results"):
 
 
 def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results") -> str:
-    location = os.path.join(os.getcwd(), folder_relative_path)
+    # make sure that we are in the folder "pattern_boosting"
+    last_folder=os.path.basename(os.path.normpath(os.getcwd()))
+    if last_folder=="pattern_boosting":
+        location=os.getcwd()
+    elif last_folder =="classes" or last_folder =="data":
+        location=os.path.dirname(os.getcwd())
+    else:
+        raise Exception("Uknown location")
+
+
+
+
+    location = os.path.join(location, folder_relative_path)
     if len(file_extension) > 0 and file_extension[0] != '.':
         raise TypeError("File extension must start with a dot")
 
@@ -141,35 +152,3 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     return location + folder_name + file_name
 
 
-def load_dataset():
-    if Settings.dataset_name == "5_k_selection_graphs":
-        if Settings.generate_new_dataset is False:
-            dataset = load_dataset_from_binary(filename="5_k_selection_graphs")
-        else:
-            print("Creating 5k dataset")
-            dataset = read_data_from_directory("data/5k-selection-graphs")
-            dataset = Dataset(dataset)
-            save_dataset_in_binary_file(dataset, filename="5_k_selection_graphs")
-            return dataset
-
-        return dataset
-    elif Settings.dataset_name == "60k_dataset":
-        if Settings.generate_new_dataset is False:
-            dataset = load_dataset_from_binary(filename="60k_dataset")
-        else:
-            print("Creating 60k dataset")
-            dataset = read_data_from_directory("data/dNatQ_graphs")
-            dataset = Dataset(dataset)
-            save_dataset_in_binary_file(dataset, filename="60k_dataset")
-        return dataset
-
-    elif Settings.dataset_name == "5k_synthetic_dataset":
-        if Settings.generate_new_dataset is False:
-            dataset = load_dataset_from_binary(filename="5k_synthetic_dataset")
-
-        else:
-            print("Creating a new labels for 5k dataset")
-            create_dataset = SyntheticDataset()
-            dataset = create_dataset.create_dataset_from_5k_selection_graph()
-            save_dataset_in_binary_file(dataset, filename="5k_synthetic_dataset")
-        return dataset
