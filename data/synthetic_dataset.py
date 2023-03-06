@@ -146,6 +146,7 @@ class SyntheticDataset:
 
         new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
         if save_on_file is True:
+            print("line 149 synthetic_dataset")
             save_dataset_in_binary_file(new_dataset, filename=new_file_name)
 
         return new_dataset
