@@ -157,7 +157,10 @@ class SyntheticDataset:
         # can be rewritten using vector multiplication, but I don't have internet now to check how to do it
         # also if number_of_paths_counting is a matrix we can use matrix multiplications
         number_paths_counting = np.array(number_paths_counting)
+        print("line 160 synthetic_dataset")
+
         y = np.matmul(number_paths_counting, self.coefficients)
+        print("line 163 synthetic_dataset")
 
         # add random noise
         if add_noise is True:
