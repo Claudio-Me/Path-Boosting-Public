@@ -8,7 +8,7 @@ class Settings:
     maximum_number_of_steps = 1000  # call it maximum number of steps
 
     save_analysis = True
-    show_analysis = False
+    show_analysis = True
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = True

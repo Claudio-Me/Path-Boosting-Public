@@ -22,24 +22,24 @@ class SyntheticDataset:
 
     def __init__(self):
         self.target_paths = list({(57, 7, 7), (57, 7), (57,),
-                                (72, 7, 14), (72, 7), (72,),
-                                (78, 6, 7), (78, 6), (78,),
-                                (47, 7, 7), (47, 7), (47,),
-                                (74, 15, 8), (74, 15), (74,),
-                                (80, 7, 7), (80, 7), (80,),
-                                (77, 7, 7), (77, 7), (77,),
-                                (40, 7, 14), (40, 7), (40,),
-                                (21, 7, 14), (21, 7), (21,),
-                                (27, 6, 5), (27, 6), (27,),
-                                (27, 6, 8),
-                                (42, 7, 7), (42, 7), (42,),
-                                (39, 7, 7), (39, 7), (39,),
-                                (39, 7, 14),
-                                (39, 6, 7), (39, 6),
-                                (39, 6, 14),
-                                (39, 6, 5),
-                                (45, 7, 7), (45, 7), (45,),
-                                (48, 8, 7), (48, 8), (48,)})
+                                  (72, 7, 14), (72, 7), (72,),
+                                  (78, 6, 7), (78, 6), (78,),
+                                  (47, 7, 7), (47, 7), (47,),
+                                  (74, 15, 8), (74, 15), (74,),
+                                  (80, 7, 7), (80, 7), (80,),
+                                  (77, 7, 7), (77, 7), (77,),
+                                  (40, 7, 14), (40, 7), (40,),
+                                  (21, 7, 14), (21, 7), (21,),
+                                  (27, 6, 5), (27, 6), (27,),
+                                  (27, 6, 8),
+                                  (42, 7, 7), (42, 7), (42,),
+                                  (39, 7, 7), (39, 7), (39,),
+                                  (39, 7, 14),
+                                  (39, 6, 7), (39, 6),
+                                  (39, 6, 14),
+                                  (39, 6, 5),
+                                  (45, 7, 7), (45, 7), (45,),
+                                  (48, 8, 7), (48, 8), (48,)})
 
         self.variance = 1
         self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
@@ -158,9 +158,8 @@ class SyntheticDataset:
         print("line 160 synthetic_dataset")
         # for some reason this line does not work on the server
         # y = np.matmul(number_paths_counting, self.coefficients)
-        print("number of paths",len(number_paths_counting),len(number_paths_counting[0]))
-        print("self.coeff",len(self.coefficients))
-        y= number_paths_counting @ self.coefficients
+        y = np.array([sum(a * b for a, b in zip(A_row, self.coefficients)) for A_row in number_paths_counting])
+        #y = number_paths_counting @ self.coefficients
         print("line 163 synthetic_dataset")
 
         # add random noise
