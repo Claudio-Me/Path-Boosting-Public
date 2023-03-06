@@ -127,11 +127,8 @@ class SyntheticDataset:
         self.number_paths_counting = np.array(
             [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for
              graph in dataset.graphs_list])
-        print("line 130 synthetic_dataset")
         new_labels = self.__formula_new_labels(self.number_paths_counting)
-        print("line 1132 synthetic_dataset")
         dataset.labels = list(new_labels)
-        print("line 134 synthetic_dataset")
         a = self.number_paths_counting.sum(axis=1)
         self.number_of_graphs_that_contains_target_path = np.count_nonzero(a)
 
@@ -144,6 +141,7 @@ class SyntheticDataset:
                     self.new_graphs_list.append(dataset.graphs_list[i])
                     self.new_labels_list.append(new_labels[i])
         new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
+
         if save_on_file is True:
             save_dataset_in_binary_file(new_dataset, filename=new_file_name)
 
@@ -158,8 +156,9 @@ class SyntheticDataset:
         # also if number_of_paths_counting is a matrix we can use matrix multiplications
         number_paths_counting = np.array(number_paths_counting)
         print("line 160 synthetic_dataset")
-
-        y = np.matmul(number_paths_counting, self.coefficients)
+        # for some reason this line does not work on the server
+        # y = np.matmul(number_paths_counting, self.coefficients)
+        y=number_paths_counting.dot(self.coefficients)
         print("line 163 synthetic_dataset")
 
         # add random noise
