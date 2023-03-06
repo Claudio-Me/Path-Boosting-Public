@@ -18,6 +18,12 @@ import sys
 
 
 class Analysis:
+    def __init__(self):
+        self.train_predictions = None
+        self.test_predictions = None
+
+        self.train_error = None
+        self.test_error = None
 
     def load_and_analyze(self, directory, show=True, save=True):
 
@@ -61,7 +67,9 @@ class Analysis:
                                        save=save)
 
     def errors_plots(self, pattern_boosting: PatternBoosting, show=True, save=True):
-        # error plots
+
+        self.train_error = pattern_boosting.train_error
+        self.test_error = pattern_boosting.test_error
 
         # cut first n points
         cut_point = 0

@@ -53,19 +53,6 @@ def append_matrix_rows(matrix1, matrix2):
     return np.vstack((matrix1, matrix2))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     # Testing()
 
@@ -104,8 +91,9 @@ if __name__ == '__main__':
     except:
         pass
     analysis = Analysis()
-    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"), show=False,
-                              save=True)
+    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
+                              show=Settings.show_analysis,
+                              save=Settings.save_analysis)
     # analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False, save=True)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -114,9 +102,6 @@ if __name__ == '__main__':
     # check number of repeated rows
     train_boosting_matrix = pattern_boosting.create_boosting_matrix_for(train_dataset)
     test_boosting_matrix = pattern_boosting.create_boosting_matrix_for(test_dataset)
-
-
-
 
     print("--------------------------------------------------------------------------------")
     print("Repeated rows in final training boosting matrix")
@@ -127,7 +112,6 @@ if __name__ == '__main__':
     print(count_repeated_rows(test_boosting_matrix))
 
     print("Different rows in test matrix: ", different_rows(test_boosting_matrix))
-
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -145,4 +129,3 @@ if __name__ == '__main__':
     pattern_boosting = PatternBoosting()
     pattern_boosting.training(train_dataset, test_dataset)
     '''
-
