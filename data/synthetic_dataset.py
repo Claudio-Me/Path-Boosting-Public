@@ -157,9 +157,10 @@ class SyntheticDataset:
         number_paths_counting = np.array(number_paths_counting)
         print("line 160 synthetic_dataset")
         # for some reason this line does not work on the server
+        # y = np.matmul(number_paths_counting, self.coefficients)
         print("number of paths",number_paths_counting)
         print("self.coeff",self.coefficients)
-        y=number_paths_counting.dot(self.coefficients)
+        y= number_paths_counting @ self.coefficients
         print("line 163 synthetic_dataset")
 
         # add random noise
