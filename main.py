@@ -55,19 +55,18 @@ def append_matrix_rows(matrix1, matrix2):
 
 if __name__ == '__main__':
     # Testing()
-    print("line 58 main")
     generate_new_dataset = True
     if generate_new_dataset is True:
         synthetic_dataset = SyntheticDataset()
 
-        print("line 63 main")
+        print("line 62 main")
         synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True,
                                                                  new_file_name="5k_synthetic_dataset")
+        print("line 65 main")
         data_reader.save_dataset_in_binary_file(synthetic_dataset, filename="synthetic_dataset")
+        print("line 67 main")
     synthetic_dataset = data_reader.load_dataset_from_binary(filename="synthetic_dataset")
-
-
-    print("line 70 main")
+    print("line 69 main")
     if generate_new_dataset is True:
         dataset_filename = "5k_synthetic_dataset"
         # dataset_filename = "5_k_selection_graphs"
