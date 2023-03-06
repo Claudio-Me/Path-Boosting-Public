@@ -158,8 +158,8 @@ class SyntheticDataset:
         print("line 160 synthetic_dataset")
         # for some reason this line does not work on the server
         # y = np.matmul(number_paths_counting, self.coefficients)
-        print("number of paths",number_paths_counting)
-        print("self.coeff",self.coefficients)
+        print("number of paths",len(number_paths_counting),len(number_paths_counting[0]))
+        print("self.coeff",len(self.coefficients))
         y= number_paths_counting @ self.coefficients
         print("line 163 synthetic_dataset")
 
