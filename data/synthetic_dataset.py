@@ -158,8 +158,8 @@ class SyntheticDataset:
         print("line 160 synthetic_dataset")
         # for some reason this line does not work on the server
         # y = np.matmul(number_paths_counting, self.coefficients)
+        # y = number_paths_counting @ self.coefficients
         y = np.array([sum(a * b for a, b in zip(A_row, self.coefficients)) for A_row in number_paths_counting])
-        #y = number_paths_counting @ self.coefficients
         print("line 163 synthetic_dataset")
 
         # add random noise
