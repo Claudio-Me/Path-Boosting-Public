@@ -123,13 +123,13 @@ class SyntheticDataset:
     def create_dataset_from_5k_selection_graph(self, save_on_file=True, filename: str = "5_k_selection_graphs",
                                                new_file_name="5k_synthetic_dataset"):
         dataset = load_dataset_from_binary(filename=filename)
-        print("line 126 synthetic_dataset")
         # each row is a different graph, each column is a different path
         self.number_paths_counting = np.array(
             [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for
              graph in dataset.graphs_list])
-        print("line 131 synthetic_dataset")
+        print("line 130 synthetic_dataset")
         new_labels = self.__formula_new_labels(self.number_paths_counting)
+        print("line 1132 synthetic_dataset")
         dataset.labels = list(new_labels)
         print("line 134 synthetic_dataset")
         a = self.number_paths_counting.sum(axis=1)
@@ -143,7 +143,6 @@ class SyntheticDataset:
                 if random.uniform(0, 1) < self.keep_probability:
                     self.new_graphs_list.append(dataset.graphs_list[i])
                     self.new_labels_list.append(new_labels[i])
-        print("line 146 synthetic_dataset")
         new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
         if save_on_file is True:
             save_dataset_in_binary_file(new_dataset, filename=new_file_name)
