@@ -18,12 +18,12 @@ import sys
 
 
 class Analysis:
-    def __init__(self):
-        self.train_predictions = None
-        self.test_predictions = None
+    def __init__(self, train_predictions=None, test_predictions=None, train_error=None, test_error=None):
+        self.train_predictions = train_predictions
+        self.test_predictions = test_predictions
 
-        self.train_error = None
-        self.test_error = None
+        self.train_error = train_error
+        self.test_error = test_error
 
     def load_and_analyze(self, directory, show=True, save=True):
 
@@ -61,8 +61,10 @@ class Analysis:
         if pattern_boosting.test_dataset is not None:
             # self.analysis.plot_labels_histogram(self.training_dataset.labels, self.test_dataset.labels, tittle="Real labels")
             # self.analysis.plot_labels_histogram(self.predict(training_dataset), self.predict(test_dataset), tittle="Predicted Labels")
+            if self.test_predictions is None:
+                self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset)
             self.plot_labels_histogram(pattern_boosting.test_dataset.labels,
-                                       pattern_boosting.predict(pattern_boosting.test_dataset),
+                                       self.test_predictions,
                                        tittle="Predicted vs real y", legend1="real", legend2="predicted", show=show,
                                        save=save)
 
@@ -106,6 +108,8 @@ class Analysis:
                                  tittle="test classification",
                                  x_label="number of learners", y_label="jaccard score",
                                  show=show, save=save)
+
+        self.__scatterplot_test_prediction_vs_labels(pattern_boosting,show=show,save=save)
 
     def plot_graphs(self, x, y, tittle: str, x_label: str = "", y_label: str = "", show=True, save=True):
 
@@ -183,6 +187,27 @@ class Analysis:
         saving_location = data_reader.get_save_location(tittle, '.png')
 
         if save is True:
+            plt.savefig(saving_location)
+        if show is True:
+            plt.show()
+
+    def __scatterplot_test_prediction_vs_labels(self, pattern_boosting: PatternBoosting, show=True, save=True):
+        if pattern_boosting.test_dataset is not None:
+            if self.test_predictions is None:
+                self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset)
+
+            plt.style.use('ggplot')
+
+            fig, ax = plt.subplots()
+            ax.scatter(self.test_predictions, pattern_boosting.test_dataset.get_labels(), c='black')
+            ax.set_xlabel('Predictions')
+            ax.set_ylabel('True label')
+            max_all = max(self.test_predictions+ pattern_boosting.test_dataset.get_labels())
+            min_all = min(self.test_predictions+ pattern_boosting.test_dataset.get_labels())
+            ax.plot([min_all, max_all], [min_all, max_all], color='red')
+
+        if save is True:
+            saving_location = data_reader.get_save_location(file_name="prediction_vs_true_value", file_extension='.png')
             plt.savefig(saving_location)
         if show is True:
             plt.show()

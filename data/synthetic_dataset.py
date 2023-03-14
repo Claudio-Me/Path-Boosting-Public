@@ -43,7 +43,10 @@ class SyntheticDataset:
 
         self.variance = 1
         self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
-        self.keep_probability = 0.01
+        for i, coefficient in enumerate(self.coefficients):
+            self.coefficients[i] = coefficient * pow(10, 2 - len(self.target_paths[i]))
+
+        self.keep_probability = 0.0
         self.new_graphs_list = []
         self.new_labels_list = []
         self.number_paths_counting = None
@@ -155,12 +158,10 @@ class SyntheticDataset:
         # can be rewritten using vector multiplication, but I don't have internet now to check how to do it
         # also if number_of_paths_counting is a matrix we can use matrix multiplications
         number_paths_counting = np.array(number_paths_counting)
-        print("line 160 synthetic_dataset")
         # for some reason this line does not work on the server
         # y = np.matmul(number_paths_counting, self.coefficients)
         # y = number_paths_counting @ self.coefficients
         y = np.array([sum(a * b for a, b in zip(A_row, self.coefficients)) for A_row in number_paths_counting])
-        print("line 163 synthetic_dataset")
 
         # add random noise
         if add_noise is True:
@@ -280,17 +281,31 @@ class SyntheticDataset:
             table_synthetic_dataset_results = self.table_synthetic_dataset_results(pattern_boosting_model)
             if show is True:
                 print(table_synthetic_dataset_results)
+            if save is True:
+                saving_location = get_save_location("table_synthetic_dataset_results", '.tex')
+                table_synthetic_dataset_results.to_latex(saving_location, index=False)
+
             table_synthetic_dataset_results = self.get_latex_code_for(table_synthetic_dataset_results)
 
             table_all_selected_paths = self.get_number_of_times_all_path_are_selected(
                 pattern_boosting=pattern_boosting_model)
             if show is True:
                 print(table_all_selected_paths)
+
+            if save is True:
+                saving_location = get_save_location("table_all_selected_paths", '.tex')
+                table_all_selected_paths.to_latex(saving_location, index=False)
+
             table_all_selected_paths = self.get_latex_code_for(table_all_selected_paths)
 
         dataset_info_table = self.get_table_dataset_info(pattern_boosting_model)
         if show is True:
             print(dataset_info_table)
+
+        if save is True:
+            saving_location = get_save_location("dataset_info_table", '.tex')
+            dataset_info_table.to_latex(saving_location, index=False)
+
         dataset_info_table = self.get_latex_code_for(dataset_info_table)
 
         string = target_paths_table + "\n\n"
@@ -312,7 +327,7 @@ class SyntheticDataset:
 
                 sys.stdout = original_stdout  # Reset the standard output to its original value
 
-    def table_synthetic_dataset_results(self, pattern_boosting: PatternBoosting):
+    def table_synthetic_dataset_results(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
         assert (pattern_boosting is not None)
         boosting_matrix = pattern_boosting.boosting_matrix
         selected_paths = []

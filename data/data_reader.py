@@ -113,18 +113,16 @@ def save_data(data, filename, directory="results"):
         pickle.dump(data, outp, pickle.HIGHEST_PROTOCOL)
 
 
-def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results") -> str:
+def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results",
+                      create_unique_subfolder=False) -> str:
     # make sure that we are in the folder "pattern_boosting"
-    last_folder=os.path.basename(os.path.normpath(os.getcwd()))
-    if last_folder=="pattern_boosting":
-        location=os.getcwd()
-    elif last_folder =="classes" or last_folder =="data":
-        location=os.path.dirname(os.getcwd())
+    last_folder = os.path.basename(os.path.normpath(os.getcwd()))
+    if last_folder == "pattern_boosting":
+        location = os.getcwd()
+    elif last_folder == "classes" or last_folder == "data":
+        location = os.path.dirname(os.getcwd())
     else:
         raise Exception("Uknown location")
-
-
-
 
     location = os.path.join(location, folder_relative_path)
     if len(file_extension) > 0 and file_extension[0] != '.':
@@ -149,6 +147,7 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     folder_name = folder_name + "/"
 
     file_name = file_name.replace(" ", "_") + file_extension
-    return location + folder_name + file_name
-
-
+    if create_unique_subfolder is True:
+        return location + file_name
+    else:
+        return location + folder_name + file_name

@@ -79,10 +79,7 @@ if __name__ == '__main__':
     train_dataset = data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
     test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
 
-    print(np.count_nonzero(
-        [graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in train_dataset.graphs_list]))
-    print(np.count_nonzero(
-        [graph.number_of_time_path_is_present_in_graph((28, 7)) for graph in test_dataset.graphs_list]))
+
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
