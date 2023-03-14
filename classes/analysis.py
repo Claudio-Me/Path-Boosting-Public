@@ -109,7 +109,7 @@ class Analysis:
                                  x_label="number of learners", y_label="jaccard score",
                                  show=show, save=save)
 
-        self.__scatterplot_test_prediction_vs_labels(pattern_boosting,show=show,save=save)
+        self.__scatterplot_test_prediction_vs_labels(pattern_boosting, show=show, save=save)
 
     def plot_graphs(self, x, y, tittle: str, x_label: str = "", y_label: str = "", show=True, save=True):
 
@@ -202,8 +202,8 @@ class Analysis:
             ax.scatter(self.test_predictions, pattern_boosting.test_dataset.get_labels(), c='black')
             ax.set_xlabel('Predictions')
             ax.set_ylabel('True label')
-            max_all = max(self.test_predictions+ pattern_boosting.test_dataset.get_labels())
-            min_all = min(self.test_predictions+ pattern_boosting.test_dataset.get_labels())
+            max_all = max(list(self.test_predictions) + pattern_boosting.test_dataset.get_labels())
+            min_all = min(list(self.test_predictions) + pattern_boosting.test_dataset.get_labels())
             ax.plot([min_all, max_all], [min_all, max_all], color='red')
 
         if save is True:

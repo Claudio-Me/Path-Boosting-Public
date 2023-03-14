@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100  # call it maximum number of steps
+    maximum_number_of_steps = 1000  # call it maximum number of steps
 
     save_analysis = True
     show_analysis = False
