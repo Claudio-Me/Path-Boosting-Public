@@ -5,10 +5,10 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100  # call it maximum number of steps
+    maximum_number_of_steps = 10000  # call it maximum number of steps
 
     save_analysis = True
-    show_analysis = True
+    show_analysis = False
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = True
