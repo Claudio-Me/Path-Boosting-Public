@@ -33,10 +33,11 @@ class Dataset:
     def get_first_n_entries(self, n):
         return Dataset(self.graphs_list[:n], self.labels[:n])
 
-    def split_dataset(self, test_size):
+    def split_dataset(self, test_size, random_split_seed=None):
         if test_size == 0:
             return self, None
-        x_train, x_test, y_train, y_test = train_test_split(self.graphs_list, self.labels, test_size=test_size)
+        x_train, x_test, y_train, y_test = train_test_split(self.graphs_list, self.labels, test_size=test_size,
+                                                            random_state=random_split_seed)
         train_dataset = Dataset(x_train, y_train)
         test_dataset = Dataset(x_test, y_test)
 

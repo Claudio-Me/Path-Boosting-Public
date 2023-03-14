@@ -8,6 +8,7 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
+from data.load_dataset import load_dataset
 
 
 def different_rows(matrix):
@@ -55,29 +56,9 @@ def append_matrix_rows(matrix1, matrix2):
 
 if __name__ == '__main__':
     # Testing()
-    generate_new_dataset = True
-    if generate_new_dataset is True:
-        synthetic_dataset = SyntheticDataset()
-
-        synthetic_dataset.create_dataset_from_5k_selection_graph(save_on_file=True,
-                                                                 new_file_name="5k_synthetic_dataset")
-
-        data_reader.save_dataset_in_binary_file(synthetic_dataset, filename="synthetic_dataset")
-
-    synthetic_dataset = data_reader.load_dataset_from_binary(filename="synthetic_dataset")
-
-    if generate_new_dataset is True:
-        dataset_filename = "5k_synthetic_dataset"
-        # dataset_filename = "5_k_selection_graphs"
-        # dataset_filename = "60k_dataset"
-        dataset = data_reader.load_dataset_from_binary(filename=dataset_filename)
-        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
-
-        data_reader.save_dataset_in_binary_file(train_dataset, filename="synthetic_train_dataset")
-        data_reader.save_dataset_in_binary_file(test_dataset, filename="synthetic_test_dataset")
-
-    train_dataset = data_reader.load_dataset_from_binary(filename="synthetic_train_dataset")
-    test_dataset = data_reader.load_dataset_from_binary(filename="synthetic_test_dataset")
+    dataset = load_dataset()
+    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
+                                                                      random_split_seed=Settings.random_split)
 
 
     pattern_boosting = PatternBoosting()
@@ -85,10 +66,7 @@ if __name__ == '__main__':
     pattern_boosting.training(train_dataset, test_dataset)
 
     data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
-    try:
-        data_reader.save_data(synthetic_dataset, filename="synthetic_dataset", directory="results")
-    except:
-        pass
+
     analysis = Analysis()
     analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
                               show=Settings.show_analysis,

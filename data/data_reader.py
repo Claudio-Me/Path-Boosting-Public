@@ -33,10 +33,10 @@ def read_data_from_directory(directory):
     return dataset
 
 
-def split_training_and_test(dataset, test_size, labels: list = None):
+def split_training_and_test(dataset, test_size, labels: list = None, random_split_seed=None):
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset, labels)
-    train_dataset, test_dataset = dataset.split_dataset(test_size)
+    train_dataset, test_dataset = dataset.split_dataset(test_size,random_split_seed)
     return train_dataset, test_dataset
 
 

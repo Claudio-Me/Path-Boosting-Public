@@ -5,13 +5,13 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 10000  # call it maximum number of steps
+    maximum_number_of_steps = 100  # call it maximum number of steps
 
     save_analysis = True
     show_analysis = False
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = True
+    generate_new_dataset = False
 
     # in the error graph Print only the last N learners
     tail = 900
@@ -19,7 +19,7 @@ class Settings:
     # do not expand if the paths are longer than this amount
     max_path_length = 100
 
-    target_train_error = 0.5
+    target_train_error = 0.0001
 
     xgb_model_parameters = {
         'n_estimators': 1,
@@ -38,6 +38,8 @@ class Settings:
         xgb_model_parameters['max_depth'] = 1
 
     plot_tree = False
+
+    random_split = 1
 
     parallelization = False
 
