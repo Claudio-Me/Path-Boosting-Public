@@ -56,6 +56,7 @@ def append_matrix_rows(matrix1, matrix2):
 
 if __name__ == '__main__':
     # Testing()
+    print("Dataset name: ", Settings.dataset_name)
     dataset = load_dataset()
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split)

@@ -5,12 +5,12 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 1000  # call it maximum number of steps
+    maximum_number_of_steps = 4001  # call it maximum number of steps
 
-    save_analysis = True
+    save_analysis = False
     show_analysis = False
 
-    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
@@ -51,7 +51,7 @@ class Settings:
     # estimation_type = EstimationType.classification
 
     # measure used for checkin the final error of the model (to plot error graphs)
-    final_evaluation_error = "MSE"  # "absolute_mean_error"
+    final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
