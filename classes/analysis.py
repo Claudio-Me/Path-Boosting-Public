@@ -118,7 +118,6 @@ class Analysis:
         fig, ax = plt.subplots()
 
         # Using set_dashes() to modify dashing of an existing line
-
         if len(x) > Settings.tail:
             ax.plot(x[-Settings.tail:], y[-Settings.tail:], label='')
         else:

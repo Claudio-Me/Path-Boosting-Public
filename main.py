@@ -98,7 +98,7 @@ if __name__ == '__main__':
 
 
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                      random_split_seed=Settings.random_split)
+                                                                      random_split_seed=Settings.random_split_test_dataset_seed)
 
 
     pattern_boosting = PatternBoosting()
@@ -106,6 +106,7 @@ if __name__ == '__main__':
     pattern_boosting.training(train_dataset, test_dataset)
 
     data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
+
 
     analysis = Analysis()
     analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),

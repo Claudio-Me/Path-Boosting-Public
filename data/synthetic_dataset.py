@@ -42,6 +42,8 @@ class SyntheticDataset:
                                   (48, 8, 7), (48, 8), (48,)})
 
         self.variance = 1
+        random.seed(Settings.random_coefficients_synthetic_dataset_seed)
+        np.random.seed(Settings.random_coefficients_synthetic_dataset_seed)
         self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
         for i, coefficient in enumerate(self.coefficients):
             self.coefficients[i] = coefficient * pow(10, 2 - len(self.target_paths[i]))

@@ -11,6 +11,8 @@ import numpy as np
 import multiprocessing
 import functools
 import itertools
+import sys
+from pympler import asizeof
 
 if Settings.parallelization is True:
     from mpi4py import MPI
@@ -65,6 +67,9 @@ class PatternBoosting:
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
+            print("size of pattern boosting: ", asizeof.asizeof(self))
+            print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
+
             self.n_iterations = iteration_number + 1
 
             selected_column_number, self.model = self.gradient_boosting_step.select_column(model=self.model,
@@ -146,6 +151,7 @@ class PatternBoosting:
         correspond to the column is present in the graph.
         The order of the columns follows the order of the input vector of paths
         """
+        print("modify me!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
         new_columns = np.zeros((len(self.training_dataset.graphs_list), len(new_paths)))
 

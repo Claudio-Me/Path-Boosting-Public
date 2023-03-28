@@ -97,7 +97,6 @@ def load_data(filename, directory=None):
         directory = "data/"
     if directory[-1] != "/":
         directory = directory + "/"
-
     with open(directory + filename + '.pkl', 'rb') as inp:
         data = pickle.load(inp)
     return data

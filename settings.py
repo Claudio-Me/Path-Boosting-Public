@@ -5,23 +5,21 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 7  # call it maximum number of steps
+    maximum_number_of_steps = 10  # call it maximum number of steps
 
-    save_analysis = True
-    show_analysis = True
+    save_analysis = False
+    show_analysis = False
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = False
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    generate_new_dataset = True
 
     # in the error graph Print only the last N learners
-    tail = 900
+    tail = 3800
 
     # do not expand if the paths are longer than this amount
     max_path_length = 100
 
     target_train_error = 0.0001
-
-    considered_metal_center=[76]
 
     xgb_model_parameters = {
         'n_estimators': 1,
@@ -41,7 +39,8 @@ class Settings:
 
     plot_tree = False
 
-    random_split = 1
+    random_split_test_dataset_seed = 1
+    random_coefficients_synthetic_dataset_seed=1
 
     parallelization = False
 
