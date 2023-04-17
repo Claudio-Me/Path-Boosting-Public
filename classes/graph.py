@@ -54,13 +54,33 @@ class GraphPB:
 
         return nl_dict
 
-    def get_new_paths_labels_and_add_them_to_the_dictionary(self, path_label: tuple):
+    def get_new_paths_labels(self, path_label: tuple):
         """
         it returns the possible extension of the input path that can be made in the graph
         note: if the input label is not present in the selected paths, an empty set is returned
         """
-        return self.selected_paths.get_new_paths_labels_and_add_them_to_the_dictionary(path_label, self.adj_list,
-                                                                                       self.node_to_label)
+
+        if not (path_label[0] in self.label_to_node):
+            return set([])
+        else:
+            last_nodes_numbers_list = self.label_to_node[path_label[0]]
+            if len(path_label) > 1:
+                for label in path_label[1:]:
+                    last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
+                                               node_number in last_nodes_numbers_list]
+
+                    # flatten the list
+                    last_nodes_numbers_list = set([item for sublist in last_nodes_numbers_list for item in sublist])
+
+            new_nodes_numbers = [self.adj_list[node] for node in last_nodes_numbers_list]
+            # flatten the list
+            new_nodes_numbers = set([item for sublist in new_nodes_numbers for item in sublist])
+
+            # get the labels of the nodes
+            new_labels = set([self.node_to_label[node] for node in new_nodes_numbers])
+
+            new_labels = [path_label + tuple([label]) for label in new_labels]
+            return new_labels
 
     def number_of_times_selected_path_is_present(self, path_label):
         """N.B. this function search only in "selected_paths" if the goal is to search in the whole graph then

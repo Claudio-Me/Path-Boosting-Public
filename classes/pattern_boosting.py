@@ -151,7 +151,7 @@ class PatternBoosting:
         correspond to the column is present in the graph.
         The order of the columns follows the order of the input vector of paths
         """
-        print("modify me!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
 
         new_columns = np.zeros((len(self.training_dataset.graphs_list), len(new_paths)))
 
@@ -159,7 +159,7 @@ class PatternBoosting:
             path = new_paths[path_number]
             for graph_number in graphs_that_contain_selected_column_path:
                 graph = self.training_dataset.graphs_list[graph_number]
-                n = graph.number_of_times_selected_path_is_present(path)
+                n = graph.number_of_time_path_is_present_in_graph(path)
                 new_columns[graph_number][path_number] = n
 
         return new_columns
@@ -171,7 +171,7 @@ class PatternBoosting:
         """
         if Settings.parallelization is False:
             new_paths = [list(
-                self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+                self.training_dataset.graphs_list[graph_number].get_new_paths_labels(
                     selected_path_label))
                 for graph_number in graphs_that_contain_selected_column_path]
         else:
@@ -189,7 +189,7 @@ class PatternBoosting:
             graph_number_list = comm.scatter(split_graphs_list, root=0)
 
             new_paths_for_specific_graph_list = [list(
-                self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+                self.training_dataset.graphs_list[graph_number].get_new_paths_labels(
                     selected_path_label))
                 for graph_number in graph_number_list]
 
@@ -209,7 +209,7 @@ class PatternBoosting:
     def __get_new_paths_labels_for_graph_number(self, graph_number, selected_path_label):
         return list(
             self.training_dataset.graphs_list[
-                graph_number].get_new_paths_labels_and_add_them_to_the_dictionary(
+                graph_number].get_new_paths_labels(
                 selected_path_label))
 
     def __initialize_boosting_matrix(self):
