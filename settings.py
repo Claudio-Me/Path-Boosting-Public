@@ -8,13 +8,16 @@ class Settings:
     maximum_number_of_steps = 50  # call it maximum number of steps
 
     save_analysis = False
-    show_analysis = True
+    show_analysis = False
 
     dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
     tail = 3800
+
+    considered_metal_center=21
+
 
     # do not expand if the paths are longer than this amount
     max_path_length = 100

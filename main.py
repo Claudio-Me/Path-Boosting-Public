@@ -12,6 +12,8 @@ from data.load_dataset import load_dataset
 from classes.dataset import Dataset
 from pympler import asizeof
 from classes.graph import GraphPB
+import sys
+
 def different_rows(matrix):
     # Create a set to store the rows that have already been seen
     seen_rows = set()
@@ -59,9 +61,9 @@ if __name__ == '__main__':
     # Testing()
     print("Dataset name: ", Settings.dataset_name)
 
-    final_test_error=[]
-    for metal_label in GraphPB.metal_labels:
-        print("training on metal center number: ", metal_label)
+
+    for tmp in range(1):
+        print("training on metal center number: ", Settings.considered_metal_center[0])
         dataset = load_dataset()
 
       #----------------------------------------------------------------------------------------------------------
@@ -73,11 +75,12 @@ if __name__ == '__main__':
         for graph in dataset.get_graphs_list():
           #46 is the most common metal center
 
-          if graph.node_to_label[graph.metal_center[0]]==metal_label:
+          if graph.node_to_label[graph.metal_center[0]]==Settings.considered_metal_center[0]:
                if len(graph.adj_list[graph.metal_center[0]]) != 0:
                     new_dataset_list.append(graph)
         del dataset
-
+        if len(new_dataset_list)==0:
+            sys.exit("No metal centers found")
         dataset=Dataset(new_dataset_list)
 
 
@@ -93,11 +96,24 @@ if __name__ == '__main__':
         pattern_boosting = PatternBoosting()
         # test_dataset.labels=np.zeros(len(test_dataset.labels))
         pattern_boosting.training(train_dataset, test_dataset)
-        final_test_error.append(pattern_boosting.test_error[-1])
+        final_test_error=pattern_boosting.test_error[-1]
 
     print("final test error:\n", final_test_error)
-    data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
+    saving_location = data_reader.get_save_location(file_name="final_test_error", file_extension=".txt", folder_relative_path='results')
+
+
+
+
+    original_stdout = sys.stdout
+    with open(saving_location, 'a') as f:
+        sys.stdout = f  # Change the standard output to the file we created.
+        string = str(Settings.considered_metal_center[0]) + '-'
+        string += str(final_test_error) + '\n'
+        print(string)
+        sys.stdout = original_stdout  # Reset the standard output to its original value
+
+    data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
     analysis = Analysis()
     analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
