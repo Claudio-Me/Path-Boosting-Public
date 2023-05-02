@@ -13,7 +13,7 @@ import functools
 import itertools
 import sys
 
-#from pympler import asizeof
+from pympler import asizeof
 
 if Settings.parallelization is True:
     from mpi4py import MPI
@@ -68,8 +68,8 @@ class PatternBoosting:
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
-            #print("size of pattern boosting: ", asizeof.asizeof(self))
-            #print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
+            print("size of pattern boosting: ", asizeof.asizeof(self))
+            print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
 
             self.n_iterations = iteration_number + 1
 

@@ -10,7 +10,6 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
 from data.load_dataset import load_dataset
 from classes.dataset import Dataset
-import sys
 
 
 def different_rows(matrix):
@@ -62,41 +61,12 @@ if __name__ == '__main__':
     dataset = load_dataset()
 
 
-
-
-
-
-
-    for tmp in range(1):
-        print("training on metal center number: ", Settings.considered_metal_center[0])
-        dataset = load_dataset()
-
-      #----------------------------------------------------------------------------------------------------------
-      #print("size of dataset: ", asizeof.asizeof(dataset))
-      #-----------------------------------------------------------------------------------------------------------
-        new_dataset_list=[]
-        print("selecting only graphs with specific metal center")
-
-        for graph in dataset.get_graphs_list():
-          #46 is the most common metal center
-
-          if graph.node_to_label[graph.metal_center[0]]==Settings.considered_metal_center[0]:
-               if len(graph.adj_list[graph.metal_center[0]]) != 0:
-                    new_dataset_list.append(graph)
-        del dataset
-        if len(new_dataset_list)==0:
-            sys.exit("No metal centers found")
-        dataset=Dataset(new_dataset_list)
-
-
-    # ----------------------------------------------------------------------------------------------------------
-        print("len of dataset",len(new_dataset_list))
-        #print("size of dataset: ", asizeof.asizeof(dataset))
-    # -----------------------------------------------------------------------------------------------------------
-
-
-
-
+    new_dataset_list=[]
+    print("selecting only graphs with specific metal center")
+    for graph in dataset.get_graphs_list():
+        if graph.node_to_label[graph.metal_center[0]]==46:
+            new_dataset_list.append(graph)
+    dataset=Dataset(new_dataset_list)
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
 
