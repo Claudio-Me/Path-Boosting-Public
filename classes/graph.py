@@ -194,7 +194,8 @@ class GraphPB:
                 label = nx_Graph.graph[Settings.graph_label_variable]
             except:
                 label = None
-
+        if len(adj_list[0])==0:
+            pass
         return GraphPB(adjacency_matrix=adj_matrix, node_to_labels_dictionary=n_t_l_d, label_value=label,
                        adj_list=adj_list)
 

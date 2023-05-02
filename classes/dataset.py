@@ -62,3 +62,7 @@ class Dataset:
         string = "Average value of label: " + str(average_label) + "\n"
         string = string + "Dataset dimension: " + str(self.get_dimension()) + "\n"
         return string
+
+
+    def get_graph_number(self,number):
+        return self.get_graphs_list()[number]

@@ -195,6 +195,14 @@ class Analysis:
             if self.test_predictions is None:
                 self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset)
 
+            tmp_weird_graphs=[]
+            for number,prediction in enumerate(self.test_predictions):
+                if prediction<0.18:
+                    tmp_weird_graphs.append(pattern_boosting.test_dataset.get_graph_number(number))
+
+            boosting_matrix_of_weird_graphs=pattern_boosting.generate_boosting_matrix(Dataset(tmp_weird_graphs))
+
+
             plt.style.use('ggplot')
 
             fig, ax = plt.subplots()

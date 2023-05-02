@@ -10,8 +10,8 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
 from data.load_dataset import load_dataset
 from classes.dataset import Dataset
-
-
+from pympler import asizeof
+from classes.graph import GraphPB
 def different_rows(matrix):
     # Create a set to store the rows that have already been seen
     seen_rows = set()
@@ -58,23 +58,44 @@ def append_matrix_rows(matrix1, matrix2):
 if __name__ == '__main__':
     # Testing()
     print("Dataset name: ", Settings.dataset_name)
-    dataset = load_dataset()
+
+    final_test_error=[]
+    for metal_label in GraphPB.metal_labels:
+        print("training on metal center number: ", metal_label)
+        dataset = load_dataset()
+
+      #----------------------------------------------------------------------------------------------------------
+      #print("size of dataset: ", asizeof.asizeof(dataset))
+      #-----------------------------------------------------------------------------------------------------------
+        new_dataset_list=[]
+        print("selecting only graphs with specific metal center")
+
+        for graph in dataset.get_graphs_list():
+          #46 is the most common metal center
+
+          if graph.node_to_label[graph.metal_center[0]]==metal_label:
+               if len(graph.adj_list[graph.metal_center[0]]) != 0:
+                    new_dataset_list.append(graph)
+        del dataset
+
+        dataset=Dataset(new_dataset_list)
 
 
-    new_dataset_list=[]
-    print("selecting only graphs with specific metal center")
-    for graph in dataset.get_graphs_list():
-        if graph.node_to_label[graph.metal_center[0]]==46:
-            new_dataset_list.append(graph)
-    dataset=Dataset(new_dataset_list)
-    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
+    # ----------------------------------------------------------------------------------------------------------
+        print("len of dataset",len(new_dataset_list))
+        #print("size of dataset: ", asizeof.asizeof(dataset))
+    # -----------------------------------------------------------------------------------------------------------
+
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
 
 
-    pattern_boosting = PatternBoosting()
-    # test_dataset.labels=np.zeros(len(test_dataset.labels))
-    pattern_boosting.training(train_dataset, test_dataset)
+        pattern_boosting = PatternBoosting()
+        # test_dataset.labels=np.zeros(len(test_dataset.labels))
+        pattern_boosting.training(train_dataset, test_dataset)
+        final_test_error.append(pattern_boosting.test_error[-1])
 
+    print("final test error:\n", final_test_error)
     data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
 
