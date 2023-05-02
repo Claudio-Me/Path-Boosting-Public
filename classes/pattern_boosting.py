@@ -13,7 +13,7 @@ import functools
 import itertools
 import sys
 
-from pympler import asizeof
+# from pympler import asizeof
 
 if Settings.parallelization is True:
     from mpi4py import MPI

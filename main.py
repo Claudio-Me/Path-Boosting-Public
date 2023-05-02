@@ -10,7 +10,7 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
 from data.load_dataset import load_dataset
 from classes.dataset import Dataset
-from pympler import asizeof
+# from pympler import asizeof
 from classes.graph import GraphPB
 import sys
 

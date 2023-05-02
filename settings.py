@@ -16,7 +16,12 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    considered_metal_center=21
+    considered_metal_center=[21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
+                    39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
+                    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
+                    72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
+                    89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
+                    104, 105, 106, 107, 108, 109, 110, 111, 112]
 
 
     # do not expand if the paths are longer than this amount
