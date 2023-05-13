@@ -68,8 +68,8 @@ class PatternBoosting:
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
-            #print("size of pattern boosting: ", asizeof.asizeof(self))
-            #print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
+            # print("size of pattern boosting: ", asizeof.asizeof(self))
+            # print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
 
             self.n_iterations = iteration_number + 1
 
@@ -77,12 +77,12 @@ class PatternBoosting:
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
-
+            print("line 80 pattern boosting")
             if test_dataset is not None:
-                print("pattern boosting row 76")
+                print("line 82 pattern boosting")
                 self.test_error.append(self.evaluate(self.test_dataset))
-            print("pattern boosting row 78")
-            self.train_error.append(self.evaluate(self.training_dataset))
+            print("line 84 pattern boosting")
+            self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
             # -------------------------------------------------------------------------------------------------------
             # debug
 
@@ -93,11 +93,11 @@ class PatternBoosting:
                 default_importance_value = np.var(training_dataset.labels)
             else:
                 default_importance_value = None
-            print("pattern boosting row 90")
+            print("line 94 pattern boosting")
             self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
                                                                      train_error=self.train_error,
                                                                      default_value=default_importance_value)
-
+            print("line 98 pattern boosting")
             self.number_of_learners.append(iteration_number + 1)
 
             # expand boosting matrix
@@ -128,9 +128,9 @@ class PatternBoosting:
             [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list])
         return boosting_matrix_matrix
 
-    def evaluate(self, dataset: Dataset):
-
-        boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
+    def evaluate(self, dataset: Dataset, boosting_matrix_matrix=None):
+        if boosting_matrix_matrix is None:
+            boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
 
         error = self.model.evaluate(boosting_matrix_matrix, dataset.labels)
         return error
@@ -147,21 +147,34 @@ class PatternBoosting:
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
         """
-        given a st of paths and a set of graphs that contains the given paths it returns the new column that should
+        given a set of paths and a set of graphs that contains the given paths it returns the new column that should
         be added to the dataset. in each line of the column the value represent the number of times the path that
         correspond to the column is present in the graph.
         The order of the columns follows the order of the input vector of paths
         """
 
-
         new_columns = np.zeros((len(self.training_dataset.graphs_list), len(new_paths)))
 
-        for path_number in range(len(new_paths)):
-            path = new_paths[path_number]
+        """
+        # old code, it works fine, but slow
+        
+        for path_number, path in enumerate(new_paths):
             for graph_number in graphs_that_contain_selected_column_path:
                 graph = self.training_dataset.graphs_list[graph_number]
                 n = graph.number_of_time_path_is_present_in_graph(path)
                 new_columns[graph_number][path_number] = n
+        """
+        print("number of graphs that need to be considered ", len(graphs_that_contain_selected_column_path))
+        print("number of paths that need to be considered ", len(new_paths))
+
+        for path_number, path in enumerate(new_paths):
+            print('path number ', path_number)
+            column = np.array(
+                [self.training_dataset.graphs_list[graph_number].number_of_time_path_is_present_in_graph(path) for
+                 graph_number in graphs_that_contain_selected_column_path])
+
+            for i, _ in enumerate(column):
+                new_columns[graphs_that_contain_selected_column_path[i]][path_number] = column[i]
 
         return new_columns
 
@@ -259,13 +272,13 @@ class PatternBoosting:
                 selected_path_label = self.boosting_matrix.header[selected_column_number]
 
                 graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
-                print("pattern boosting row 255")
+                print("line 260 pattern boosting")
                 new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
-                print("pattern boosting row 257")
+                print("line 262 pattern boosting")
                 new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
-                print("pattern boosting row 258")
-
+                print("line 264 pattern boosting")
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
+                print("line 266 pattern boosting")
 
     def get_n_iterations(self):
         return self.n_iterations

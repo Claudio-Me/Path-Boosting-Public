@@ -146,6 +146,7 @@ class GraphPB:
                     adj_list[i].append(j)
         return adj_list
 
+    '''
     def number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
         """
         Takes in input a path label and returns the number of times this path is present in the graph not to be
@@ -157,13 +158,44 @@ class GraphPB:
         else:
             result = [self.__find_path([], path_label, start_node) for start_node in self.label_to_node[starting_point]]
             return sum(result)
+    '''
+
+    def number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
+        """
+        Takes in input a path label and returns the number of times this path is present in the graph not to be
+        confused with the function "number_of_times_selected_path_is_present" that count only the already selected paths
+        """
+        node_to_be_visited = []
+        node_to_be_visited.append(path_label[0])
+        if not (path_label[0] in self.label_to_node):
+            return 0
+        else:
+            last_nodes_numbers_list = self.label_to_node[path_label[0]]
+            old_one_step_last_nodes_numbers_list=last_nodes_numbers_list
+            old_two_steps_last_nodes_numbers_list=None
+            if len(path_label) > 1:
+                for label in path_label[1:]:
+                    last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
+                                               node_number in last_nodes_numbers_list]
+                    if old_two_steps_last_nodes_numbers_list is None:
+                        old_two_steps_last_nodes_numbers_list=old_one_step_last_nodes_numbers_list
+                    else:
+                        '''devo controllare che nessun nonno (nodo presente in old_two_steps) sia presente in last_nodes_numbers_list, o meglio non sia presente se e stato messo nella lista perche vicino di uno dei figli'''
+
+                    # flatten the list
+                    last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
+
+
+
+            return len(last_nodes_numbers_list)
+
 
     def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node) -> int:
         visited_nodes = copy.deepcopy(old_visited_nodes)
         visited_nodes.append(current_node)
         if len(path_label) == len(visited_nodes):
             # we covered all the path_label
-            if self.node_to_label[current_node]==path_label[-1]:
+            if self.node_to_label[current_node] == path_label[-1]:
                 return 1
             else:
                 return 0
@@ -194,8 +226,7 @@ class GraphPB:
                 label = nx_Graph.graph[Settings.graph_label_variable]
             except:
                 label = None
-        if len(adj_list[0])==0:
-            pass
+
         return GraphPB(adjacency_matrix=adj_matrix, node_to_labels_dictionary=n_t_l_d, label_value=label,
                        adj_list=adj_list)
 
