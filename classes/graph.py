@@ -143,7 +143,10 @@ class GraphPB:
         visited_nodes.append(current_node)
         if len(path_label) == len(visited_nodes):
             # we covered all the path_label
-            return 1
+            if path_label[-1]==self.node_to_label[visited_nodes[-1]]:
+                return 1
+            else:
+                return 0
         elif (current_node, path_label[len(visited_nodes)]) in self.neighbours_with_label:
             new_nodes_list: list = []
             for new_node in self.neighbours_with_label[(current_node, path_label[len(visited_nodes)])]:

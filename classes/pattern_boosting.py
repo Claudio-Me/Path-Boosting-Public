@@ -73,8 +73,10 @@ class PatternBoosting:
                                                                                            number_of_learners=iteration_number + 1)
 
             if test_dataset is not None:
+                print("pattern boosting row 76")
                 self.test_error.append(self.evaluate(self.test_dataset))
             self.train_error.append(self.evaluate(self.training_dataset))
+            print("pattern boosting row 79")
             # -------------------------------------------------------------------------------------------------------
             # debug
 
@@ -85,7 +87,7 @@ class PatternBoosting:
                 default_importance_value = np.var(training_dataset.labels)
             else:
                 default_importance_value = None
-
+            print("pattern boosting row 90")
             self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
                                                                      train_error=self.train_error,
                                                                      default_value=default_importance_value)
@@ -250,9 +252,11 @@ class PatternBoosting:
                 selected_path_label = self.boosting_matrix.header[selected_column_number]
 
                 graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
-
+                print("pattern boosting row 255")
                 new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
+                print("pattern boosting row 257")
                 new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
+                print("pattern boosting row 258")
 
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
 
