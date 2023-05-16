@@ -75,8 +75,8 @@ class PatternBoosting:
             if test_dataset is not None:
                 print("pattern boosting row 76")
                 self.test_error.append(self.evaluate(self.test_dataset))
+            print("pattern boosting row 78")
             self.train_error.append(self.evaluate(self.training_dataset))
-            print("pattern boosting row 79")
             # -------------------------------------------------------------------------------------------------------
             # debug
 

@@ -5,10 +5,10 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100  # call it maximum number of steps
+    maximum_number_of_steps = 7  # call it maximum number of steps
 
-    save_analysis = False
-    show_analysis = False
+    save_analysis = True
+    show_analysis = True
 
     dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
@@ -21,7 +21,7 @@ class Settings:
 
     target_train_error = 0.0001
 
-    considered_metal_center=[46]
+    considered_metal_center=[76]
 
     xgb_model_parameters = {
         'n_estimators': 1,
