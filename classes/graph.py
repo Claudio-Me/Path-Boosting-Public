@@ -171,24 +171,28 @@ class GraphPB:
             return 0
         else:
             last_nodes_numbers_list = self.label_to_node[path_label[0]]
-            old_one_step_last_nodes_numbers_list=last_nodes_numbers_list
-            old_two_steps_last_nodes_numbers_list=None
+            old_one_step_last_nodes_numbers_list = [last_nodes_numbers_list]
+            old_two_steps_last_nodes_numbers_list = None
             if len(path_label) > 1:
                 for label in path_label[1:]:
                     last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
                                                node_number in last_nodes_numbers_list]
                     if old_two_steps_last_nodes_numbers_list is None:
-                        old_two_steps_last_nodes_numbers_list=old_one_step_last_nodes_numbers_list
+                        old_two_steps_last_nodes_numbers_list = old_one_step_last_nodes_numbers_list
                     else:
                         '''devo controllare che nessun nonno (nodo presente in old_two_steps) sia presente in last_nodes_numbers_list, o meglio non sia presente se e stato messo nella lista perche vicino di uno dei figli'''
+                        for
+
+
+                        old_two_steps_last_nodes_numbers_list = [item for sublist in
+                                                                 old_one_step_last_nodes_numbers_list for item in
+                                                                 sublist]
+                        old_one_step_last_nodes_numbers_list=last_nodes_numbers_list
 
                     # flatten the list
                     last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
 
-
-
             return len(last_nodes_numbers_list)
-
 
     def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node) -> int:
         visited_nodes = copy.deepcopy(old_visited_nodes)
