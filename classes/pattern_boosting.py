@@ -77,11 +77,9 @@ class PatternBoosting:
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
-            print("line 80 pattern boosting")
-            if test_dataset is not None:
-                print("line 82 pattern boosting")
-                self.test_error.append(self.evaluate(self.test_dataset))
-            print("line 84 pattern boosting")
+            if test_dataset is not None and self.settings.algorithm != "Xgb_step":
+                self.test_error.append(self.evaluate(test_dataset))
+
             self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
             # -------------------------------------------------------------------------------------------------------
             # debug
@@ -110,10 +108,25 @@ class PatternBoosting:
             if self.train_error[-1] < Settings.target_train_error:
                 break
 
-    def predict(self, dataset):
+        if test_dataset is not None:
+            self.test_error = self.evaluate_progression(test_dataset)
+
+    def evaluate_progression(self, dataset: Dataset, boosting_matrix_matrix=None):
+        '''
+        :param dataset: dataset to evaluate the progression of the model on.
+        :param boosting_matrix_matrix: optional, boosting matrix of the dataset.
+        :return: it returns an array  of the test error of the model in which the i-th corresponds to the performance of the model using only the first 'i' base learners.
+        '''
+        if boosting_matrix_matrix is None:
+            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
+        test_error=self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
+        return test_error
+
+    def predict(self, dataset, boosting_matrix_matrix=None):
         if not isinstance(dataset, Dataset):
             dataset = Dataset(dataset)
-        boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
+        if boosting_matrix_matrix is None:
+            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
@@ -178,6 +191,25 @@ class PatternBoosting:
 
         return new_columns
 
+    def __get_new_paths_and_columns(self, selected_path_label, graphs_that_contain_selected_column_path):
+        new_paths = [list(
+            self.training_dataset.graphs_list[graph_number].get_new_paths_labels_and_count(
+                selected_path_label))
+            for graph_number in graphs_that_contain_selected_column_path]
+
+        counts = [graph_counts for graph_paths, graph_counts in new_paths]
+        paths = [graph_paths for graph_paths, graph_counts in new_paths]
+        new_paths = list(set([path for graph_paths in paths for path in graph_paths]))
+
+        new_columns = np.zeros((len(self.training_dataset.graphs_list), len(new_paths)))
+
+        for i, graph_number in enumerate(graphs_that_contain_selected_column_path):
+            for path_number, path in enumerate(paths[i]):
+                column_number = new_paths.index(path)
+                new_columns[graph_number][column_number] = counts[i][path_number]
+
+        return new_paths, new_columns
+
     def __get_new_paths(self, selected_path_label, graphs_that_contain_selected_column_path):
         """
         given one path it returns the list of all the possible extension of the input path
@@ -189,7 +221,8 @@ class PatternBoosting:
                     selected_path_label))
                 for graph_number in graphs_that_contain_selected_column_path]
         else:
-
+            pass
+        '''
             # ------------------------------------------------------------------------------------------------------------
 
             comm = MPI.COMM_WORLD
@@ -211,7 +244,8 @@ class PatternBoosting:
 
             # -----------------------------------------------------------------------------------------------------------
             new_paths = [item for sublist in new_paths for item in sublist]
-
+        '''
+        # flattern the list of list
         new_paths = list(set([path for paths_list in new_paths for path in paths_list]))
         return new_paths
 
@@ -220,11 +254,13 @@ class PatternBoosting:
         k, m = divmod(len(list), n)
         return (list[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
+    '''
     def __get_new_paths_labels_for_graph_number(self, graph_number, selected_path_label):
         return list(
             self.training_dataset.graphs_list[
                 graph_number].get_new_paths_labels(
                 selected_path_label))
+    '''
 
     def __initialize_boosting_matrix(self):
         """
@@ -272,11 +308,14 @@ class PatternBoosting:
                 selected_path_label = self.boosting_matrix.header[selected_column_number]
 
                 graphs_that_contain_selected_column_path = np.nonzero(selected_column)[0]
-                print("line 260 pattern boosting")
-                new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
-                print("line 262 pattern boosting")
-                new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
-                print("line 264 pattern boosting")
+
+                # old version
+                # new_paths_labels = self.__get_new_paths(selected_path_label, graphs_that_contain_selected_column_path)
+                # new_columns = self.__get_new_columns(new_paths_labels, graphs_that_contain_selected_column_path)
+
+                new_paths_labels, new_columns = self.__get_new_paths_and_columns(selected_path_label,
+                                                                                 graphs_that_contain_selected_column_path)
+
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
                 print("line 266 pattern boosting")
 

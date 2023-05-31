@@ -50,6 +50,35 @@ class GradientBoostingModel:
                                     zip(self.base_learners_list, self.base_learners_dimension)])
             return predictions.sum(axis=0)
 
+    def predict_progression(self, boosting_matrix_matrix: np.ndarray):
+        if self.model is not ModelType.xgb_one_step:
+            raise ValueError("predict_progression only works with 'Xgb_step' algorithm")
+        else:
+            for xgb_model, matrix_dimension in zip(self.base_learners_list, self.base_learners_dimension):
+                xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension])
+
+            predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
+                                    xgb_model, matrix_dimension in
+                                    zip(self.base_learners_list, self.base_learners_dimension)])
+            return predictions.cumsum(axis=0)
+    def evaluate_progression(self,boosting_matrix_matrix, labels):
+        if self.model is not ModelType.xgb_one_step:
+            raise ValueError("evaluate_progression only works with 'Xgb_step' algorithm")
+        else:
+            y_pred = self.predict_progression(boosting_matrix_matrix)
+            y_pred = list(y_pred)
+
+            error_list = []
+
+            for prediction_with_i_base_learners in y_pred:
+                if Settings.final_evaluation_error == "MSE":
+                    error_list.append(metrics.mean_squared_error(labels, prediction_with_i_base_learners))
+                elif Settings.final_evaluation_error == "absolute_mean_error":
+                    error_list.append(metrics.mean_absolute_error(labels, prediction_with_i_base_learners))
+                else:
+                    raise ValueError("measure error not found")
+            return error_list
+
     def evaluate(self, boosting_matrix_matrix, labels):
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             y_pred = self.predict_my(boosting_matrix_matrix)

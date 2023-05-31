@@ -7,6 +7,8 @@ import copy
 from settings import Settings
 from classes.paths.selected_paths import SelectedPaths
 
+import random
+
 
 class GraphPB:
     # list of labels of metal center
@@ -81,6 +83,171 @@ class GraphPB:
 
             new_labels = [path_label + tuple([label]) for label in new_labels]
             return new_labels
+
+    def get_new_paths_labels_and_count(self, path_label: tuple):
+        '''
+        :param path_label: is the label of the path we want to extend
+        :return: returns the possible extensions of path_label and the number of times those are present in the graph
+        '''
+        if not (path_label[0] in self.label_to_node):
+            return set([])
+        else:
+            last_nodes_numbers_list = self.label_to_node[path_label[0]]
+            ancestors_list = [{node} for node in last_nodes_numbers_list]
+            for label in path_label[1:]:
+                new_last_nodes_numbers_list = []
+                new_ancestors_list = []
+                for index, node_number in enumerate(last_nodes_numbers_list):
+                    sons_of_node = self.neighbours_with_label[(node_number, label)]
+                    # transform the following in list comprehension
+                    # for son in sons_of_node:
+                    #     if son in ancestors_list[index]:
+                    #         sons_of_node.remove(son)
+
+                    sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
+                    new_last_nodes_numbers_list += sons_of_node
+                    new_ancestors_list += [ancestors_list[index].union({node}) for node in sons_of_node]
+
+
+                last_nodes_numbers_list=new_last_nodes_numbers_list
+                ancestors_list=new_ancestors_list
+
+            # now in last nodes we have all the possible nodes at the end of path label
+            # we need to find the possible extensions of those nodes
+
+
+            new_last_nodes_numbers_list = []
+            for index, node_number in enumerate(last_nodes_numbers_list):
+                sons_of_node = self.adj_list[node_number]
+                # transform the following in list comprehension
+                # for son in sons_of_node:
+                #     if son in ancestors_list[index]:
+                #         sons_of_node.remove(son)
+
+                sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
+                new_last_nodes_numbers_list += sons_of_node
+
+            last_nodes_numbers_list = new_last_nodes_numbers_list
+
+        # we need to generate the new paths and count how many times each node is present in the graph
+        # get the labels of the nodes
+        new_labels = [self.node_to_label[node] for node in last_nodes_numbers_list]
+        new_labels = list(set(new_labels))
+
+        counts = [0] * len(new_labels)
+
+        for node in last_nodes_numbers_list:
+            node_label = self.node_to_label[node]
+            index = new_labels.index(node_label)
+            counts[index] += 1
+
+        new_labels = [path_label + tuple([label]) for label in new_labels]
+        return new_labels, counts
+
+    '''              
+    def get_new_paths_labels_and_count(self, path_label: tuple):
+
+        if not (path_label[0] in self.label_to_node):
+            return set([])
+        else:
+            last_nodes_numbers_list = self.label_to_node[path_label[0]]
+            ancestors_list = [{node} for node in last_nodes_numbers_list]
+            for label in path_label[1:]:
+
+                # get the next nodes
+                last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
+                                           node_number in last_nodes_numbers_list]
+
+                # check that none of the new selected nodes is an ancestor of himself
+                new_ancestors_list = []
+                new_last_nodes_numbers_list = []
+                # ciclo tra tutti i genitori (che sono lo stesso numero delle liste degli antenati)
+                for i, ancestor_set in enumerate(ancestors_list):
+
+                    # se la list dei figli del genitore non e vuota:
+                    if len(last_nodes_numbers_list[i]) != 0:
+
+                        # ciclo tra tutti i nuovi figli e controllo che il figlio non sia anche un antenato
+                        nodes_to_remove = set([j for j, node in enumerate(last_nodes_numbers_list[i]) if
+                                               node in ancestor_set])
+
+                        # nodes to remove contiene la lista di figli da rimuovere
+                        # rimuovo solo i figli da rimuovere e aggiungo i n nuovi sets in base a quanti nuovi figli abbiamo
+
+                        # remove all the elements in last_nodes_numbers_list[i] that are at index 'nodes_to_remove'
+
+                        sublist = []
+                        for index, node in enumerate(last_nodes_numbers_list[i]):
+                            if not (index in nodes_to_remove):
+                                sublist.append(node)
+                        new_last_nodes_numbers_list.append(sublist)
+
+
+
+                        # create a new list 'new_sets' where each element is 'set' + 'node
+                        new_sets = [ancestor_set.union({node}) for node in new_last_nodes_numbers_list[i]]
+
+                        new_ancestors_list = new_ancestors_list + new_sets
+
+                    else:
+                        new_last_nodes_numbers_list.append([])
+
+                last_nodes_numbers_list = new_last_nodes_numbers_list
+                # flattern the list
+                last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
+
+                ancestors_list = new_ancestors_list
+
+            # get the next nodes
+            last_nodes_numbers_list = [self.adj_list[node_number] for node_number in last_nodes_numbers_list]
+
+            # check that none of the new selected nodes is an ancestor of himself
+            new_ancestors_list = []
+            new_last_nodes_numbers_list = []
+            # ciclo tra tutti i genitori (che sono lo stesso numero delle liste degli antenati)
+            for i, ancestor_set in enumerate(ancestors_list):
+
+                # se la list dei figli del genitore non e vuota:
+                if len(last_nodes_numbers_list[i]) != 0:
+
+                    # ciclo tra tutti i nuovi figli e controllo che il figlio non sia anche un antenato
+                    nodes_to_remove = [j for j, node in enumerate(last_nodes_numbers_list[i]) if node in ancestor_set]
+
+                    # nodes to remove contiene la lista di figli da rimuovere
+                    # se non devo rimuovere tutti i figli rimuovo solo quelli da rimuovere e aggiungo i n nuovi sets in base a quanti nuivi figli abbiamo
+
+                    # remove all the elements in last_nodes_numbers_list[i] that are at index 'nodes_to_remove'
+                    sublist = []
+                    for index, node in enumerate(last_nodes_numbers_list[i]):
+                        if not (index in nodes_to_remove):
+                            sublist.append(node)
+                    new_last_nodes_numbers_list.append(sublist)
+
+                    # create a new list 'new_sets' where each element is 'set' + 'node
+                    new_sets = [ancestor_set.union({node}) for node in new_last_nodes_numbers_list[i]]
+
+                    new_ancestors_list = new_ancestors_list + new_sets
+                else:
+                    new_last_nodes_numbers_list.append([])
+
+            last_nodes_numbers_list = new_last_nodes_numbers_list
+            # flattern the list
+            last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
+
+            # get the labels of the nodes
+            new_labels = [self.node_to_label[node] for node in last_nodes_numbers_list]
+            new_labels = list(set(new_labels))
+
+            counts = [0] * len(new_labels)
+
+            for node in last_nodes_numbers_list:
+                node_label = self.node_to_label[node]
+                index = new_labels.index(node_label)
+                counts[index] += 1
+
+            new_labels = [path_label + tuple([label]) for label in new_labels]
+            return new_labels, counts
+    '''
 
     def number_of_times_selected_path_is_present(self, path_label):
         """N.B. this function search only in "selected_paths" if the goal is to search in the whole graph then
@@ -162,36 +329,31 @@ class GraphPB:
 
     def number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
         """
-        Takes in input a path label and returns the number of times this path is present in the graph not to be
+        Takes in input a path label (path_label) and returns the number of times this path is present in the graph not to be
         confused with the function "number_of_times_selected_path_is_present" that count only the already selected paths
         """
-        node_to_be_visited = []
-        node_to_be_visited.append(path_label[0])
         if not (path_label[0] in self.label_to_node):
             return 0
         else:
             last_nodes_numbers_list = self.label_to_node[path_label[0]]
-            old_one_step_last_nodes_numbers_list = [last_nodes_numbers_list]
-            old_two_steps_last_nodes_numbers_list = None
-            if len(path_label) > 1:
-                for label in path_label[1:]:
-                    last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
-                                               node_number in last_nodes_numbers_list]
-                    if old_two_steps_last_nodes_numbers_list is None:
-                        old_two_steps_last_nodes_numbers_list = old_one_step_last_nodes_numbers_list
-                    else:
-                        '''devo controllare che nessun nonno (nodo presente in old_two_steps) sia presente in last_nodes_numbers_list, o meglio non sia presente se e stato messo nella lista perche vicino di uno dei figli'''
-                        for
+            ancestors_list = [{node} for node in last_nodes_numbers_list]
+            for label in path_label[1:]:
+                new_last_nodes_numbers_list = []
+                new_ancestors_list = []
+                for index, node_number in enumerate(last_nodes_numbers_list):
+                    sons_of_node = self.neighbours_with_label[(node_number, label)]
+                    # transform the following in list comprehension
+                    # for son in sons_of_node:
+                    #     if son in ancestors_list[index]:
+                    #         sons_of_node.remove(son)
+
+                    sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
+                    new_last_nodes_numbers_list += sons_of_node
+                    new_ancestors_list += [ancestors_list[index].union({node}) for node in sons_of_node]
 
 
-                        old_two_steps_last_nodes_numbers_list = [item for sublist in
-                                                                 old_one_step_last_nodes_numbers_list for item in
-                                                                 sublist]
-                        old_one_step_last_nodes_numbers_list=last_nodes_numbers_list
-
-                    # flatten the list
-                    last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
-
+                last_nodes_numbers_list=new_last_nodes_numbers_list
+                ancestors_list=new_ancestors_list
             return len(last_nodes_numbers_list)
 
     def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node) -> int:
