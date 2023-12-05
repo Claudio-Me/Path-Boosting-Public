@@ -9,10 +9,12 @@ from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis import Analysis
 from data.load_dataset import load_dataset
+from data.load_dataset import split_dataset_by_metal_centers
 from classes.dataset import Dataset
 # from pympler import asizeof
 from classes.graph import GraphPB
 import sys
+
 
 def different_rows(matrix):
     # Create a set to store the rows that have already been seen
@@ -61,49 +63,29 @@ if __name__ == '__main__':
     # Testing()
     print("Dataset name: ", Settings.dataset_name)
 
-
-    for tmp in range(1):
-        print("training on metal center number: ", Settings.considered_metal_center[0])
-        dataset = load_dataset()
-
-      #----------------------------------------------------------------------------------------------------------
-      #print("size of dataset: ", asizeof.asizeof(dataset))
-      #-----------------------------------------------------------------------------------------------------------
-        new_dataset_list=[]
-        print("selecting only graphs with specific metal center")
-
-        for graph in dataset.get_graphs_list():
-          #46 is the most common metal center
-
-          if graph.node_to_label[graph.metal_center[0]]==Settings.considered_metal_center[0]:
-               if len(graph.adj_list[graph.metal_center[0]]) != 0:
-                    new_dataset_list.append(graph)
-        del dataset
-        if len(new_dataset_list)==0:
-            sys.exit("No metal centers found")
-        dataset=Dataset(new_dataset_list)
-
+    dataset = load_dataset()
 
     # ----------------------------------------------------------------------------------------------------------
-        print("len of dataset",len(new_dataset_list))
-        #print("size of dataset: ", asizeof.asizeof(dataset))
+    # print("size of dataset: ", asizeof.asizeof(dataset))
     # -----------------------------------------------------------------------------------------------------------
 
-        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
+    print("selecting only graphs with specific metal center")
+
+    splitted_datasets_list = split_dataset_by_metal_centers(dataset)
+
+
+    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
-
-
-        pattern_boosting = PatternBoosting()
-        # test_dataset.labels=np.zeros(len(test_dataset.labels))
-        pattern_boosting.training(train_dataset, test_dataset)
-        final_test_error=pattern_boosting.test_error[-1]
+    #paralelize after this
+    pattern_boosting = PatternBoosting()
+    # test_dataset.labels=np.zeros(len(test_dataset.labels))
+    pattern_boosting.training(train_dataset, test_dataset)
+    final_test_error = pattern_boosting.test_error[-1]
 
     print("final test error:\n", final_test_error)
 
-    saving_location = data_reader.get_save_location(file_name="final_test_error", file_extension=".txt", folder_relative_path='results')
-
-
-
+    saving_location = data_reader.get_save_location(file_name="final_test_error", file_extension=".txt",
+                                                    folder_relative_path='results')
 
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:

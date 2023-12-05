@@ -108,13 +108,11 @@ class GraphPB:
                     new_last_nodes_numbers_list += sons_of_node
                     new_ancestors_list += [ancestors_list[index].union({node}) for node in sons_of_node]
 
-
-                last_nodes_numbers_list=new_last_nodes_numbers_list
-                ancestors_list=new_ancestors_list
+                last_nodes_numbers_list = new_last_nodes_numbers_list
+                ancestors_list = new_ancestors_list
 
             # now in last nodes we have all the possible nodes at the end of path label
             # we need to find the possible extensions of those nodes
-
 
             new_last_nodes_numbers_list = []
             for index, node_number in enumerate(last_nodes_numbers_list):
@@ -290,7 +288,7 @@ class GraphPB:
             raise ValueError("Metal center not found")
         return metal_center_labels
 
-    def find_metal_center_nodes(self):
+    def find_metal_center_nodes(self) -> list:
         warnings.warn("Metal list not initialized yet")
         metal_center = []
         warning = True
@@ -351,9 +349,8 @@ class GraphPB:
                     new_last_nodes_numbers_list += sons_of_node
                     new_ancestors_list += [ancestors_list[index].union({node}) for node in sons_of_node]
 
-
-                last_nodes_numbers_list=new_last_nodes_numbers_list
-                ancestors_list=new_ancestors_list
+                last_nodes_numbers_list = new_last_nodes_numbers_list
+                ancestors_list = new_ancestors_list
             return len(last_nodes_numbers_list)
 
     def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node) -> int:

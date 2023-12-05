@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from PyAstronomy import pyasl
 
 
@@ -188,3 +189,7 @@ class BoostingMatrix:
 
     def get_matrix(self):
         return self.matrix
+
+    def get_pandas_matrix(self):
+        pd.DataFrame(self.get_matrix(),
+                     columns=self.get_header())

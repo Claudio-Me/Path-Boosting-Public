@@ -1,10 +1,13 @@
-from data.data_reader import load_dataset_from_binary, read_data_from_directory,save_dataset_in_binary_file, save_data
+from data.data_reader import load_dataset_from_binary, read_data_from_directory, save_dataset_in_binary_file, save_data
 from settings import Settings
 from classes.dataset import Dataset
 from data.synthetic_dataset import SyntheticDataset
 
-def load_dataset():
-    if Settings.dataset_name == "5_k_selection_graphs":
+
+def load_dataset(dataset_name=None):
+    if dataset_name is None:
+        dataset_name = Settings.dataset_name
+    if dataset_name == "5_k_selection_graphs":
         if Settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(filename="5_k_selection_graphs")
         else:
@@ -15,7 +18,7 @@ def load_dataset():
 
 
 
-    elif Settings.dataset_name == "60k_dataset":
+    elif dataset_name == "60k_dataset":
         if Settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(filename="60k_dataset")
         else:
@@ -25,7 +28,7 @@ def load_dataset():
             save_dataset_in_binary_file(dataset, filename="60k_dataset")
 
 
-    elif Settings.dataset_name == "5k_synthetic_dataset":
+    elif dataset_name == "5k_synthetic_dataset":
         if Settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(filename="5k_synthetic_dataset")
 
@@ -37,3 +40,30 @@ def load_dataset():
 
             save_data(create_dataset, filename="synthetic_dataset", directory="results")
     return dataset
+
+
+def split_dataset_by_metal_centers(dataset):
+    if not isinstance(dataset, Dataset):
+        dataset = Dataset(dataset)
+
+    datasets_list = [[]] * len(Settings.considered_metal_center)
+
+    # ----------------------------------------------------------------------------------------------------------
+    # print("size of dataset: ", asizeof.asizeof(dataset))
+    # -----------------------------------------------------------------------------------------------------------
+
+    print("Splitting the dataset")
+
+    for i, graph in enumerate(dataset.get_graphs_list()):
+        # 46 is the most common metal center
+        metal_centers_labels = [graph.node_to_label[metal_center] for metal_center in graph.metal_center]
+        for metal_label in metal_centers_labels:
+            try:
+                index = Settings.considered_metal_center.index(metal_label)
+                datasets_list[index].append(graph)
+            except:
+                print("No metal center found for graph ", i)
+
+    datasets_list = [Dataset(dataset) for dataset in datasets_list]
+    del dataset
+    return datasets_list

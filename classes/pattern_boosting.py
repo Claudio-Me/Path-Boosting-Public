@@ -30,6 +30,7 @@ class PatternBoosting:
         self.number_of_learners = []
         self.gradient_boosting_step = GradientBoostingStep()
         self.n_iterations = None
+        self.boosting_matrix_matrix_for_test_dataset = None
 
     def training(self, training_dataset, test_dataset=None):
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
@@ -109,7 +110,9 @@ class PatternBoosting:
                 break
 
         if test_dataset is not None:
-            self.test_error = self.evaluate_progression(test_dataset)
+            self.boosting_matrix_matrix_for_test_dataset = boosting_matrix_matrix = self.create_boosting_matrix_for(
+                test_dataset)
+            self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
 
     def evaluate_progression(self, dataset: Dataset, boosting_matrix_matrix=None):
         '''
@@ -119,7 +122,7 @@ class PatternBoosting:
         '''
         if boosting_matrix_matrix is None:
             boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
-        test_error=self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
+        test_error = self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
         return test_error
 
     def predict(self, dataset, boosting_matrix_matrix=None):

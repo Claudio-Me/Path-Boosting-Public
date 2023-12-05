@@ -62,7 +62,8 @@ class Analysis:
             # self.analysis.plot_labels_histogram(self.training_dataset.labels, self.test_dataset.labels, tittle="Real labels")
             # self.analysis.plot_labels_histogram(self.predict(training_dataset), self.predict(test_dataset), tittle="Predicted Labels")
             if self.test_predictions is None:
-                self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset)
+                self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset,
+                                                                 pattern_boosting.boosting_matrix_matrix_for_test_dataset)
             self.plot_labels_histogram(pattern_boosting.test_dataset.labels,
                                        self.test_predictions,
                                        tittle="Predicted vs real y", legend1="real", legend2="predicted", show=show,
@@ -193,15 +194,15 @@ class Analysis:
     def __scatterplot_test_prediction_vs_labels(self, pattern_boosting: PatternBoosting, show=True, save=True):
         if pattern_boosting.test_dataset is not None:
             if self.test_predictions is None:
-                self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset)
+                self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset,
+                                                                 pattern_boosting.boosting_matrix_matrix_for_test_dataset)
 
-            tmp_weird_graphs=[]
-            for number,prediction in enumerate(self.test_predictions):
-                if prediction<0.18:
+            tmp_weird_graphs = []
+            for number, prediction in enumerate(self.test_predictions):
+                if prediction < 0.18:
                     tmp_weird_graphs.append(pattern_boosting.test_dataset.get_graph_number(number))
 
-            boosting_matrix_of_weird_graphs=pattern_boosting.generate_boosting_matrix(Dataset(tmp_weird_graphs))
-
+            boosting_matrix_of_weird_graphs = pattern_boosting.generate_boosting_matrix(Dataset(tmp_weird_graphs))
 
             plt.style.use('ggplot')
 
