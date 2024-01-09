@@ -42,11 +42,10 @@ def load_dataset(dataset_name=None):
     return dataset
 
 
-def split_dataset_by_metal_centers(dataset):
+def     split_dataset_by_metal_centers(dataset):
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset)
-
-    datasets_list = [[]] * len(Settings.considered_metal_center)
+    datasets_list=[[] for i in range(len(Settings.considered_metal_centers))]
 
     # ----------------------------------------------------------------------------------------------------------
     # print("size of dataset: ", asizeof.asizeof(dataset))
@@ -59,11 +58,11 @@ def split_dataset_by_metal_centers(dataset):
         metal_centers_labels = [graph.node_to_label[metal_center] for metal_center in graph.metal_center]
         for metal_label in metal_centers_labels:
             try:
-                index = Settings.considered_metal_center.index(metal_label)
+                index = Settings.considered_metal_centers.index(metal_label)
                 datasets_list[index].append(graph)
             except:
                 print("No metal center found for graph ", i)
 
     datasets_list = [Dataset(dataset) for dataset in datasets_list]
-    del dataset
+    #del dataset
     return datasets_list

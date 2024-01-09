@@ -155,7 +155,7 @@ def plot_graphs_new(x, y, tittle: str, x_label: str = "", y_label: str = "", sho
     if x2 == None:
         x2 = x
     fig, ax = plt.subplots()
-    ax.set_ylim(0.00075, 0.00125)
+    ax.set_ylim(0.00075, 0.000125)
     # Using set_dashes() to modify dashing of an existing line
     if len(x) > Settings.tail:
         ax.plot(x[-Settings.tail:], y[-Settings.tail:], label='')

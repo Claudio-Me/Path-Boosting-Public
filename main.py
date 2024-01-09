@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
-    #paralelize after this
+    # paralelize after this
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:
         sys.stdout = f  # Change the standard output to the file we created.
-        string = str(Settings.considered_metal_center[0]) + '-'
+        string = str(Settings.considered_metal_centers[0]) + '-'
         string += str(final_test_error) + '\n'
         print(string)
         sys.stdout = original_stdout  # Reset the standard output to its original value

@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 5000000999
+    maximum_number_of_steps = 400
 
     save_analysis = True
     show_analysis = False
@@ -16,7 +16,7 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    considered_metal_center=[21,22,23,24,25,26,27,28,29,30,40,41,42,43,44,45,46,47,48,57,72,73,74,76,77,78,79,80]
+    considered_metal_centers=[21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 40, 41, 42, 43, 44, 45, 46, 47, 48, 57, 72, 73, 74, 76, 77, 78, 79, 80]
 
     tmp=[21,22,23,24,25,26,27,28,29,30,40,41,42,43,44,45,46,47,48,57,72,73,74,76,77,78,79,80]
 

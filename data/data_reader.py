@@ -143,8 +143,8 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
 
     folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length) + "_" + Settings.dataset_name
 
-    if Settings.considered_metal_center is not None:
-        folder_name = folder_name + "/considered_metal_center_" + str(Settings.considered_metal_center[0])
+    if Settings.considered_metal_centers is not None:
+        folder_name = folder_name + "/considered_metal_center_" + str(Settings.considered_metal_centers[0])
     if not os.path.exists(location + folder_name):
         os.makedirs(location + folder_name)
     folder_name = folder_name + "/"
