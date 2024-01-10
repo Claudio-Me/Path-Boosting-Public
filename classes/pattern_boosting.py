@@ -125,11 +125,13 @@ class PatternBoosting:
         test_error = self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
         return test_error
 
-    def predict(self, dataset, boosting_matrix_matrix=None):
-        if not isinstance(dataset, Dataset):
-            dataset = Dataset(dataset)
+    def predict(self, graphs_list, boosting_matrix_matrix=None):
+        if isinstance(graphs_list, GraphPB):
+            graphs_list = [graphs_list]
+        if isinstance(graphs_list, Dataset):
+            graphs_list = graphs_list.get_graphs_list()
         if boosting_matrix_matrix is None:
-            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
+            boosting_matrix_matrix = self.create_boosting_matrix_for(graphs_list)
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
@@ -137,14 +139,15 @@ class PatternBoosting:
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
-    def create_boosting_matrix_for(self, dataset):
-        if not isinstance(dataset, Dataset):
-            dataset = Dataset(dataset)
+    def create_boosting_matrix_for(self, graphs_list):
+        if isinstance(graphs_list, Dataset):
+            graphs_list = graphs_list.get_graphs_list()
         boosting_matrix_matrix = np.array(
-            [self.__create_boosting_vector_for_graph(graph) for graph in dataset.graphs_list])
+            [self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
         return boosting_matrix_matrix
 
     def evaluate(self, dataset: Dataset, boosting_matrix_matrix=None):
+
         if boosting_matrix_matrix is None:
             boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
 

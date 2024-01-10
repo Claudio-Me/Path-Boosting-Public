@@ -14,6 +14,8 @@ from classes.dataset import Dataset
 # from pympler import asizeof
 from classes.graph import GraphPB
 import sys
+from multiprocessing.dummy import Pool as ThreadPool
+import functools
 
 
 def different_rows(matrix):
@@ -69,18 +71,36 @@ if __name__ == '__main__':
     # print("size of dataset: ", asizeof.asizeof(dataset))
     # -----------------------------------------------------------------------------------------------------------
 
-    print("selecting only graphs with specific metal center")
-
-    splitted_datasets_list = split_dataset_by_metal_centers(dataset)
-
-
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
+
+    splitted_train_datasets_list = split_dataset_by_metal_centers(train_dataset)
+
+    splitted_test_datasets_list = split_dataset_by_metal_centers(test_dataset)
+
     # paralelize after this
+    # Parallelization template
+    # ------------------------------------------------------------------------------------------------------------
+    """
+    pool = ThreadPool(min(10, len(Settings.considered_metal_centers)))
+
+    array_of_outputs = pool.map(
+        functools.partial(function_to_parallelize,
+                          param_1=param_1,
+                          param_2=param_2),
+        list_over_wich_we_parallelize)
+
+    xgb_test_err, xgb_train_err, variable_importance = zip(*xgb_err)
+    """
+    # ------------------------------------------------------------------------------------------------------------
+
+    # part to be parellized
+    #-------------------------------------------------------------------------------------------------
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
     final_test_error = pattern_boosting.test_error[-1]
+    #-------------------------------------------------------------------------------------------------
 
     print("final test error:\n", final_test_error)
 
@@ -90,10 +110,10 @@ if __name__ == '__main__':
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:
         sys.stdout = f  # Change the standard output to the file we created.
-        string = str(Settings.considered_metal_centers[0]) + '-'
-        string += str(final_test_error) + '\n'
-        print(string)
-        sys.stdout = original_stdout  # Reset the standard output to its original value
+    string = str(Settings.considered_metal_centers[0]) + '-'
+    string += str(final_test_error) + '\n'
+    print(string)
+    sys.stdout = original_stdout  # Reset the standard output to its original value
 
     data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
