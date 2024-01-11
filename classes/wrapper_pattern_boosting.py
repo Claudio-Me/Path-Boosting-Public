@@ -32,7 +32,12 @@ class WrapperPatternBoosting:
             for metal_label in metal_centers_labels:
                 try:
                     index = self.metal_center_list.index(metal_label)
-                    graph_prediction = graph_prediction + self.pattern_boosting_models_list[index].predict(graph)
+                    if boosting_matrix_matrix is None:
+                        graph_prediction = graph_prediction + self.pattern_boosting_models_list[index].predict(graph)
+                    else:
+                        # if we already have a boosting matrix
+                        graph_prediction = graph_prediction + self.pattern_boosting_models_list[index].predict(graph, [
+                            boosting_matrix_matrix[i]])
                     counter += 1
                 except:
                     pass
@@ -42,22 +47,35 @@ class WrapperPatternBoosting:
         return prediction
 
     @staticmethod
-    def __train_pattern_boosting(pattern_boosting_model: PatternBoosting, train_dataset, test_dataset):
+    def __train_pattern_boosting(input_from_parallelization: tuple):
+        pattern_boosting_model: PatternBoosting = input_from_parallelization[0]
+        train_dataset = input_from_parallelization[1]
+        test_dataset = input_from_parallelization[2]
         pattern_boosting_model.training(train_dataset, test_dataset)
         return pattern_boosting_model
 
-    def train(self, train_datasets_list, test_datasets_list=None):
+    def train(self, train_dataset, test_dataset=None):
 
-        if test_datasets_list is None:
+        # some checks for the input format, whether the input dataset it is already divided by metal centers or not
+        if not isinstance(train_dataset, list):
+            train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
+                                                                 considered_metal_centers=self.metal_center_list)
+            if test_dataset is not None:
+                test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
+                                                                    considered_metal_centers=self.metal_center_list)
+        else:
+            train_datasets_list = train_dataset
+            test_datasets_list = test_dataset
+
+        if test_dataset is None:
             test_datasets_list = [None for _ in range(len(train_datasets_list))]
 
         # Paralelization
         # ------------------------------------------------------------------------------------------------------------
 
-
+        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list)
         pool = ThreadPool(min(10, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(self.__train_patern_boosting), self.pattern_boosting_models_list, train_datasets_list,
-            test_datasets_list)
+            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
         return array_of_outputs

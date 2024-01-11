@@ -11,6 +11,7 @@ from classes.analysis import Analysis
 from data.load_dataset import load_dataset
 from data.load_dataset import split_dataset_by_metal_centers
 from classes.dataset import Dataset
+from classes.wrapper_pattern_boosting import WrapperPatternBoosting
 # from pympler import asizeof
 from classes.graph import GraphPB
 import sys
@@ -71,13 +72,13 @@ if __name__ == '__main__':
     # print("size of dataset: ", asizeof.asizeof(dataset))
     # -----------------------------------------------------------------------------------------------------------
 
-    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                      random_split_seed=Settings.random_split_test_dataset_seed)
 
+    """
     splitted_train_datasets_list = split_dataset_by_metal_centers(train_dataset)
 
     splitted_test_datasets_list = split_dataset_by_metal_centers(test_dataset)
 
+    """
     # paralelize after this
     # Parallelization template
     # ------------------------------------------------------------------------------------------------------------
@@ -103,7 +104,13 @@ if __name__ == '__main__':
     final_test_error = pattern_boosting.test_error[-1]
     """
     #-------------------------------------------------------------------------------------------------
+
+    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
+                                                                      random_split_seed=Settings.random_split_test_dataset_seed)
+
     wrapper_pattern_boosting=WrapperPatternBoosting()
+    wrapper_pattern_boosting.train(train_dataset,test_dataset)
+
 
     print("final test error:\n", final_test_error)
 
