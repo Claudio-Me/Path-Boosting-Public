@@ -96,11 +96,14 @@ if __name__ == '__main__':
 
     # part to be parellized
     #-------------------------------------------------------------------------------------------------
+    """
     pattern_boosting = PatternBoosting()
     # test_dataset.labels=np.zeros(len(test_dataset.labels))
     pattern_boosting.training(train_dataset, test_dataset)
     final_test_error = pattern_boosting.test_error[-1]
+    """
     #-------------------------------------------------------------------------------------------------
+    wrapper_pattern_boosting=WrapperPatternBoosting()
 
     print("final test error:\n", final_test_error)
 
