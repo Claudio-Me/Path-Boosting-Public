@@ -78,10 +78,11 @@ if __name__ == '__main__':
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:
         sys.stdout = f  # Change the standard output to the file we created.
-    string = str(Settings.considered_metal_centers[0]) + '-'
-    string += str(final_test_error) + '\n'
-    print(string)
-    sys.stdout = original_stdout  # Reset the standard output to its original value
+        string = str(Settings.considered_metal_centers[0]) + '-'
+        string += str(final_test_error) + '\n'
+        print(string)
+        sys.stdout = original_stdout  # Reset the standard output to its original value
+
 
     data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
 
