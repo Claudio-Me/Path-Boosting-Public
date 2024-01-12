@@ -17,7 +17,7 @@ import os
 import sys
 
 
-class Analysis:
+class AnalysisPatternBoosting:
     def __init__(self, train_predictions=None, test_predictions=None, train_error=None, test_error=None):
         self.train_predictions = train_predictions
         self.test_predictions = test_predictions

@@ -93,8 +93,9 @@ class WrapperPatternBoosting:
         if test_dataset is None:
             test_datasets_list = [None for _ in range(len(train_datasets_list))]
 
-        # Paralelization
+        # Parallelization
         # ------------------------------------------------------------------------------------------------------------
+
 
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list)
         pool = ThreadPool(min(10, len(Settings.considered_metal_centers)))

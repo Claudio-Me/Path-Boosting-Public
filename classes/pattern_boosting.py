@@ -42,6 +42,9 @@ class PatternBoosting:
 
         elif isinstance(training_dataset, list):
             self.training_dataset = Dataset(training_dataset)
+
+        elif training_dataset is None:
+            return
         else:
             raise TypeError("Input dataset not recognized")
 
@@ -120,12 +123,18 @@ class PatternBoosting:
         :param boosting_matrix_matrix: optional, boosting matrix of the dataset.
         :return: it returns an array  of the test error of the model in which the i-th corresponds to the performance of the model using only the first 'i' base learners.
         '''
+        if self.trained is False:
+            warnings.warn("This model is not trained")
+            return None
         if boosting_matrix_matrix is None:
             boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
         test_error = self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
         return test_error
 
     def predict(self, graphs_list, boosting_matrix_matrix=None):
+        if self.trained is False:
+            warnings.warn("This model is not trained")
+            return None
         if isinstance(graphs_list, GraphPB):
             graphs_list = [graphs_list]
         if isinstance(graphs_list, Dataset):
@@ -136,6 +145,9 @@ class PatternBoosting:
         return prediction
 
     def predict_boosting_matrix(self, boosting_matrix_matrix: np.ndarray):
+        if self.trained is False:
+            warnings.warn("This model is not trained")
+            return None
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
@@ -147,7 +159,9 @@ class PatternBoosting:
         return boosting_matrix_matrix
 
     def evaluate(self, dataset: Dataset, boosting_matrix_matrix=None):
-
+        if self.trained is False:
+            warnings.warn("This model is not trained")
+            return None
         if boosting_matrix_matrix is None:
             boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
 
