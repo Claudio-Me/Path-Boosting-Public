@@ -58,13 +58,18 @@ class WrapperPatternBoosting:
         return pattern_boosting_model
 
     def get_wrapper_test_error(self) -> Iterable[float]:
-        ar = np.asarray(self.get_test_models_errors())
-        return np.mean(ar, axis=0)
+        return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_test_models_errors())
 
-
+    # need to fix the fact that the tested model errors if not trained they return [], not a list of errors, so everithing here does not work
     def get_wrapper_train_error(self) -> Iterable[float]:
-        ar = np.asarray(self.get_train_models_errors())
-        return np.mean(ar, axis=0)
+        return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors())
+
+    @staticmethod
+    def __get_average_of_matrix_of_nested_list_of_errors(errors_lists):
+        #filter out the models who are not trained (because their metal center is not contained in the training dataset)
+        error=[error for error in errors_lists if not(error is None or error==[])]
+        error = np.asarray(error)
+        return np.mean(error, axis=0)
 
 
     def get_train_models_errors(self) -> Iterable[Sequence[float]]:
