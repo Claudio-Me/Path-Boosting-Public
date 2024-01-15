@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 70
+    maximum_number_of_steps = 80
 
     save_analysis = True
     show_analysis = False
@@ -16,6 +16,9 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
+
+    #
+    # lplused in wrapped boosting to specify the centers over which split the dataset
     considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
                                 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
                                 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
