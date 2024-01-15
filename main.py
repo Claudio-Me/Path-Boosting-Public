@@ -7,7 +7,7 @@ from settings import Settings
 from data.synthetic_dataset import SyntheticDataset
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
-from classes.analysispatternboosting import AnalysisPatternBoosting
+from classes.analysis_patternboosting import AnalysisPatternBoosting
 from data.load_dataset import load_dataset
 from data.load_dataset import split_dataset_by_metal_centers
 from classes.dataset import Dataset

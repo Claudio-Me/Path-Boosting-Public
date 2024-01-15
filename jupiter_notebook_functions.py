@@ -29,7 +29,7 @@ from data.synthetic_dataset import SyntheticDataset
 import pandas as pd
 import copy
 import matplotlib.pyplot as plt
-from classes.analysispatternboosting import AnalysisPatternBoosting
+from classes.analysis_patternboosting import AnalysisPatternBoosting
 from data.load_dataset import load_dataset
 from data import data_reader
 from xgboost import XGBRegressor

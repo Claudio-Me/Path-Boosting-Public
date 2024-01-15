@@ -58,6 +58,7 @@ class WrapperPatternBoosting:
         return pattern_boosting_model
 
     def get_wrapper_test_error(self) -> Iterable[float]:
+
         return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_test_models_errors())
 
     # need to fix the fact that the tested model errors if not trained they return [], not a list of errors, so everithing here does not work
@@ -65,12 +66,30 @@ class WrapperPatternBoosting:
         return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors())
 
     @staticmethod
-    def __get_average_of_matrix_of_nested_list_of_errors(errors_lists):
-        #filter out the models who are not trained (because their metal center is not contained in the training dataset)
-        error=[error for error in errors_lists if not(error is None or error==[])]
-        error = np.asarray(error)
-        return np.mean(error, axis=0)
+    def __get_average_of_matrix_of_nested_list_of_errors(errors_lists) -> np.array:
+        '''
+        :param errors_lists:
+        :return: an array where each cell correspond to one iteration, since we have multiple base learners each
+                    iteration is actually n_base learners iterations, so the final array returned contains the error repeated
+                    n_iterations times
+        '''
 
+        # filter out the models who are not trained (because their metal center is not contained in the training dataset)
+        errors_lists = [error for error in errors_lists if not (error is None or error == [])]
+        number_of_trained_models=len(errors_lists)
+        # FIXME check that the lengths of the error for each model is the same (for now it always is
+        #  because we set Setting.train_target_error to zero, but if not, then the train for some
+        #  models may stop earlyer)
+
+        errors_lists = np.array(errors_lists)
+
+        # array of errors:
+        error = np.mean(errors_lists, axis=0)
+
+        #here we just repeat the errors by the number of trained models
+        error = np.repeat(error,number_of_trained_models)
+
+        return error
 
     def get_train_models_errors(self) -> Iterable[Sequence[float]]:
         # it returns a nested list where each row is the vector of errors coming from the model
@@ -100,7 +119,6 @@ class WrapperPatternBoosting:
 
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
-
 
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list)
         pool = ThreadPool(min(10, len(Settings.considered_metal_centers)))

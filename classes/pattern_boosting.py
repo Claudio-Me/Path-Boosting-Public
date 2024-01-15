@@ -95,17 +95,15 @@ class PatternBoosting:
                 default_importance_value = np.var(training_dataset.labels)
             else:
                 default_importance_value = None
-            print("line 94 pattern boosting")
             self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
                                                                      train_error=self.train_error,
                                                                      default_value=default_importance_value)
-            print("line 98 pattern boosting")
+
             self.number_of_learners.append(iteration_number + 1)
 
             # expand boosting matrix
-            print("------")
             self.__expand_boosting_matrix(selected_column_number)
-            print("expanded boosting")
+
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
 
@@ -337,7 +335,6 @@ class PatternBoosting:
                                                                                  graphs_that_contain_selected_column_path)
 
                 self.boosting_matrix.add_column(new_columns, new_paths_labels)
-                print("line 266 pattern boosting")
 
     def get_n_iterations(self):
         return self.n_iterations

@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 4
+    maximum_number_of_steps = 8
 
     save_analysis = True
     show_analysis = False
@@ -26,7 +26,7 @@ class Settings:
     # do not expand if the paths are longer than this amount
     max_path_length = 100
 
-    target_train_error = 0.0001
+    target_train_error = 0.000
 
     xgb_model_parameters = {
         'n_estimators': 1,
