@@ -76,7 +76,7 @@ class WrapperPatternBoosting:
 
         # filter out the models who are not trained (because their metal center is not contained in the training dataset)
         errors_lists = [error for error in errors_lists if not (error is None or error == [])]
-        number_of_trained_models=len(errors_lists)
+        number_of_trained_models = len(errors_lists)
         # FIXME check that the lengths of the error for each model is the same (for now it always is
         #  because we set Setting.train_target_error to zero, but if not, then the train for some
         #  models may stop earlyer)
@@ -86,8 +86,8 @@ class WrapperPatternBoosting:
         # array of errors:
         error = np.mean(errors_lists, axis=0)
 
-        #here we just repeat the errors by the number of trained models
-        error = np.repeat(error,number_of_trained_models)
+        # here we just repeat the errors by the number of trained models
+        error = np.repeat(error, number_of_trained_models)
 
         return error
 
