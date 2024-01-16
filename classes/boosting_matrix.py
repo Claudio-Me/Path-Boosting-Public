@@ -30,14 +30,6 @@ class BoostingMatrix:
             column = None
         return column
 
-
-    def get_path_importance(self, path: tuple) -> float:
-        column = self.__get_path_column(path)
-        if column is None:
-            return 0
-        else:
-            return self.columns_importance[column]
-
     def add_column(self, new_column, header):
         """"
         given a list of columns and their header adds them to the main matrix
@@ -71,7 +63,7 @@ class BoostingMatrix:
     def update_pattern_importance_of_column(self, column: int, train_error: list, default_value=0):
         '''
         It updates the importance of the column taken in input, and it registers how many times this column has been selected
-        that is the number of times column's importance has been update
+        that is the number of times column's importance has been updated
         :return:
         '''
         self.number_of_times_column_is_selected[column] += 1
@@ -148,12 +140,35 @@ class BoostingMatrix:
 
         return repeated_rows
 
-    def get_importance_of(self, path):
+    def get_importance_of(self, path: tuple) -> float or None:
+        '''
+        :param path: tuple indicating a path (list of atoms e.g. C-H-...)
+        :return: return the importance measure of the path, it returns None if path is not present
+                 N.B. there is a similar function "get_path_importance" that returns 0 if path is not present
+        '''
         if path not in self.header:
             return None
         else:
             index = self.header.index(path)
             return self.columns_importance[index]
+
+    def get_path_importance(self, path: tuple) -> float:
+        '''
+        :param path: tuple indicating a path (list of atoms e.g. C-H-...)
+        :return: return the importance measure of the path, it returns 0 if path is not present
+                 N.B. there is a similar function "get_importance_of" that returns None if path is not present
+        '''
+        column = self.__get_path_column(path)
+        if column is None:
+            return 0
+        else:
+            return self.columns_importance[column]
+
+    def get_columns_importance(self):
+        '''
+        :return: return column's importance
+        '''
+        return self.columns_importance
 
     def different_rows(self):
         # Create a set to store the rows that have already been seen

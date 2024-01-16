@@ -142,3 +142,27 @@ class WrapperPatternBoosting:
 
     def get_pattern_boosting_models(self):
         return self.pattern_boosting_models_list
+
+    def create_boosting_matrices_for(self, graphs_list):
+        '''
+        :param graphs_list: list or dataset of graphs
+        :return: a list of matrices, every matrix is the boosting matrix corresponding to one metal center's model
+                 (N.B. the order is preserved so the matrix can be used by the model for predictions)
+        '''
+        if isinstance(graphs_list, Dataset):
+            graphs_list = graphs_list.get_graphs_list()
+        matrices_list = [model.create_boosting_matrix_for(graphs_list) for model in self.pattern_boosting_models_list]
+        return matrices_list
+
+    def create_ordered_booting_matrix(self, graphs_list):
+        '''
+        :param graph_list: list or dataset of graphs
+        :return: It returns one boosting matrix, with columns ordered by the relative pattern importance
+                 (!!N.B. ti matrix can not be used for predictions since the columns are permuted respect to the original ordering!!)
+        '''
+        if isinstance(graphs_list, Dataset):
+            graphs_list = graphs_list.get_graphs_list()
+
+        boosting_matrices_list = self.create_boosting_matrices_for(graphs_list)
+        list_columns_importance = [model.get_boosting_matrix_columns_importance_values for model in
+                                   self.pattern_boosting_models_list]

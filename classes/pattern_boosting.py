@@ -104,7 +104,6 @@ class PatternBoosting:
             # expand boosting matrix
             self.__expand_boosting_matrix(selected_column_number)
 
-
             self.average_path_length.append(self.boosting_matrix.average_path_length())
 
             if self.train_error[-1] < Settings.target_train_error:
@@ -149,7 +148,12 @@ class PatternBoosting:
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
-    def create_boosting_matrix_for(self, graphs_list):
+    def create_boosting_matrix_for(self, graphs_list) -> np.ndarray:
+        '''
+        :param graphs_list: list of graphs in dataset format or list
+        :return: the boosting matrix of relative to the set of graphs given in input, the order of the columns is the
+                 same as the order of the header of the model's boosting matrix
+        '''
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
         boosting_matrix_matrix = np.array(
@@ -312,6 +316,12 @@ class PatternBoosting:
                     graph.selected_paths.add_path(path_label=label, path=[node])
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
+
+    def get_boosting_matrix_header(self):
+        return self.boosting_matrix.get_header()
+
+    def get_boosting_matrix_columns_importance_values(self):
+        return self.boosting_matrix.get_columns_importance()
 
     def __expand_boosting_matrix(self, selected_column_number):
         # Following two lines are jut to have mor readable code, everything can be grouped in one line
