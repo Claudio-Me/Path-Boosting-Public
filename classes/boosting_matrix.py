@@ -164,7 +164,7 @@ class BoostingMatrix:
         else:
             return self.columns_importance[column]
 
-    def get_columns_importance(self):
+    def get_columns_importance(self)->list[float]:
         '''
         :return: return column's importance
         '''

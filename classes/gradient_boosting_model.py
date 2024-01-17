@@ -6,6 +6,7 @@ from xgboost import XGBClassifier
 from sklearn import metrics
 from settings import Settings
 from classes.enumeration.estimation_type import EstimationType
+from classes.boosting_matrix import BoostingMatrix
 from classes.enumeration.model_type import ModelType
 import numpy as np
 from R_code.interface_with_R_code import LaunchRCode
@@ -31,6 +32,9 @@ class GradientBoostingModel:
             self.model = model
 
     def predict_my(self, boosting_matrix_matrix: np.ndarray):
+        if isinstance(boosting_matrix_matrix, BoostingMatrix):
+            boosting_matrix_matrix = boosting_matrix_matrix.get_matrix()
+
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             return self.model.predict(boosting_matrix_matrix[:, :self.n_features])
         elif self.model is ModelType.r_model:
@@ -51,6 +55,9 @@ class GradientBoostingModel:
             return predictions.sum(axis=0)
 
     def predict_progression(self, boosting_matrix_matrix: np.ndarray):
+        if isinstance(boosting_matrix_matrix, BoostingMatrix):
+            boosting_matrix_matrix = boosting_matrix_matrix.get_matrix()
+
         if self.model is not ModelType.xgb_one_step:
             raise ValueError("predict_progression only works with 'Xgb_step' algorithm")
         else:
@@ -61,7 +68,10 @@ class GradientBoostingModel:
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
             return predictions.cumsum(axis=0)
-    def evaluate_progression(self,boosting_matrix_matrix, labels):
+
+    def evaluate_progression(self, boosting_matrix_matrix, labels):
+        if isinstance(boosting_matrix_matrix, BoostingMatrix):
+            boosting_matrix_matrix = boosting_matrix_matrix.get_matrix()
         if self.model is not ModelType.xgb_one_step:
             raise ValueError("evaluate_progression only works with 'Xgb_step' algorithm")
         else:
@@ -139,7 +149,6 @@ class GradientBoostingModel:
                 if Settings.plot_tree is True:
                     plot_tree(xgb_model)
                     plt.show()
-
 
                 self.base_learners_list.append(copy.deepcopy(xgb_model))
                 self.base_learners_dimension.append(len(boosting_matrix[0]))

@@ -66,25 +66,38 @@ if __name__ == '__main__':
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
 
-    wrapper_pattern_boosting=WrapperPatternBoosting()
-    wrapper_pattern_boosting.train(train_dataset,test_dataset)
+    #wrapper_pattern_boosting=WrapperPatternBoosting()
+    #wrapper_pattern_boosting.train(train_dataset,test_dataset)
 
-    final_test_error=wrapper_pattern_boosting.get_wrapper_test_error()[-1]
+    #final_test_error=wrapper_pattern_boosting.get_wrapper_test_error()[-1]
+
+
+    pattern_boosting = PatternBoosting()
+    pattern_boosting.training(train_dataset, test_dataset)
+    final_test_error = pattern_boosting.test_error[-1]
+
+
     print("final test error:\n", final_test_error)
 
     saving_location = data_reader.get_save_location(file_name="final_test_error", file_extension=".txt",
                                                     folder_relative_path='results')
 
+    print("Saving location:")
+    print(saving_location)
+
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:
         sys.stdout = f  # Change the standard output to the file we created.
-        string = str(Settings.considered_metal_centers[0]) + '-'
+        string = str(Settings.considered_metal_centers) + '-'
         string += str(final_test_error) + '\n'
         print(string)
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
 
-    data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
+    #data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
+    data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
+
+
 
     """
     analysis = AnalysisPatternBoosting()

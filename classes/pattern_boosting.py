@@ -129,6 +129,8 @@ class PatternBoosting:
         return test_error
 
     def predict(self, graphs_list, boosting_matrix_matrix=None):
+        if isinstance(boosting_matrix_matrix, BoostingMatrix):
+            boosting_matrix_matrix = boosting_matrix_matrix.get_matrix()
         if self.trained is False:
             warnings.warn("This model is not trained")
             return None
@@ -136,20 +138,17 @@ class PatternBoosting:
             graphs_list = [graphs_list]
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
+
+        if isinstance(boosting_matrix_matrix, BoostingMatrix):
+            boosting_matrix_matrix = boosting_matrix_matrix.get_matrix()
         if boosting_matrix_matrix is None:
             boosting_matrix_matrix = self.create_boosting_matrix_for(graphs_list)
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
-    def predict_boosting_matrix(self, boosting_matrix_matrix: np.ndarray):
-        if self.trained is False:
-            warnings.warn("This model is not trained")
-            return None
-        prediction = self.model.predict_my(boosting_matrix_matrix)
-        return prediction
-
-    def create_boosting_matrix_for(self, graphs_list) -> np.ndarray:
+    def create_boosting_matrix_for(self, graphs_list, convert_to_boosting_matrix=False) -> np.ndarray | BoostingMatrix:
         '''
+        :param convert_to_boosting_matrix: to decide if at the end the boosting matrices should be converted in the class BoostingMatrix
         :param graphs_list: list of graphs in dataset format or list
         :return: the boosting matrix of relative to the set of graphs given in input, the order of the columns is the
                  same as the order of the header of the model's boosting matrix
@@ -158,7 +157,11 @@ class PatternBoosting:
             graphs_list = graphs_list.get_graphs_list()
         boosting_matrix_matrix = np.array(
             [self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
-        return boosting_matrix_matrix
+        if convert_to_boosting_matrix is False:
+            return boosting_matrix_matrix
+        else:
+            return BoostingMatrix(boosting_matrix_matrix, self.get_boosting_matrix_header(),
+                                  self.get_boosting_matrix_columns_importance_values())
 
     def evaluate(self, dataset: Dataset, boosting_matrix_matrix=None):
         if self.trained is False:
@@ -320,7 +323,7 @@ class PatternBoosting:
     def get_boosting_matrix_header(self):
         return self.boosting_matrix.get_header()
 
-    def get_boosting_matrix_columns_importance_values(self):
+    def get_boosting_matrix_columns_importance_values(self) -> list[float]:
         return self.boosting_matrix.get_columns_importance()
 
     def __expand_boosting_matrix(self, selected_column_number):
