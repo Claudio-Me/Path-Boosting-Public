@@ -94,6 +94,7 @@ class WrapperPatternBoosting:
 
     def get_train_models_errors(self) -> Iterable[Sequence[float]]:
         # it returns a nested list where each row is the vector of errors coming from the model
+
         train_model_errors = [model.train_error for model in self.pattern_boosting_models_list]
         return train_model_errors
 

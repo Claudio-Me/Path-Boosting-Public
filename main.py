@@ -66,10 +66,10 @@ if __name__ == '__main__':
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
 
-    #wrapper_pattern_boosting=WrapperPatternBoosting()
-    #wrapper_pattern_boosting.train(train_dataset,test_dataset)
+    wrapper_pattern_boosting=WrapperPatternBoosting()
+    wrapper_pattern_boosting.train(train_dataset,test_dataset)
 
-    #final_test_error=wrapper_pattern_boosting.get_wrapper_test_error()[-1]
+    final_test_error=wrapper_pattern_boosting.get_wrapper_test_error()[-1]
 
 
     pattern_boosting = PatternBoosting()
@@ -94,8 +94,8 @@ if __name__ == '__main__':
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
 
-    #data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
-    data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
+    data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
+    #data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
 
 
