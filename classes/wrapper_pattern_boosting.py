@@ -67,13 +67,25 @@ class WrapperPatternBoosting:
         return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors())
 
     @staticmethod
-    def __get_average_of_matrix_of_nested_list_of_errors(errors_lists) -> np.array:
+    def __weighted_average(errors_lists, weights):
+        if len(errors_lists) == len(weights):
+            return [sum(x * y for x, y in zip(sublist, weights)) / sum(weights) for sublist in zip(*errors_lists)]
+        else:
+            return "The length of sublists and weights should be equal"
+
+
+
+    @staticmethod
+    def __get_average_of_matrix_of_nested_list_of_errors(errors_lists, mode='average') -> np.array:
         '''
         :param errors_lists:
+        :param mode: a string 'average', 'max', 'min' to indicate which error measure it should be considered. Average, max or min of the all error made at the i-th step
         :return: an array where each cell correspond to one iteration, since we have multiple base learners each
                     iteration is actually n_base learners iterations, so the final array returned contains the error repeated
                     n_iterations times
         '''
+
+
 
         # filter out the models who are not trained (because their metal center is not contained in the training dataset)
         errors_lists = [error for error in errors_lists if not (error is None or error == [])]
@@ -81,6 +93,8 @@ class WrapperPatternBoosting:
         # FIXME check that the lengths of the error for each model is the same (for now it always is
         #  because we set Setting.train_target_error to zero, but if not, then the train for some
         #  models may stop earlyer)
+
+
 
         errors_lists = np.array(errors_lists)
 
@@ -127,6 +141,9 @@ class WrapperPatternBoosting:
         array_of_outputs = pool.map(
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
+        self.test_error=self.get_wrapper_test_error()
+        self.train_error=self.get_wrapper_train_error()
+
         return array_of_outputs
 
     def evaluate(self, dataset: Dataset, boosting_matrix_matrix=None):
