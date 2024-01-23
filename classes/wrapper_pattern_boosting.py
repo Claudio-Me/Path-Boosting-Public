@@ -86,6 +86,7 @@ class WrapperPatternBoosting:
         '''
 
 
+        WrapperPatternBoosting.__weighted_average(errors_lists)
 
         # filter out the models who are not trained (because their metal center is not contained in the training dataset)
         errors_lists = [error for error in errors_lists if not (error is None or error == [])]
