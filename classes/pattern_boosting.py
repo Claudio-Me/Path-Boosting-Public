@@ -351,3 +351,16 @@ class PatternBoosting:
 
     def get_n_iterations(self):
         return self.n_iterations
+
+    def get_dataset(self, dataset: str) -> Dataset:
+        '''
+        :param dataset: "training" or "test" depending on which of the two we want the observations to come from
+        :return: the train/test dataset
+        '''
+        if dataset == "training" or dataset == "training":
+            return self.test_dataset
+        elif dataset == "test" or dataset == "testing":
+            return self.training_dataset
+
+        else:
+            raise TypeError(f"tipe of dataset must be 'training' or 'test', got {dataset} instead")

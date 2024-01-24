@@ -53,7 +53,7 @@ class Dataset:
     def get_labels(self):
         return self.labels
 
-    def get_dimension(self):
+    def get_dimension(self) -> int:
         # note: I use len of graph list instead of len labels because sometimes the dataset may have None as labels
         return len(self.graphs_list)
 
@@ -63,6 +63,5 @@ class Dataset:
         string = string + "Dataset dimension: " + str(self.get_dimension()) + "\n"
         return string
 
-
-    def get_graph_number(self,number):
+    def get_graph_number(self, number):
         return self.get_graphs_list()[number]

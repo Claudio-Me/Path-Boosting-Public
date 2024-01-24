@@ -60,23 +60,43 @@ class WrapperPatternBoosting:
 
     def get_wrapper_test_error(self) -> Iterable[float]:
 
-        return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_test_models_errors())
+        return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_test_models_errors(), dataset="test")
 
-    # need to fix the fact that the tested model errors if not trained they return [], not a list of errors, so everithing here does not work
+    # need to fix the fact that the tested model errors if not trained they return [], not a list of errors, so everything here does not work
     def get_wrapper_train_error(self) -> Iterable[float]:
-        return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors())
+        return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors(), dataset="train")
 
     @staticmethod
     def __weighted_average(errors_lists, weights):
+        '''
+        Parameters:
+        errors_lists (list of lists): A nested list where each sublist contains numerical values.
+                    The number of elements in each sublist should be equal.
+        weights (list): A list of numerical values serving as weights for the errors_lists.
+                    The number of weights should be equal to the number of errors_lists.
+
+        Returns:
+        list: A list containing the weighted averages of the i-th elements of each sublist.
+              If the lengths of errors_lists and weights are not equal, an error message is returned.
+
+        Raises:
+        TypeError: If errors_lists is not a list or weights is not a list.
+        ValueError: If all elements in each sublist are not numeric.
+        ValueError: If the weights do not sum up to 1.
+
+        Example:
+         errors_lists = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+         weights = [0.3, 0.2, 0.5]
+         weighted_average(errors_lists, weights)
+        [5.0, 6.0, 7.0]
+        '''
         if len(errors_lists) == len(weights):
             return [sum(x * y for x, y in zip(sublist, weights)) / sum(weights) for sublist in zip(*errors_lists)]
         else:
-            return "The length of sublists and weights should be equal"
+            raise TypeError("The length of errors_lists and weights should be equal")
 
-
-
-    @staticmethod
-    def __get_average_of_matrix_of_nested_list_of_errors(errors_lists, mode='average') -> np.array:
+    def __get_average_of_matrix_of_nested_list_of_errors(self, errors_lists: Iterable[Sequence[float]], dataset: str,
+                                                         mode='average') -> np.array:
         '''
         :param errors_lists:
         :param mode: a string 'average', 'max', 'min' to indicate which error measure it should be considered. Average, max or min of the all error made at the i-th step
@@ -85,38 +105,48 @@ class WrapperPatternBoosting:
                     n_iterations times
         '''
 
-
-        WrapperPatternBoosting.__weighted_average(errors_lists)
+        weights = self.get_number_of_observations_per_model(dataset=dataset)
 
         # filter out the models who are not trained (because their metal center is not contained in the training dataset)
-        errors_lists = [error for error in errors_lists if not (error is None or error == [])]
-        number_of_trained_models = len(errors_lists)
-        # FIXME check that the lengths of the error for each model is the same (for now it always is
-        #  because we set Setting.train_target_error to zero, but if not, then the train for some
-        #  models may stop earlyer)
 
+        errors_lists, weights = list(zip(*[(error, weights) for error, weights in zip(errors_lists, weights) if
+                                           not (error is None or error == [])]))
 
-
-        errors_lists = np.array(errors_lists)
-
-        # array of errors:
-        error = np.mean(errors_lists, axis=0)
+        error = np.array(self.__weighted_average(errors_lists, weights))
+        number_of_trained_models = len(self.pattern_boosting_models_list)
 
         # here we just repeat the errors by the number of trained models
         error = np.repeat(error, number_of_trained_models)
-
+        # TODO return the error based on the parameter 'mode' that can be average, max, min
         return error
 
     def get_train_models_errors(self) -> Iterable[Sequence[float]]:
-        # it returns a nested list where each row is the vector of errors coming from the model
+        '''
+        :return: a nested list where each row is the vector of errors coming from the model
+        '''
 
         train_model_errors = [model.train_error for model in self.pattern_boosting_models_list]
         return train_model_errors
 
     def get_test_models_errors(self) -> Iterable[Sequence[float]]:
-        # it returns a nested list where each row is the vector of errors coming from the model
+        '''
+
+        :return: a nested list where each row is the vector of errors coming from the model
+        '''
         test_model_errors = [model.test_error for model in self.pattern_boosting_models_list]
         return test_model_errors
+
+    def get_number_of_observations_per_model(self, dataset: str) -> list[int]:
+        '''
+        :param dataset: "training" or "test" depending on which of the two we want the observations to come from
+        :return: the number of observations used for the training/test of each model
+        '''
+        if dataset == "train" or dataset == "test" or dataset == "training" or dataset == "testing":
+            dimension_list = [model.get_dataset(dataset).get_dimension() for model in self.pattern_boosting_models_list]
+            return dimension_list
+        else:
+            raise TypeError(
+                f"tipe of dataset must be 'train' or 'test' or 'training' or 'testing', got {dataset} instead")
 
     def train(self, train_dataset, test_dataset=None):
 
@@ -142,8 +172,8 @@ class WrapperPatternBoosting:
         array_of_outputs = pool.map(
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
-        self.test_error=self.get_wrapper_test_error()
-        self.train_error=self.get_wrapper_train_error()
+        self.test_error = self.get_wrapper_test_error()
+        self.train_error = self.get_wrapper_train_error()
 
         return array_of_outputs
 
