@@ -19,7 +19,6 @@ import numpy as np
 from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
 from settings import Settings
-import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from collections import Counter
 from classes.pattern_boosting import PatternBoosting
@@ -44,6 +43,8 @@ import pathlib
 import os
 import sys
 from collections.abc import Iterable
+from matplotlib.ticker import MaxNLocator
+from typing import List
 
 
 def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, max_number_of_learners, frequency_matrix,
@@ -108,9 +109,9 @@ def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, m
 
     # plot feature importance
     print("max path length: ", max_path_length)
-    plot_importance(xgb_model)
+    # plot_importance(xgb_model)
     print("max path length: ", max_path_length)
-    plt.show()
+    # plt.show()
     print("max path length: ", max_path_length)
     xgb_test_err = np.array(xgb_test_err)
     return xgb_test_err, xgb_train_err, features_importance
@@ -168,9 +169,9 @@ def get_XGB_error_and_variable_importance(max_path_length, frequency_matrix, lab
 
     # plot feature importance
     print("max path length: ", max_path_length)
-    plot_importance(xgb_model)
+    # plot_importance(xgb_model)
     print("max path length: ", max_path_length)
-    plt.show()
+    # plt.show()
     print("max path length: ", max_path_length)
     xgb_test_err = np.array(xgb_test_err)
     return xgb_test_err, xgb_train_err, features_importance
@@ -251,51 +252,19 @@ def plot_graphs_new(x, y, tittle: str, x_label: str = "", y_label: str = "", sho
     return fig, ax
 
 
-def plot_graphs(x, y, tittle: str, x_label: str = "", y_label: str = "", show=True, save=True, y2=None, x2=None):
+def plot_graphs(x, y, tittle: str, x_label: str = "", y_label: str = "", show=True, save=True, y2=None, x2=None,
+                y_lim: tuple = None):
     plt.style.use('ggplot')
 
     fig, ax = plt.subplots()
-    ax.set_ylim(0.00075, 0.00125)
+    if y_lim is None:
+        ax.set_ylim(0.00075, 0.00125)
     # Using set_dashes() to modify dashing of an existing line
     if len(x) > Settings.tail:
         ax.plot(x[-Settings.tail:], y[-Settings.tail:], label='')
     else:
         ax.plot(x, y, label='Pattern Boosting')
         ax.plot(x2, y2, label='XGB')
-
-    ax.legend()
-    ax.set_title(tittle)
-    ax.set_ylabel(y_label)
-    ax.set_xlabel(x_label)
-
-    # plt.grid()
-
-    # plot only integers on the x-axis
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    saving_location = data_reader.get_save_location(tittle, '.png')
-
-    if save is True:
-        plt.savefig(saving_location)
-    if show is True:
-        plt.show()
-
-    return fig, ax
-
-
-def plot_graphs_new(x, y, tittle: str, x_label: str = "", y_label: str = "", show=True, save=True, y2=None, x2=None,
-                    max_path_length=[]):
-    plt.style.use('ggplot')
-    if x2 == None:
-        x2 = x
-    fig, ax = plt.subplots()
-    ax.set_ylim(0.0001, 0.0015)
-    # Using set_dashes() to modify dashing of an existing line
-    if len(x) > Settings.tail:
-        ax.plot(x[-Settings.tail:], y[-Settings.tail:], label='')
-    else:
-        ax.plot(x, y, label='Pattern Boosting')
-        for i, max_length in enumerate(max_path_length):
-            ax.plot(x2, y2[i], label='XGB_' + str(max_length))
 
     ax.legend()
     ax.set_title(tittle)
@@ -323,7 +292,7 @@ def plot_graphs_new_temp_funct(x, y, tittle: str, max_number_of_learners, test_e
     if x2 == None:
         x2 = x
     fig, ax = plt.subplots()
-    ax.set_ylim(0.0005, 0.0015)
+
     # Using set_dashes() to modify dashing of an existing line
     if len(x) > Settings.tail:
         ax.plot(x[-Settings.tail:], y[-Settings.tail:], label='')
@@ -351,3 +320,6 @@ def plot_graphs_new_temp_funct(x, y, tittle: str, max_number_of_learners, test_e
         plt.show()
 
     return fig, ax
+
+
+import matplotlib.pyplot as plt

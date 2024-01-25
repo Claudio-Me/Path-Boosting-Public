@@ -357,10 +357,16 @@ class PatternBoosting:
         :param dataset: "training" or "test" depending on which of the two we want the observations to come from
         :return: the train/test dataset
         '''
-        if dataset == "training" or dataset == "training":
-            return self.test_dataset
+        if dataset == "train" or dataset == "training":
+            if hasattr(self, 'test_dataset'):
+                return self.test_dataset
+            else:
+                return Dataset(graphs_list=None)
         elif dataset == "test" or dataset == "testing":
-            return self.training_dataset
+            if hasattr(self, 'training_dataset'):
+                return self.training_dataset
+            else:
+                return Dataset(graphs_list=None)
 
         else:
-            raise TypeError(f"tipe of dataset must be 'training' or 'test', got {dataset} instead")
+            raise TypeError(f"tipe of dataset must be 'train' or 'test', got {dataset} instead")

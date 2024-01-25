@@ -36,7 +36,7 @@ def read_data_from_directory(directory):
 def split_training_and_test(dataset, test_size, labels: list = None, random_split_seed=None):
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset, labels)
-    train_dataset, test_dataset = dataset.split_dataset(test_size,random_split_seed)
+    train_dataset, test_dataset = dataset.split_dataset(test_size, random_split_seed)
     return train_dataset, test_dataset
 
 
@@ -102,9 +102,10 @@ def load_data(filename, directory=None):
     return data
 
 
-def save_data(data, filename, directory="results"):
+def save_data(data, filename, directory="results", create_unique_subfolder=True):
     if not (os.getcwd() in directory):
-        directory = get_save_location(file_name=filename, file_extension=".pkl", folder_relative_path=directory)
+        directory = get_save_location(file_name=filename, file_extension=".pkl", folder_relative_path=directory,
+                                      create_unique_subfolder=create_unique_subfolder)
 
     if not '.' in directory:
         directory = directory + filename + ".pkl"
@@ -140,7 +141,6 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     else:
         raise TypeError("Selected algorithm not recognized")
 
-
     folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length) + "_" + Settings.dataset_name
 
     if Settings.considered_metal_centers is not None:
@@ -151,6 +151,7 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
 
     file_name = file_name.replace(" ", "_") + file_extension
     if create_unique_subfolder is True:
-        return location + file_name
-    else:
         return location + folder_name + file_name
+
+    else:
+        return location + file_name
