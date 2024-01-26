@@ -24,41 +24,6 @@ if __name__ == '__main__':
 
     dataset = load_dataset()
 
-    # ----------------------------------------------------------------------------------------------------------
-    # print("size of dataset: ", asizeof.asizeof(dataset))
-    # -----------------------------------------------------------------------------------------------------------
-
-    """
-    splitted_train_datasets_list = split_dataset_by_metal_centers(train_dataset)
-
-    splitted_test_datasets_list = split_dataset_by_metal_centers(test_dataset)
-
-    """
-    # paralelize after this
-    # Parallelization template
-    # ------------------------------------------------------------------------------------------------------------
-    """
-    pool = ThreadPool(min(10, len(Settings.considered_metal_centers)))
-
-    array_of_outputs = pool.map(
-        functools.partial(function_to_parallelize,
-                          param_1=param_1,
-                          param_2=param_2),
-        list_over_wich_we_parallelize)
-
-    xgb_test_err, xgb_train_err, variable_importance = zip(*xgb_err)
-    """
-    # ------------------------------------------------------------------------------------------------------------
-
-    # part to be parellized
-    # -------------------------------------------------------------------------------------------------
-    """
-    pattern_boosting = PatternBoosting()
-    # test_dataset.labels=np.zeros(len(test_dataset.labels))
-    pattern_boosting.training(train_dataset, test_dataset)
-    final_test_error = pattern_boosting.test_error[-1]
-    """
-    # -------------------------------------------------------------------------------------------------
 
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
@@ -68,7 +33,8 @@ if __name__ == '__main__':
         wrapper_pattern_boosting = WrapperPatternBoosting()
         wrapper_pattern_boosting.train(train_dataset, test_dataset)
         error=wrapper_pattern_boosting.get_wrapper_test_error()
-        final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()[-1]
+        final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
+        final_test_error=final_test_error[-1]
 
     else:
         # pattern boosting

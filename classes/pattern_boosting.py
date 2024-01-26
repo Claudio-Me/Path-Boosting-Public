@@ -12,6 +12,7 @@ import multiprocessing
 import functools
 import itertools
 import sys
+import copy
 
 # from pympler import asizeof
 
@@ -84,20 +85,29 @@ class PatternBoosting:
             if test_dataset is not None and self.settings.algorithm != "Xgb_step":
                 self.test_error.append(self.evaluate(test_dataset))
 
+            # TODO improve this evaluation process to get train error, it seems unnecessary to re-evaluate the whole dataset
             self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
-            # -------------------------------------------------------------------------------------------------------
-            # debug
 
-            # print("Error: ", self.train_error[-1])
-            # --------------------------------------------------------------------------------------------------------
+            if self.settings.update_features_importance_by_comparison is False:
+                if len(self.train_error) <= 1:
+                    default_importance_value = np.var(training_dataset.labels)
+                else:
+                    default_importance_value = None
 
-            if len(self.train_error) <= 1:
-                default_importance_value = np.var(training_dataset.labels)
+                self.boosting_matrix.update_pattern_importance_of_column_based_on_error_improvment(
+                    selected_column_number,
+                    train_error=self.train_error,
+                    default_value=default_importance_value)
             else:
-                default_importance_value = None
-            self.boosting_matrix.update_pattern_importance_of_column(selected_column_number,
-                                                                     train_error=self.train_error,
-                                                                     default_value=default_importance_value)
+                second_best_column = self.find_second_best_column(selected_column_number,
+                                                                  number_of_learners=iteration_number + 1)
+
+                # TODO new_model train new_model on new matrix, note that it needs to be taken into account that the old models need the original matrix with the original position of the columns
+                new_model = copy.deepcopy(self.model)
+
+                new_error = None
+                improvment = None
+                self.boosting_matrix.update_column_importance(selected_column_number, improvment)
 
             self.number_of_learners.append(iteration_number + 1)
 
@@ -110,9 +120,23 @@ class PatternBoosting:
                 break
 
         if test_dataset is not None:
-            self.boosting_matrix_matrix_for_test_dataset = boosting_matrix_matrix = self.create_boosting_matrix_for(
+            self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
                 test_dataset)
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
+
+    def find_second_best_column(self, first_column_number):
+        model = self.model
+        boosting_matrix = self.boosting_matrix.new_matrix_without_column(first_column_number)
+        labels = self.training_dataset.labels
+        if self.settings.algorithm == "Full_xgb":
+            return model.just_select_best_column(boosting_matrix, labels)
+
+        elif self.settings.algorithm == "Xgb_step":
+
+            return model.just_select_best_column(boosting_matrix, labels)
+        else:
+            raise TypeError(
+                "Wrong algorithm, impossible to get feature importance by comparison for this model, change update_features_importance_by_comparison in settings")
 
     def evaluate_progression(self, dataset: Dataset, boosting_matrix_matrix=None):
         '''

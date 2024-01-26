@@ -16,7 +16,7 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    wrapper_boosting = True
+    wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -34,6 +34,9 @@ class Settings:
     max_path_length = 100
 
     target_train_error = 0.000001
+
+    #it works only if "algorithm" is Xgb_step
+    update_features_importance_by_comparison = False
 
     xgb_model_parameters = {
         'n_estimators': 1,

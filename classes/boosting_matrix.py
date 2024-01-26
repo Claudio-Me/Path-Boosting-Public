@@ -60,7 +60,8 @@ class BoostingMatrix:
                                                                   new_cells_number_of_times_column_is_selected])
         self.columns_importance = self.columns_importance + new_cells_for_importance_list
 
-    def update_pattern_importance_of_column(self, column: int, train_error: list, default_value=0):
+    def update_pattern_importance_of_column_based_on_error_improvment(self, column: int, train_error: list,
+                                                                      default_value=0):
         '''
         It updates the importance of the column taken in input, and it registers how many times this column has been selected
         that is the number of times column's importance has been updated
@@ -68,9 +69,13 @@ class BoostingMatrix:
         '''
         self.number_of_times_column_is_selected[column] += 1
         if len(train_error) <= 1:
-            self.columns_importance[column] += default_value
+            self.update_column_importance(column, default_value)
         else:
-            self.columns_importance[column] += train_error[-2] - train_error[-1]
+            self.update_column_importance(column, train_error[-2] - train_error[-1])
+
+    def update_column_importance(self, column: int, value_to_add: float):
+        self.number_of_times_column_is_selected[column] += 1
+        self.columns_importance[column] += value_to_add
 
     def translate_header_to_atom_symbols(self):
         an = pyasl.AtomicNo()
@@ -97,6 +102,24 @@ class BoostingMatrix:
             if len(path) > max_length:
                 max_length = len(path)
         return max_length
+
+    import numpy as np
+
+    def new_matrix_without_column(self, column: int):
+        """
+        Return an object BoostingMatrix that has same matrix as self, but with one column removed
+
+        :param column: Column index to be removed.
+        :type column: int
+        :return: Matrix with the specified column removed.
+        :rtype: BoostingMatrix
+        """
+
+        new_matrix = np.delete(self.matrix, column, axis=1)
+
+        # New list with the element at the column-th position removed.
+        new_header = self.header[:column] + self.header[column + 1:]
+        return BoostingMatrix(new_matrix, new_header)
 
     def get_header(self) -> list:
         return self.header
@@ -164,7 +187,7 @@ class BoostingMatrix:
         else:
             return self.columns_importance[column]
 
-    def get_columns_importance(self)->list[float]:
+    def get_columns_importance(self) -> list[float]:
         '''
         :return: return column's importance
         '''

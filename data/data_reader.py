@@ -145,8 +145,12 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
 
     if Settings.considered_metal_centers is not None:
         folder_name = folder_name + "/wrapped_boosting"
-    if not os.path.exists(location + folder_name):
+
+    if (not os.path.exists(location + folder_name)) and (create_unique_subfolder is True):
         os.makedirs(location + folder_name)
+    elif (not os.path.exists(location)) and (create_unique_subfolder is False):
+        os.makedirs(location)
+
     folder_name = folder_name + "/"
 
     file_name = file_name.replace(" ", "_") + file_extension
