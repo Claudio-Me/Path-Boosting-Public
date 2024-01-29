@@ -46,7 +46,6 @@ class GradientBoostingModel:
 
         elif self.model is ModelType.xgb_one_step:
 
-
             predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
@@ -106,10 +105,18 @@ class GradientBoostingModel:
             raise ValueError("measure error not found")
         return model_error
 
-    def just_select_best_column(self,boosting_matrix_matrix,labels):
+    def select_second_best_column(self, boosting_matrix: BoostingMatrix, first_column_number: int,
+                                  labels: np.array) -> tuple[int, float]:
 
+        boosting_matrix_matrix = boosting_matrix.get_matrix()
         if self.model is ModelType.xgb_one_step:
-            y_hat = self.predict_my(boosting_matrix_matrix)
+            predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
+                                    xgb_model, matrix_dimension in
+                                    zip(self.base_learners_list[:-1], self.base_learners_dimension[:-1])])
+            y_hat = predictions.sum(axis=0)
+
+            boosting_matrix_without_column=boosting_matrix.new_matrix_without_column(first_column_number)
+            boosting_matrix_without_column_matrix=boosting_matrix_without_column.get_matrix()
 
             neg_gradient = self.__neg_gradient(labels, y_hat)
 
@@ -117,13 +124,15 @@ class GradientBoostingModel:
                                                 estimation_type=EstimationType.regression)
 
 
-            xgb_model.fit(boosting_matrix_matrix, neg_gradient)
+            xgb_model.fit(boosting_matrix_without_column_matrix, neg_gradient)
 
-            eval_set = [(boosting_matrix_matrix, neg_gradient)]
-            xgb_model.fit(boosting_matrix_matrix, neg_gradient, eval_set=eval_set, verbose=True)
+            eval_set = [(boosting_matrix_without_column_matrix, neg_gradient)]
+            xgb_model.fit(X=boosting_matrix_without_column_matrix, Y=neg_gradient, eval_set=eval_set)
             selected_column = np.argsort(xgb_model.feature_importances_)
 
-            return selected_column[-1]
+            results = xgb_model.evals_result()
+            final_train_error = results['validation_0'][Settings.xgb_model_parameters['eval_metric']][-1]
+            return selected_column[-1], final_train_error
 
     def fit_one_step(self, boosting_matrix: np.ndarray, labels):
         # ----------------------------------------------------------------------------------------------------------

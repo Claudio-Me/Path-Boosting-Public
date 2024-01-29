@@ -126,14 +126,13 @@ class PatternBoosting:
 
     def find_second_best_column(self, first_column_number):
         model = self.model
-        boosting_matrix = self.boosting_matrix.new_matrix_without_column(first_column_number)
+        boosting_matrix = self.boosting_matrix
         labels = self.training_dataset.labels
-        if self.settings.algorithm == "Full_xgb":
-            return model.just_select_best_column(boosting_matrix, labels)
 
-        elif self.settings.algorithm == "Xgb_step":
 
-            return model.just_select_best_column(boosting_matrix, labels)
+        if self.settings.algorithm == "Xgb_step":
+
+            return model.select_second_best_column(boosting_matrix,first_column_number, labels)
         else:
             raise TypeError(
                 "Wrong algorithm, impossible to get feature importance by comparison for this model, change update_features_importance_by_comparison in settings")
