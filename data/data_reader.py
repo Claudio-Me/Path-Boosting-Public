@@ -105,7 +105,7 @@ def load_data(filename, directory=None):
 def save_data(data, filename, directory="results", create_unique_subfolder=True):
     if not (os.getcwd() in directory):
         directory = get_save_location(file_name=filename, file_extension=".pkl", folder_relative_path=directory,
-                                      create_unique_subfolder=create_unique_subfolder)
+                                      unique_subfolder=create_unique_subfolder)
 
     if not '.' in directory:
         directory = directory + filename + ".pkl"
@@ -114,7 +114,7 @@ def save_data(data, filename, directory="results", create_unique_subfolder=True)
 
 
 def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results",
-                      create_unique_subfolder=False) -> str:
+                      unique_subfolder=False) -> str:
     # make sure that we are in the folder "pattern_boosting"
     last_folder = os.path.basename(os.path.normpath(os.getcwd()))
     if last_folder == "pattern_boosting":
@@ -146,15 +146,15 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     if Settings.considered_metal_centers is not None:
         folder_name = folder_name + "/wrapped_boosting"
 
-    if (not os.path.exists(location + folder_name)) and (create_unique_subfolder is True):
+    if (not os.path.exists(location + folder_name)) and (unique_subfolder is True):
         os.makedirs(location + folder_name)
-    elif (not os.path.exists(location)) and (create_unique_subfolder is False):
+    elif (not os.path.exists(location)) and (unique_subfolder is False):
         os.makedirs(location)
 
     folder_name = folder_name + "/"
 
     file_name = file_name.replace(" ", "_") + file_extension
-    if create_unique_subfolder is True:
+    if unique_subfolder is True:
         return location + folder_name + file_name
 
     else:

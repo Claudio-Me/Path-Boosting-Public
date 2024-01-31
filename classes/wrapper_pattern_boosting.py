@@ -10,6 +10,7 @@ import functools
 import numpy as np
 from sklearn import metrics
 from typing import Sequence, Iterable
+from typing import List, Tuple
 
 
 class WrapperPatternBoosting:
@@ -115,8 +116,7 @@ class WrapperPatternBoosting:
         error = np.array(self.__weighted_average(errors_lists, weights))
         number_of_trained_models = len(self.pattern_boosting_models_list)
 
-        # here we just repeat the errors by the number of trained models
-        error = np.repeat(error, number_of_trained_models)
+
         # TODO return the error based on the parameter 'mode' that can be average, max, min
         return error
 
@@ -193,6 +193,9 @@ class WrapperPatternBoosting:
     def get_pattern_boosting_models(self):
         return self.pattern_boosting_models_list
 
+    def get_trained_pattern_boosting_models(self):
+        return [model for model in self.get_pattern_boosting_models() if model.trained is True]
+
     def create_boosting_matrices_for(self, graphs_list, convert_to_boosting_matrix=False) -> list[
                                                                                                  np.array] | list[
                                                                                                  BoostingMatrix]:
@@ -248,3 +251,36 @@ class WrapperPatternBoosting:
         for row in matrix:
             flat_list += row
         return flat_list
+
+    def get_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
+        '''
+        It returns a list wih the patterns and a list with their importance
+        # extremely optimized version of this:
+        importance = []
+        paths = []
+
+        for model in self.get_pattern_boosting_models():
+            importance += model.get_boosting_matrix_columns_importance_values()
+            paths += model.get_boosting_matrix_header()
+        '''
+
+        importance_length = sum(
+            len(model.get_boosting_matrix_columns_importance_values()) for model in self.get_trained_pattern_boosting_models())
+        paths_length = sum(len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
+
+        importance = [0.0] * importance_length
+        paths = [()] * paths_length
+
+        importance_index = 0
+        paths_index = 0
+
+        for model in self.get_trained_pattern_boosting_models():
+            model_importance = model.get_boosting_matrix_columns_importance_values()
+            model_paths = model.get_boosting_matrix_header()
+
+            importance[importance_index:importance_index + len(model_importance)] = model_importance
+            paths[paths_index:paths_index + len(model_paths)] = model_paths
+
+            importance_index += len(model_importance)
+            paths_index += len(model_paths)
+        return paths, importance

@@ -27,7 +27,7 @@ class GradientBoostingStep:
             return self.__step_using_r(model, boosting_matrix, labels)
 
         elif Settings.algorithm == "Full_xgb":
-            return self.__step_training_a_whole_new_XGB_moel(boosting_matrix, labels, number_of_learners)
+            return self.__step_training_a_whole_new_XGB_model(boosting_matrix, labels, number_of_learners)
 
         elif Settings.algorithm == "Xgb_step":
 
@@ -65,8 +65,8 @@ class GradientBoostingStep:
         gc.collect()
         return selected_column_number, model
 
-    def __step_training_a_whole_new_XGB_moel(self, boosting_matrix: BoostingMatrix, labels: list,
-                                             number_of_learners: int):
+    def __step_training_a_whole_new_XGB_model(self, boosting_matrix: BoostingMatrix, labels: list,
+                                              number_of_learners: int):
 
         if Settings.estimation_type is EstimationType.regression:
             xgb_model = XGBRegressor(n_estimators=number_of_learners)

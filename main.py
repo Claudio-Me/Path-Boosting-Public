@@ -3,6 +3,7 @@ import numpy as np
 from classes.testing.testing import Testing
 from classes.pattern_boosting import PatternBoosting
 from data import data_reader
+from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
 from settings import Settings
 from data.synthetic_dataset import SyntheticDataset
 from classes.enumeration.estimation_type import EstimationType
@@ -24,7 +25,6 @@ if __name__ == '__main__':
 
     dataset = load_dataset()
 
-
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
 
@@ -32,9 +32,9 @@ if __name__ == '__main__':
     if Settings.wrapper_boosting is True:
         wrapper_pattern_boosting = WrapperPatternBoosting()
         wrapper_pattern_boosting.train(train_dataset, test_dataset)
-        error=wrapper_pattern_boosting.get_wrapper_test_error()
+        error = wrapper_pattern_boosting.get_wrapper_test_error()
         final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
-        final_test_error=final_test_error[-1]
+        final_test_error = final_test_error[-1]
 
     else:
         # pattern boosting
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     print("final test error:\n", final_test_error)
 
     saving_location = data_reader.get_save_location(file_name="final_test_error", file_extension=".txt",
-                                                    folder_relative_path='results')
+                                                    folder_relative_path='results', unique_subfolder=True)
 
     print("Saving location:")
     print(saving_location)
@@ -64,10 +64,20 @@ if __name__ == '__main__':
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
-    """
-    analysis = AnalysisPatternBoosting()
-    analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results"),
-                              show=Settings.show_analysis,
-                              save=Settings.save_analysis)
-    """
-    # analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False, save=True)
+    if Settings.wrapper_boosting is True:
+        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
+        analysis.plot_top_n_paths_heatmap(n=Settings.n_of_paths_importance_plotted)
+
+
+    else:
+        analysis = AnalysisPatternBoosting()
+        analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
+                                                                          unique_subfolder=True),
+                                  show=Settings.show_analysis,
+                                  save=Settings.save_analysis)
+
+        '''
+        if Settings.dataset_name == "5k_synthetic_dataset":
+            analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False,
+                                  save=True)
+        '''

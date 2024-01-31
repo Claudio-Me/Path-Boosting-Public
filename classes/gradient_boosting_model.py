@@ -1,5 +1,7 @@
 import copy
 import os
+import warnings
+
 import xgboost
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
@@ -105,8 +107,30 @@ class GradientBoostingModel:
             raise ValueError("measure error not found")
         return model_error
 
-    def select_second_best_column(self, boosting_matrix: BoostingMatrix, first_column_number: int,
+    def select_second_best_column(self, boosting_matrix: 'BoostingMatrix', first_column_number: int,
                                   labels: np.array) -> tuple[int, float]:
+        """
+        Selects the second-best column based on feature importance after fitting an XGBoost model on the boosting matrix
+        without the first most important feature.
+
+        This function is specifically designed for use with the XGBoost one-step model (xgb_one_step).
+        It computes predictions and negative gradients for the current ensemble of models,
+        excluding the last model. It creates a new BoostingMatrix without the specified column
+        (first_column_number) and fits an XGBoost regression model to the negative gradients.
+        The function then selects the column with the second-highest feature importance based on this fitted model.
+
+        :param boosting_matrix: An instance of BoostingMatrix containing the data matrix.
+        :type boosting_matrix: BoostingMatrix
+        :param first_column_number: Index of the column to be excluded from the BoostingMatrix when fitting the XGBoost model.
+        :type first_column_number: int
+        :param labels: The array of true label values used to compute the negative gradient.
+        :type labels: np.array
+        :raises Warning: If the model type is not ModelType.xgb_one_step, a warning is raised.
+        :return: A tuple with the index of the second-best column (with the second-highest feature importance) and the final training error of the model.
+        :rtype: tuple[int, float]
+
+        .. warning:: This function is only applicable for ModelType.xgb_one_step. If called with a different model type, it raises a warning.
+        """
 
         boosting_matrix_matrix = boosting_matrix.get_matrix()
         if self.model is ModelType.xgb_one_step:
@@ -115,24 +139,34 @@ class GradientBoostingModel:
                                     zip(self.base_learners_list[:-1], self.base_learners_dimension[:-1])])
             y_hat = predictions.sum(axis=0)
 
-            boosting_matrix_without_column=boosting_matrix.new_matrix_without_column(first_column_number)
-            boosting_matrix_without_column_matrix=boosting_matrix_without_column.get_matrix()
-
             neg_gradient = self.__neg_gradient(labels, y_hat)
+
+
+            # remove the selected column from the matrix and train a model over the new matrix
+            boosting_matrix_without_column = boosting_matrix.new_matrix_without_column(first_column_number)
+            boosting_matrix_without_column_matrix = boosting_matrix_without_column.get_matrix()
 
             xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
                                                 estimation_type=EstimationType.regression)
 
 
-            xgb_model.fit(boosting_matrix_without_column_matrix, neg_gradient)
-
             eval_set = [(boosting_matrix_without_column_matrix, neg_gradient)]
-            xgb_model.fit(X=boosting_matrix_without_column_matrix, Y=neg_gradient, eval_set=eval_set)
+            xgb_model.fit(X=boosting_matrix_without_column_matrix, y=neg_gradient, eval_set=eval_set, verbose=True)
             selected_column = np.argsort(xgb_model.feature_importances_)
+            selected_column = selected_column[-1]
+            if selected_column >= first_column_number:
+                selected_column += 1
 
             results = xgb_model.evals_result()
             final_train_error = results['validation_0'][Settings.xgb_model_parameters['eval_metric']][-1]
-            return selected_column[-1], final_train_error
+
+
+            # we assume the eval method is rmse
+            final_train_error = final_train_error * final_train_error
+            return selected_column, final_train_error
+
+        else:
+            warnings.warn("Selection of second best column is possible only with model type xgb_one_step")
 
     def fit_one_step(self, boosting_matrix: np.ndarray, labels):
         # ----------------------------------------------------------------------------------------------------------
@@ -167,7 +201,8 @@ class GradientBoostingModel:
                 # if it is the first time we launch the model
                 # xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
                 xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
-                xgb_model.fit(boosting_matrix, labels)
+                eval_set = [(boosting_matrix, labels)]
+                xgb_model.fit(boosting_matrix, labels, eval_set=eval_set)
 
                 # plot single tree
                 if Settings.plot_tree is True:
@@ -188,12 +223,13 @@ class GradientBoostingModel:
                 # ----------------------------------------------------------------------------------------------------
 
                 neg_gradient = self.__neg_gradient(labels, y_hat)
-                # xgb_model = self.__create_xgb_model(np.mean(neg_gradient))
 
                 xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
                                                     estimation_type=EstimationType.regression)
                 eval_set = [(boosting_matrix, neg_gradient)]
-                xgb_model.fit(boosting_matrix, neg_gradient, eval_set=eval_set, verbose=True)
+                xgb_model.fit(X=boosting_matrix, y=neg_gradient, eval_set=eval_set, verbose=True)
+
+
 
                 # plot single tree
                 if Settings.plot_tree is True:
@@ -241,7 +277,6 @@ class GradientBoostingModel:
     def __create_xgb_model(self, base_score=0, estimation_type=Settings.estimation_type):
 
         # create a Xgb model
-
         param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
             return XGBRegressor(**Settings.xgb_model_parameters,
@@ -254,3 +289,12 @@ class GradientBoostingModel:
 
     def __neg_gradient(self, y, y_hat):
         return Settings.neg_gradient(y, y_hat)
+
+    def get_last_training_error(self):
+        if self.model is ModelType.xgb_one_step:
+            last_base_learner = self.base_learners_list[-1]
+
+            results = last_base_learner.evals_result()
+            return results['validation_0'][Settings.xgb_model_parameters['eval_metric']][-1]
+        else:
+            raise TypeError("Can't get last training error for this model")

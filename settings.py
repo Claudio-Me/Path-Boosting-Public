@@ -5,9 +5,9 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 300
+    maximum_number_of_steps = 50
 
-    save_analysis = True
+    save_analysis = False
     show_analysis = True
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
@@ -36,7 +36,7 @@ class Settings:
     target_train_error = 0.000001
 
     #it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = False
+    update_features_importance_by_comparison = True
 
     xgb_model_parameters = {
         'n_estimators': 1,
@@ -46,6 +46,9 @@ class Settings:
         "objective": 'reg:squarederror',
         "reg_lambda": 0
     }
+
+    # note in gradient_boosting_model "eval_metric" is assumed to be rmse, be careful when changing it
+
     if xgb_model_parameters['booster'] == 'gblinear':
         xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
         xgb_model_parameters['feature_selector'] = 'thrifty'  # cyclic # greedy # thrifty
@@ -55,6 +58,8 @@ class Settings:
         xgb_model_parameters['max_depth'] = 1
 
     plot_tree = False
+
+    n_of_paths_importance_plotted: int = 49
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1

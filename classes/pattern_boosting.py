@@ -13,6 +13,7 @@ import functools
 import itertools
 import sys
 import copy
+from typing import List, Tuple
 
 # from pympler import asizeof
 
@@ -86,7 +87,10 @@ class PatternBoosting:
                 self.test_error.append(self.evaluate(test_dataset))
 
             # TODO improve this evaluation process to get train error, it seems unnecessary to re-evaluate the whole dataset
-            self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
+            if self.settings.algorithm != "Xgb_step":
+                self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
+            else:
+                self.train_error.append(self.model.get_last_training_error() * self.model.get_last_training_error())
 
             if self.settings.update_features_importance_by_comparison is False:
                 if len(self.train_error) <= 1:
@@ -99,14 +103,10 @@ class PatternBoosting:
                     train_error=self.train_error,
                     default_value=default_importance_value)
             else:
-                second_best_column = self.find_second_best_column(selected_column_number,
-                                                                  number_of_learners=iteration_number + 1)
+                second_best_column, second_column_error = self.find_second_best_column(selected_column_number)
 
-                # TODO new_model train new_model on new matrix, note that it needs to be taken into account that the old models need the original matrix with the original position of the columns
-                new_model = copy.deepcopy(self.model)
+                improvment = second_column_error - self.train_error[-1]
 
-                new_error = None
-                improvment = None
                 self.boosting_matrix.update_column_importance(selected_column_number, improvment)
 
             self.number_of_learners.append(iteration_number + 1)
@@ -124,18 +124,33 @@ class PatternBoosting:
                 test_dataset)
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
 
-    def find_second_best_column(self, first_column_number):
+    def find_second_best_column(self, first_column_number: int) -> tuple[int, float]:
+        """
+        Finds the second-best column to be used in the boosting model based on the feature importances.
+
+        This method wraps around the model's `select_second_best_column` function. It provides an interface to retrieve the second most important
+        feature after excluding a specified column. If the model's algorithm setting does not match "Xgb_step",
+        a TypeError is raised.
+
+        :param first_column_number: The index of the column to be excluded from feature importance assessment.
+        :type first_column_number: int
+        :raises TypeError: If the wrong algorithm is specified in the settings and the function is incompatible
+                           with the model in use.
+        :return: A tuple containing the index of the second-best column (with the second-highest feature
+                 importance) and the final training error of the model if the algorithm setting is "Xgb_step".
+        :rtype: tuple[int, float]
+        """
         model = self.model
         boosting_matrix = self.boosting_matrix
         labels = self.training_dataset.labels
 
-
         if self.settings.algorithm == "Xgb_step":
-
-            return model.select_second_best_column(boosting_matrix,first_column_number, labels)
+            return model.select_second_best_column(boosting_matrix, first_column_number, labels)
         else:
             raise TypeError(
-                "Wrong algorithm, impossible to get feature importance by comparison for this model, change update_features_importance_by_comparison in settings")
+                "Wrong algorithm, impossible to get feature importance by comparison for this model; "
+                "change update_features_importance_by_comparison in settings."
+            )
 
     def evaluate_progression(self, dataset: Dataset, boosting_matrix_matrix=None):
         '''
@@ -343,7 +358,7 @@ class PatternBoosting:
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
 
-    def get_boosting_matrix_header(self):
+    def get_boosting_matrix_header(self) -> List[Tuple[int]]:
         return self.boosting_matrix.get_header()
 
     def get_boosting_matrix_columns_importance_values(self) -> list[float]:
@@ -393,3 +408,8 @@ class PatternBoosting:
 
         else:
             raise TypeError(f"tipe of dataset must be 'train' or 'test', got {dataset} instead")
+
+    def get_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
+        importance = self.get_boosting_matrix_columns_importance_values()
+        paths = self.get_boosting_matrix_header()
+        return paths, importance

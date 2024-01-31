@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from PyAstronomy import pyasl
+from typing import List, Tuple
 
 
 class BoostingMatrix:
@@ -121,7 +122,7 @@ class BoostingMatrix:
         new_header = self.header[:column] + self.header[column + 1:]
         return BoostingMatrix(new_matrix, new_header)
 
-    def get_header(self) -> list:
+    def get_header(self) -> List[Tuple[int]]:
         return self.header
 
     def __str__(self):
