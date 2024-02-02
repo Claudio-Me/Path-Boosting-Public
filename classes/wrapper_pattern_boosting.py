@@ -9,8 +9,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import functools
 import numpy as np
 from sklearn import metrics
-from typing import Sequence, Iterable
-from typing import List, Tuple
+from typing import List, Tuple, Optional, Sequence, Iterable
 
 
 class WrapperPatternBoosting:
@@ -29,7 +28,7 @@ class WrapperPatternBoosting:
             graphs_list = [graphs_list]
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
-        prediction = [] * len(graphs_list)
+        prediction = [None] * len(graphs_list)
         for i, graph in enumerate(graphs_list):
             metal_centers_labels = [graph.node_to_label[metal_center] for metal_center in graph.metal_center]
             graph_prediction = 0
@@ -49,6 +48,11 @@ class WrapperPatternBoosting:
 
             graph_prediction = graph_prediction / counter
             prediction[i] = graph_prediction
+        # Concatenate the arrays into a single array
+        concatenated_array = np.concatenate(prediction)
+
+        # Convert the resulting array to a Python list
+        prediction = concatenated_array.tolist()
         return prediction
 
     @staticmethod
@@ -68,33 +72,43 @@ class WrapperPatternBoosting:
         return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors(), dataset="train")
 
     @staticmethod
-    def __weighted_average(errors_lists, weights):
-        '''
-        Parameters:
-        errors_lists (list of lists): A nested list where each sublist contains numerical values.
-                    The number of elements in each sublist should be equal.
-        weights (list): A list of numerical values serving as weights for the errors_lists.
-                    The number of weights should be equal to the number of errors_lists.
+    def __weighted_average(error_lists: List[List[float]], weights: List[int]) -> List[Optional[float]]:
+        """
+        Calculate the weighted average of the i-th elements in a list of error_lists, given a list of weights.
+        The function handles error_lists of different lengths, excluding error_lists that don't have an i-th element.
 
-        Returns:
-        list: A list containing the weighted averages of the i-th elements of each sublist.
-              If the lengths of errors_lists and weights are not equal, an error message is returned.
-
-        Raises:
-        TypeError: If errors_lists is not a list or weights is not a list.
-        ValueError: If all elements in each sublist are not numeric.
-        ValueError: If the weights do not sum up to 1.
+        :param error_lists: A list of lists, where each error_list contains float elements.
+        :param weights: A list of integers representing the importance (weight) of each error_list.
+                        The weights do not need to sum up to 1.
+        :return: A list of floats, where the i-th element is the weighted average of the i-th elements from the error_lists.
+                 If no error_lists contain an i-th element, the i-th position in the output list will be None.
 
         Example:
-         errors_lists = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-         weights = [0.3, 0.2, 0.5]
-         weighted_average(errors_lists, weights)
-        [5.0, 6.0, 7.0]
-        '''
-        if len(errors_lists) == len(weights):
-            return [sum(x * y for x, y in zip(sublist, weights)) / sum(weights) for sublist in zip(*errors_lists)]
-        else:
-            raise TypeError("The length of errors_lists and weights should be equal")
+            error_lists = [[1.0, 2.0, 3.0], [4.0, 5.0], [6.0, 7.0, 8.0, 9.0]]
+            weights = [1, 2, 3]
+            output = weighted_average_of_error_lists(error_lists, weights)
+            print(output)  # Output: [4.5, 5.333333333333333, 6.75, 9.0]
+        """
+        weighted_avgs = []
+        max_len = max(len(single_model_error) for single_model_error in error_lists)
+
+        for i in range(max_len):
+            weighted_sum = 0.0
+            total_weight = 0
+
+            for single_model_error, weight in zip(error_lists, weights):
+                if i < len(single_model_error):
+                    weighted_sum += single_model_error[i] * weight
+                    total_weight += weight
+
+            if total_weight != 0:
+                weighted_avg = weighted_sum / total_weight
+            else:
+                weighted_avg = None
+
+            weighted_avgs.append(weighted_avg)
+
+        return weighted_avgs
 
     def __get_average_of_matrix_of_nested_list_of_errors(self, errors_lists: Iterable[Sequence[float]], dataset: str,
                                                          mode='average') -> np.array:
@@ -115,7 +129,6 @@ class WrapperPatternBoosting:
 
         error = np.array(self.__weighted_average(errors_lists, weights))
         number_of_trained_models = len(self.pattern_boosting_models_list)
-
 
         # TODO return the error based on the parameter 'mode' that can be average, max, min
         return error
@@ -164,11 +177,14 @@ class WrapperPatternBoosting:
         if test_dataset is None:
             test_datasets_list = [None for _ in range(len(train_datasets_list))]
 
+        self.train_dataset = train_dataset
+        self.test_dataset = test_dataset
+
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
 
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list)
-        pool = ThreadPool(min(10, len(Settings.considered_metal_centers)))
+        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
@@ -265,8 +281,10 @@ class WrapperPatternBoosting:
         '''
 
         importance_length = sum(
-            len(model.get_boosting_matrix_columns_importance_values()) for model in self.get_trained_pattern_boosting_models())
-        paths_length = sum(len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
+            len(model.get_boosting_matrix_columns_importance_values()) for model in
+            self.get_trained_pattern_boosting_models())
+        paths_length = sum(
+            len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
 
         importance = [0.0] * importance_length
         paths = [()] * paths_length

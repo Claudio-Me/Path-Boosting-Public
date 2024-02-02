@@ -3,7 +3,6 @@ import numpy as np
 from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
 from settings import Settings
-import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from collections import Counter
 from classes.pattern_boosting import PatternBoosting
@@ -20,10 +19,22 @@ import matplotlib.pyplot as plt
 
 
 class AnalysisWrapperPatternBoosting:
-    def __init__(self, wrapper_pattern_boosting: WrapperPatternBoosting):
+    def __init__(self, wrapper_pattern_boosting: WrapperPatternBoosting, test_predictions=None, train_predictions=None):
         self.wrapper_pattern_boosting = wrapper_pattern_boosting
+        self.test_predictions = test_predictions
+        self.train_predictions = train_predictions
+        if self.test_predictions is None:
+            self.test_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
+        if self.train_predictions is None:
+            self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.train_dataset)
 
-    def plot_top_n_paths_heatmap(self, n: int| None = None):
+
+    def plot_all_analysis(self, n: int | None = None):
+        self.plot_top_n_paths_heatmap(n)
+        self.plot_performance_scatter_plot(dataset='test')
+
+
+    def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.wrapper_pattern_boosting.get_patterns_importance()
         """
         Generates a heatmap for the `n` most important paths.
@@ -92,4 +103,57 @@ class AnalysisWrapperPatternBoosting:
         plt.ylabel('Paths')
         plt.xlabel('Subpath Length')
 
+        plt.show()
+
+
+
+    def plot_performance_scatter_plot(self,dataset: str):
+        if dataset == 'test':
+            predicted_values=self.test_predictions
+            actual_values=self.wrapper_pattern_boosting.test_dataset.get_labels()
+        elif dataset=='train':
+            predicted_values=self.train_predictions
+            actual_values=self.wrapper_pattern_boosting.train_dataset.get_labels()
+        """
+        Plot the performance of an algorithm by comparing predicted values to actual values using a scatter plot with color mapping.
+
+        Parameters:
+            - predicted_values: A list of predicted float values.
+            - actual_values: A list of actual float values.
+        """
+
+        # Check if the input lists are of the same length
+        if len(predicted_values) != len(actual_values):
+            print("Error: The lengths of the input lists do not match.")
+            return
+
+        # Create a range of indices for plotting
+        indices = range(len(predicted_values))
+
+        # Calculate the absolute errors
+        errors = np.abs(np.array(predicted_values) - np.array(actual_values))
+
+        # Set up the figure and axes
+        fig, ax = plt.subplots()
+
+        # Create a scatter plot with color mapping based on errors
+        sc = ax.scatter(actual_values,predicted_values, c=errors, cmap='viridis', marker='o')
+
+        # Determine the range of your data to plot the ideal line
+        min_val = min(min(actual_values), min(predicted_values))
+        max_val = max(max(actual_values), max(predicted_values))
+
+        # Plot ideal line (y=x) on the axis
+        ax.plot([min_val, max_val], [min_val, max_val], color="green", linestyle="--", label="Ideal")
+
+        # Set the labels and title
+        ax.set_xlabel("Actual Value")
+        ax.set_ylabel("Predicted Value")
+        ax.set_title("Performance of the Algorithm on test error")
+
+        # Add a color bar
+        cbar = fig.colorbar(sc)
+        cbar.ax.set_ylabel("Absolute Error")
+
+        # Display the plot
         plt.show()

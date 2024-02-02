@@ -131,9 +131,10 @@ class GradientBoostingModel:
 
         .. warning:: This function is only applicable for ModelType.xgb_one_step. If called with a different model type, it raises a warning.
         """
-
+        # TODO fix the case when matrix has only one column, for now we do not remove the column
         boosting_matrix_matrix = boosting_matrix.get_matrix()
         if self.model is ModelType.xgb_one_step:
+
             predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list[:-1], self.base_learners_dimension[:-1])])
@@ -143,15 +144,18 @@ class GradientBoostingModel:
 
 
             # remove the selected column from the matrix and train a model over the new matrix
-            boosting_matrix_without_column = boosting_matrix.new_matrix_without_column(first_column_number)
-            boosting_matrix_without_column_matrix = boosting_matrix_without_column.get_matrix()
+            if len(boosting_matrix.get_header())>1:
+                boosting_matrix_without_column = boosting_matrix.new_matrix_without_column(first_column_number)
+                boosting_matrix_without_column_matrix = boosting_matrix_without_column.get_matrix()
+            else:
+                boosting_matrix_without_column_matrix=boosting_matrix.get_matrix()
 
             xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
                                                 estimation_type=EstimationType.regression)
 
 
             eval_set = [(boosting_matrix_without_column_matrix, neg_gradient)]
-            xgb_model.fit(X=boosting_matrix_without_column_matrix, y=neg_gradient, eval_set=eval_set, verbose=True)
+            xgb_model.fit(X=boosting_matrix_without_column_matrix, y=neg_gradient, eval_set=eval_set)
             selected_column = np.argsort(xgb_model.feature_importances_)
             selected_column = selected_column[-1]
             if selected_column >= first_column_number:

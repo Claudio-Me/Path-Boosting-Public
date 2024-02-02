@@ -34,6 +34,7 @@ if __name__ == '__main__':
         wrapper_pattern_boosting.train(train_dataset, test_dataset)
         error = wrapper_pattern_boosting.get_wrapper_test_error()
         final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
+        print("len final test error", len(final_test_error))
         final_test_error = final_test_error[-1]
 
     else:
@@ -66,7 +67,7 @@ if __name__ == '__main__':
 
     if Settings.wrapper_boosting is True:
         analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
-        analysis.plot_top_n_paths_heatmap(n=Settings.n_of_paths_importance_plotted)
+        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted)
 
 
     else:

@@ -144,7 +144,7 @@ class PatternBoosting:
         boosting_matrix = self.boosting_matrix
         labels = self.training_dataset.labels
 
-        if self.settings.algorithm == "Xgb_step":
+        if self.settings.algorithm == "Xgb_step" and self.trained is True:
             return model.select_second_best_column(boosting_matrix, first_column_number, labels)
         else:
             raise TypeError(
