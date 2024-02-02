@@ -10,7 +10,7 @@ class Settings:
     save_analysis = False
     show_analysis = True
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
@@ -38,7 +38,7 @@ class Settings:
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
 
-    max_number_of_cores = 100
+    max_number_of_cores = 10
 
     xgb_model_parameters = {
         'n_estimators': 1,

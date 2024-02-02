@@ -59,16 +59,14 @@ if __name__ == '__main__':
         print(string)
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
-
     if Settings.wrapper_boosting is True:
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
     if Settings.wrapper_boosting is True:
-        pass
-        #analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
-        #analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted)
+        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
+        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted)
 
 
     else:

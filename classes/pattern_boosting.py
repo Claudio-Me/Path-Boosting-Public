@@ -120,6 +120,7 @@ class PatternBoosting:
                 break
 
         if test_dataset is not None:
+            print("computing test error")
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
                 test_dataset)
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
