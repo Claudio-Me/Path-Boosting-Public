@@ -66,8 +66,9 @@ if __name__ == '__main__':
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
     if Settings.wrapper_boosting is True:
-        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
-        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted)
+        pass
+        #analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
+        #analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted)
 
 
     else:
