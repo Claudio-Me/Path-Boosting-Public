@@ -50,7 +50,7 @@ class Dataset:
         self.graphs_list = self.graphs_list + new_dataset.graphs_list
         self.labels = self.labels + new_dataset.labels
 
-    def get_graphs_list(self):
+    def get_graphs_list(self)->list[GraphPB]:
         return self.graphs_list
 
     def get_labels(self):

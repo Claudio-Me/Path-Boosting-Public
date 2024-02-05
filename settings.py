@@ -5,18 +5,18 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100
+    maximum_number_of_steps = 2
 
     save_analysis = False
-    show_analysis = True
+    show_analysis = False
 
-    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = False
+    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    generate_new_dataset = True
 
     # in the error graph Print only the last N learners
     tail = 3800
 
-    wrapper_boosting = True
+    wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -61,7 +61,7 @@ class Settings:
 
     plot_tree = False
 
-    n_of_paths_importance_plotted: int = 49
+    n_of_paths_importance_plotted: int = 10
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1

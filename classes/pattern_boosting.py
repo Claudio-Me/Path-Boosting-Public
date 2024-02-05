@@ -33,8 +33,9 @@ class PatternBoosting:
         self.gradient_boosting_step = GradientBoostingStep()
         self.n_iterations = None
         self.boosting_matrix_matrix_for_test_dataset = None
+        self.global_train_labels_variance = None
 
-    def training(self, training_dataset, test_dataset=None):
+    def training(self, training_dataset, test_dataset=None, global_train_labels_variance=None):
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
         training is always the one took as input the first time the function "training" is called
         In future versions it will be possible to give as input a new dataset"""
@@ -65,6 +66,7 @@ class PatternBoosting:
         if self.trained is False:
             self.trained = True
             self.__initialize_boosting_matrix()
+            self.global_train_labels_variance = global_train_labels_variance
 
         else:
             boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in
@@ -119,10 +121,12 @@ class PatternBoosting:
             if self.train_error[-1] < Settings.target_train_error:
                 break
 
-        if test_dataset is not None:
+        if test_dataset is not None and self.settings.algorithm == "Xgb_step":
             print("computing test error")
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
                 test_dataset)
+            self.test_dataset_final_predictions = self.predict(self.test_dataset,
+                                                               self.boosting_matrix_matrix_for_test_dataset)
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
 
     def find_second_best_column(self, first_column_number: int) -> tuple[int, float]:
@@ -146,7 +150,8 @@ class PatternBoosting:
         labels = self.training_dataset.labels
 
         if self.settings.algorithm == "Xgb_step" and self.trained is True:
-            return model.select_second_best_column(boosting_matrix, first_column_number, labels)
+            return model.select_second_best_column(boosting_matrix, first_column_number, labels,
+                                                   global_labels_variance=self.global_train_labels_variance)
         else:
             raise TypeError(
                 "Wrong algorithm, impossible to get feature importance by comparison for this model; "

@@ -42,7 +42,8 @@ def load_dataset(dataset_name=None):
     return dataset
 
 
-def split_dataset_by_metal_centers(dataset, considered_metal_centers: list = Settings.considered_metal_centers):
+def split_dataset_by_metal_centers(dataset, considered_metal_centers: list = Settings.considered_metal_centers) -> list[
+    Dataset]:
     "It returns a list of datasets where dataset in i-th position have all the graphs that have the i-th atom as metal center"
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset)

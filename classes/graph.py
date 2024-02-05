@@ -289,7 +289,6 @@ class GraphPB:
         return metal_center_labels
 
     def find_metal_center_nodes(self) -> list:
-        warnings.warn("Metal list not initialized yet")
         metal_center = []
         warning = True
         for metal_label in self.metal_labels:
@@ -417,3 +416,10 @@ class GraphPB:
 
     def set_label(self, label):
         self.label = label
+
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__) and
+                np.all(getattr(other, 'adj_matrix', None) == self.adj_matrix))
+
+    def __hash__(self):
+        return hash(self.adj_matrix)

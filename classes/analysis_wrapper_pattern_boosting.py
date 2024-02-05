@@ -23,15 +23,18 @@ class AnalysisWrapperPatternBoosting:
         self.wrapper_pattern_boosting = wrapper_pattern_boosting
         self.test_predictions = test_predictions
         self.train_predictions = train_predictions
+        # old method, it works, but it is slow
+        #self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
         if self.test_predictions is None:
-            self.test_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
+            self.test_predictions = self.wrapper_pattern_boosting.predict_test_dataset()
         if self.train_predictions is None:
-            self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.train_dataset)
+            self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset()
 
 
     def plot_all_analysis(self, n: int | None = None):
         self.plot_top_n_paths_heatmap(n)
         self.plot_performance_scatter_plot(dataset='test')
+        self.plot_performance_scatter_plot(dataset='train')
 
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
@@ -124,6 +127,7 @@ class AnalysisWrapperPatternBoosting:
 
         # Check if the input lists are of the same length
         if len(predicted_values) != len(actual_values):
+            print(dataset)
             print("Error: The lengths of the input lists do not match.")
             return
 
