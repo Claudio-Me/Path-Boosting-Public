@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 2
+    maximum_number_of_steps = 3
 
     save_analysis = False
     show_analysis = False
