@@ -27,7 +27,7 @@ class Dataset:
                 raise TypeError("Graph format not recognized")
 
             if labels is None:
-                self.labels: list = [graph.label_value for graph in self.graphs_list]
+                self.labels: list = [graph.label for graph in self.graphs_list]
             else:
                 self.labels: list = labels
             if not (isinstance(self.labels[0], numbers.Number)):

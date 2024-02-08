@@ -56,7 +56,6 @@ def split_dataset_by_metal_centers(dataset, considered_metal_centers: list = Set
     print("Splitting the dataset")
 
     for i, graph in enumerate(dataset.get_graphs_list()):
-        # 46 is the most common metal center
         metal_centers_labels = [graph.node_to_label[metal_center] for metal_center in graph.metal_center]
         for metal_label in metal_centers_labels:
             try:
@@ -65,6 +64,5 @@ def split_dataset_by_metal_centers(dataset, considered_metal_centers: list = Set
             except:
                 print("No metal center found for graph ", i)
 
-    datasets_list = [Dataset(dataset) if len(dataset) > 0 else None for dataset in datasets_list]
-    del dataset
+    datasets_list = [Dataset(graphs_list) if len(graphs_list) > 0 else None for graphs_list in datasets_list]
     return datasets_list

@@ -121,6 +121,8 @@ class PatternBoosting:
             if self.train_error[-1] < Settings.target_train_error:
                 break
 
+        self.training_dataset_final_predictions = self.predict(self.training_dataset, self.boosting_matrix)
+
         if test_dataset is not None and self.settings.algorithm == "Xgb_step":
             print("computing test error")
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
@@ -367,6 +369,9 @@ class PatternBoosting:
     def get_boosting_matrix_header(self) -> List[Tuple[int]]:
         return self.boosting_matrix.get_header()
 
+    def get_boosting_matrix(self):
+        return self.boosting_matrix
+
     def get_boosting_matrix_columns_importance_values(self) -> list[float]:
         return self.boosting_matrix.get_columns_importance()
 
@@ -401,14 +406,23 @@ class PatternBoosting:
         :param dataset: "training" or "test" depending on which of the two we want the observations to come from
         :return: the train/test dataset
         '''
+
         if dataset == "train" or dataset == "training":
-            if hasattr(self, 'test_dataset'):
-                return self.test_dataset
+            if hasattr(self, 'training_dataset'):
+                if self.training_dataset is not None:
+
+                    return self.training_dataset
+                else:
+                    return Dataset(graphs_list=None)
             else:
                 return Dataset(graphs_list=None)
+
         elif dataset == "test" or dataset == "testing":
-            if hasattr(self, 'training_dataset'):
-                return self.training_dataset
+            if hasattr(self, 'test_dataset'):
+                if self.test_dataset is not None:
+                    return self.test_dataset
+                else:
+                    return Dataset(graphs_list=None)
             else:
                 return Dataset(graphs_list=None)
 

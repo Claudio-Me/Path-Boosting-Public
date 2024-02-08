@@ -23,50 +23,56 @@ class WrapperPatternBoosting:
             raise ValueError("not enough models for each metal center")
         self.pattern_boosting_models_list: list[PatternBoosting] = pattern_boosting_list
         self.metal_center_list = metal_center_list
-        self.original_test_dataset = None
-        self.original_train_dataset = None
+        self.test_dataset = None
+        self.train_dataset = None
 
     def predict_test_dataset(self) -> List[float]:
-        if self.original_test_dataset is None:
+        if self.test_dataset is None:
             warnings.warn("Test dataset not found")
             return None
         else:
-            predictions = [0.0] * len(self.original_test_dataset.get_graphs_list())
-            counters = [0] * len(self.original_test_dataset.get_graphs_list())
-            for i, graph in enumerate(self.original_test_dataset.get_graphs_list()):
+            predictions = [0.0] * len(self.test_dataset.get_graphs_list())
+            counters = [0] * len(self.test_dataset.get_graphs_list())
+            for i, graph in enumerate(self.test_dataset.get_graphs_list()):
 
                 for model in self.pattern_boosting_models_list:
+                    if model.trained is True:
+                        pass
                     try:
                         if graph in model.test_dataset.get_graphs_list():
                             pass
                         index = model.test_dataset.get_graphs_list().index(graph)
                         predictions[i] += model.test_dataset_final_predictions[index]
                         counters[i] += 1
+
                     except:
                         pass
-                if counters[i]==0:
+                if counters[i] == 0:
+                    print("test")
                     print(graph.node_to_label[graph.metal_center[0]])
             for i in range(len(predictions)):
                 if counters[i] != 0:
                     predictions[i] = predictions[i] / counters[i]
             return predictions
 
-
     def predict_train_dataset(self) -> List[float]:
-        if self.original_train_dataset is None:
+        if self.train_dataset is None:
             warnings.warn("Train dataset not found")
             return None
         else:
-            predictions = [0.0] * len(self.original_train_dataset.get_graphs_list())
-            counters = [0] * len(self.original_train_dataset.get_graphs_list())
-            for i, graph in enumerate(self.original_train_dataset.get_graphs_list()):
+            predictions = [0.0] * len(self.train_dataset.get_graphs_list())
+            counters = [0] * len(self.train_dataset.get_graphs_list())
+            for i, graph in enumerate(self.train_dataset.get_graphs_list()):
                 for model in self.pattern_boosting_models_list:
                     try:
-                        index = model.train_dataset.get_graphs_list().index(graph)
-                        predictions[i] += model.train_dataset_final_predictions[index]
+                        index = model.training_dataset.get_graphs_list().index(graph)
+                        predictions[i] += model.training_dataset_final_predictions[index]
                         counters[i] += 1
                     except:
                         pass
+                if counters[i] == 0:
+                    print("train")
+                    print(graph.node_to_label[graph.metal_center[0]])
             for i in range(len(predictions)):
                 if counters[i] != 0:
                     predictions[i] = predictions[i] / counters[i]
@@ -173,7 +179,7 @@ class WrapperPatternBoosting:
                     n_iterations times
         '''
 
-        weights = self.get_number_of_observations_per_model(dataset=dataset)
+        weights = self.get_number_of_observations_per_model(dataset_name=dataset)
 
         # filter out the models who are not trained (because their metal center is not contained in the training dataset)
 
@@ -202,17 +208,17 @@ class WrapperPatternBoosting:
         test_model_errors = [model.test_error for model in self.pattern_boosting_models_list]
         return test_model_errors
 
-    def get_number_of_observations_per_model(self, dataset: str) -> list[int]:
+    def get_number_of_observations_per_model(self, dataset_name: str) -> list[int]:
         '''
-        :param dataset: "training" or "test" depending on which of the two we want the observations to come from
+        :param dataset_name: "training" or "test" depending on which of the two we want the observations to come from
         :return: the number of observations used for the training/test of each model
         '''
-        if dataset == "train" or dataset == "test" or dataset == "training" or dataset == "testing":
-            dimension_list = [model.get_dataset(dataset).get_dimension() for model in self.pattern_boosting_models_list]
+        if dataset_name == "train" or dataset_name == "test" or dataset_name == "training" or dataset_name == "testing":
+            dimension_list = [model.get_dataset(dataset_name).get_dimension() for model in self.pattern_boosting_models_list]
             return dimension_list
         else:
             raise TypeError(
-                f"tipe of dataset must be 'train' or 'test' or 'training' or 'testing', got {dataset} instead")
+                f"tipe of dataset must be 'train' or 'test' or 'training' or 'testing', got {dataset_name} instead")
 
     def train(self, train_dataset, test_dataset=None):
 
@@ -220,13 +226,11 @@ class WrapperPatternBoosting:
         if not isinstance(train_dataset, list):
             if not isinstance(train_dataset, Dataset):
                 train_dataset = Dataset(train_dataset)
-            self.original_train_dataset = train_dataset
             train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
                                                                  considered_metal_centers=self.metal_center_list)
             if test_dataset is not None:
                 if not isinstance(test_dataset, Dataset):
                     test_dataset = Dataset(test_dataset)
-                self.original_test_dataset = test_dataset
                 test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
                                                                     considered_metal_centers=self.metal_center_list)
         else:
@@ -367,3 +371,21 @@ class WrapperPatternBoosting:
             importance_index += len(model_importance)
             paths_index += len(model_paths)
         return paths, importance
+
+    def get_selected_paths(self):
+        paths_length = sum(
+            len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
+
+        paths = [()] * paths_length
+
+        paths_index = 0
+
+        for model in self.get_trained_pattern_boosting_models():
+            model_paths = model.get_boosting_matrix_header()
+
+            paths[paths_index:paths_index + len(model_paths)] = model_paths
+
+            paths_index += len(model_paths)
+        return list(set(paths))
+
+

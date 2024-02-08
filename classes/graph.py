@@ -26,7 +26,7 @@ class GraphPB:
         # nodel_labels is assumed to be a dictionary where the key is the node and the value is the feature
         self.node_to_label = node_to_labels_dictionary
 
-        self.label_value = label_value
+        self.label = label_value
 
         self.label_to_node = self.__from_node_feature_dictionary_to_feature_node_dictionary(node_to_labels_dictionary)
 
@@ -414,7 +414,8 @@ class GraphPB:
 
         return new_dict
 
-    def set_label(self, label):
+
+    def set_label_value(self, label):
         self.label = label
 
     def __eq__(self, other):

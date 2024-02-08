@@ -10,7 +10,6 @@ from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis_patternboosting import AnalysisPatternBoosting
 from data.load_dataset import load_dataset
-from data.load_dataset import split_dataset_by_metal_centers
 from classes.dataset import Dataset
 from classes.wrapper_pattern_boosting import WrapperPatternBoosting
 # from pympler import asizeof
@@ -65,8 +64,12 @@ if __name__ == '__main__':
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
     if Settings.wrapper_boosting is True:
+        if Settings.dataset_name == "5k_synthetic_dataset":
+            synthetic_dataset = SyntheticDataset()
+        else:
+            synthetic_dataset = None
         analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
-        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted)
+        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
 
 
     else:

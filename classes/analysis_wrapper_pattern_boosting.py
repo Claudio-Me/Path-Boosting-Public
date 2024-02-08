@@ -16,6 +16,8 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+from classes.analysis import *
 
 
 class AnalysisWrapperPatternBoosting:
@@ -24,18 +26,25 @@ class AnalysisWrapperPatternBoosting:
         self.test_predictions = test_predictions
         self.train_predictions = train_predictions
         # old method, it works, but it is slow
-        #self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
+        # self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
         if self.test_predictions is None:
             self.test_predictions = self.wrapper_pattern_boosting.predict_test_dataset()
         if self.train_predictions is None:
             self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset()
 
-
-    def plot_all_analysis(self, n: int | None = None):
+    def plot_all_analysis(self, n: int | None = None, synthetic_dataset: SyntheticDataset | None = None):
         self.plot_top_n_paths_heatmap(n)
-        self.plot_performance_scatter_plot(dataset='test')
-        self.plot_performance_scatter_plot(dataset='train')
 
+        self.plot_performance_scatter_plot(dataset='Train')
+        self.plot_performance_scatter_plot(dataset='Test')
+
+        plot_error_evolution(self.wrapper_pattern_boosting.train_error, dataset='Train')
+        plot_error_evolution(self.wrapper_pattern_boosting.test_error, dataset='Test')
+
+        if synthetic_dataset is not None:
+            self.synthetic_dataset_spotted_paths(synthetic_dataset)
+            self.performances_on_synthetic_dataset(synthetic_dataset, 'Train')
+            self.performances_on_synthetic_dataset(synthetic_dataset, 'Test')
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.wrapper_pattern_boosting.get_patterns_importance()
@@ -108,15 +117,13 @@ class AnalysisWrapperPatternBoosting:
 
         plt.show()
 
-
-
-    def plot_performance_scatter_plot(self,dataset: str):
-        if dataset == 'test':
-            predicted_values=self.test_predictions
-            actual_values=self.wrapper_pattern_boosting.test_dataset.get_labels()
-        elif dataset=='train':
-            predicted_values=self.train_predictions
-            actual_values=self.wrapper_pattern_boosting.train_dataset.get_labels()
+    def plot_performance_scatter_plot(self, dataset: str):
+        if dataset == 'test' or dataset == 'Test':
+            predicted_values = self.test_predictions
+            actual_values = self.wrapper_pattern_boosting.test_dataset.get_labels()
+        elif dataset == 'train' or dataset == 'Train' :
+            predicted_values = self.train_predictions
+            actual_values = self.wrapper_pattern_boosting.train_dataset.get_labels()
         """
         Plot the performance of an algorithm by comparing predicted values to actual values using a scatter plot with color mapping.
 
@@ -141,7 +148,7 @@ class AnalysisWrapperPatternBoosting:
         fig, ax = plt.subplots()
 
         # Create a scatter plot with color mapping based on errors
-        sc = ax.scatter(actual_values,predicted_values, c=errors, cmap='viridis', marker='o')
+        sc = ax.scatter(actual_values, predicted_values, c=errors, cmap='viridis', marker='o')
 
         # Determine the range of your data to plot the ideal line
         min_val = min(min(actual_values), min(predicted_values))
@@ -153,7 +160,7 @@ class AnalysisWrapperPatternBoosting:
         # Set the labels and title
         ax.set_xlabel("Actual Value")
         ax.set_ylabel("Predicted Value")
-        ax.set_title("Performance of the Algorithm on test error")
+        ax.set_title("Performance of the Algorithm on " + dataset + " error")
 
         # Add a color bar
         cbar = fig.colorbar(sc)
@@ -161,3 +168,49 @@ class AnalysisWrapperPatternBoosting:
 
         # Display the plot
         plt.show()
+
+    def synthetic_dataset_spotted_paths(self, synthetic_dataset: SyntheticDataset) -> pd.DataFrame:
+
+        selected_paths = self.wrapper_pattern_boosting.get_selected_paths()
+
+        # count the number of really important paths that have been selected by the algorithm
+        counter = 0
+
+        for target_path in set(synthetic_dataset.target_paths):
+            if target_path in selected_paths:
+                counter += 1
+        print("Total number of target paths: ", len(synthetic_dataset.target_paths))
+        oracle_train_error = synthetic_dataset.oracle_model_evaluate(
+            graphs_list=self.wrapper_pattern_boosting.train_dataset.get_graphs_list(),
+            labels=self.wrapper_pattern_boosting.train_dataset.get_labels())
+
+        data = {"Target paths spotted": [counter],
+                "selected paths": [len(selected_paths)],
+                "train err": [self.wrapper_pattern_boosting.train_error[-1]],
+                "oracle train err": [oracle_train_error]
+                }
+        if self.wrapper_pattern_boosting.test_error is not None:
+            oracle_test_error = synthetic_dataset.oracle_model_evaluate(
+                graphs_list=self.wrapper_pattern_boosting.test_dataset.get_graphs_list(),
+                labels=self.wrapper_pattern_boosting.test_dataset.get_labels())
+            data["test err"] = [self.wrapper_pattern_boosting.test_error[-1]]
+            data["oracle test err"] = [oracle_test_error]
+        data = pd.DataFrame(data)
+        print(data.to_markdown())
+        return data
+
+    def performances_on_synthetic_dataset(self, synthetic_dataset: SyntheticDataset, dataset: str):
+        if dataset == 'test' or dataset == 'Test':
+            graphs_list = self.wrapper_pattern_boosting.test_dataset.get_graphs_list()
+            wrapper_boosting_preds = self.test_predictions
+            labels = self.wrapper_pattern_boosting.test_dataset.get_labels()
+        else:
+            graphs_list = self.wrapper_pattern_boosting.train_dataset.get_graphs_list()
+            wrapper_boosting_preds = self.train_predictions
+            labels = self.wrapper_pattern_boosting.train_dataset.get_labels()
+
+        oracle_model_predictions = synthetic_dataset.oracle_model_predict(graphs_list)
+        compare_performances_on_synthetic_dataset(test_model_preds=wrapper_boosting_preds,
+                                                  oracle_model_preds=oracle_model_predictions,
+                                                  true_values=labels,
+                                                  dataset=dataset)

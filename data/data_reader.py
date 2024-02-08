@@ -34,7 +34,7 @@ def read_data_from_directory(directory):
     return dataset
 
 
-def split_training_and_test(dataset, test_size, labels: list = None, random_split_seed=None)->Tuple[Dataset]:
+def split_training_and_test(dataset, test_size, labels: list = None, random_split_seed=None)->Tuple[Dataset,Dataset]:
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset, labels)
     train_dataset, test_dataset = dataset.split_dataset(test_size, random_split_seed)
