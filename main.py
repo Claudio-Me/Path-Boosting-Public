@@ -68,7 +68,7 @@ if __name__ == '__main__':
             synthetic_dataset = SyntheticDataset()
         else:
             synthetic_dataset = None
-        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting)
+        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting,save=Settings.save_analysis, show=Settings.show_analysis)
         analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
 
 

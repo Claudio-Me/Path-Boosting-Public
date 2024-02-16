@@ -12,12 +12,15 @@ import functools
 import numpy as np
 from sklearn import metrics
 from typing import List, Tuple, Optional, Sequence, Iterable
+import pandas as pd
+from collections import defaultdict
 
 
 class WrapperPatternBoosting:
-    def __init__(self, pattern_boosting_list: list = None, metal_center_list: list = Settings.considered_metal_centers):
+    def __init__(self, pattern_boosting_list: list = None, metal_center_list: list = Settings.considered_metal_centers,
+                 settings: Settings = Settings()):
         if pattern_boosting_list is None:
-            pattern_boosting_list = [PatternBoosting() for _ in range(len(metal_center_list))]
+            pattern_boosting_list = [PatternBoosting(settings) for _ in range(len(metal_center_list))]
 
         if len(pattern_boosting_list) != len(metal_center_list):
             raise ValueError("not enough models for each metal center")
@@ -25,6 +28,8 @@ class WrapperPatternBoosting:
         self.metal_center_list = metal_center_list
         self.test_dataset = None
         self.train_dataset = None
+        self.settings = settings
+        self.total_boosting_matrix = None
 
     def predict_test_dataset(self) -> List[float]:
         if self.test_dataset is None:
@@ -214,7 +219,8 @@ class WrapperPatternBoosting:
         :return: the number of observations used for the training/test of each model
         '''
         if dataset_name == "train" or dataset_name == "test" or dataset_name == "training" or dataset_name == "testing":
-            dimension_list = [model.get_dataset(dataset_name).get_dimension() for model in self.pattern_boosting_models_list]
+            dimension_list = [model.get_dataset(dataset_name).get_dimension() for model in
+                              self.pattern_boosting_models_list]
             return dimension_list
         else:
             raise TypeError(
@@ -257,8 +263,9 @@ class WrapperPatternBoosting:
         array_of_outputs = pool.map(
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
-        self.test_error = self.get_wrapper_test_error()
-        self.train_error = self.get_wrapper_train_error()
+        if self.settings.show_analysis is True or self.settings.save_analysis is True:
+            self.test_error = self.get_wrapper_test_error()
+            self.train_error = self.get_wrapper_train_error()
 
         return array_of_outputs
 
@@ -293,11 +300,11 @@ class WrapperPatternBoosting:
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
         matrices_list = [model.create_boosting_matrix_for(graphs_list, convert_to_boosting_matrix) for model in
-                         self.pattern_boosting_models_list]
+                         self.pattern_boosting_models_list if model.trained is True]
         return matrices_list
 
-    def create_ordered_boosting_matrix(self, graphs_list,
-                                       convert_to_boosting_matrix=False) -> np.ndarray | BoostingMatrix:
+    def create_ordered_boosting_matrix(self, graphs_list: list | Dataset,
+                                       convert_to_boosting_matrix: bool = False) -> np.ndarray | BoostingMatrix:
         '''
         :param graphs_list: list or dataset of graphs
         :param convert_to_boosting_matrix: to decide if at the end the boosting matrices should be converted in the class BoostingMatrix
@@ -311,7 +318,7 @@ class WrapperPatternBoosting:
         boosting_matrix = np.hstack(boosting_matrices_list)
 
         list_columns_importance = [model.get_boosting_matrix_columns_importance_values for model in
-                                   self.pattern_boosting_models_list]
+                                   self.pattern_boosting_models_list if model.trained is True]
 
         columns_importance = np.hstack(list_columns_importance)
 
@@ -324,11 +331,19 @@ class WrapperPatternBoosting:
             return boosting_matrix
         else:
             # TODO test this part
-            headers = [model.get_boosting_matrix_header() for model in self.pattern_boosting_models_list]
+            headers = [model.get_boosting_matrix_header() for model in self.pattern_boosting_models_list if model.trained is True]
             headers = self.__flatten_concatenation(headers)
             ordered_headers = [header for _, _, header in sorted(zip(headers, transposed_boosting_matrix, headers))]
             return BoostingMatrix(boosting_matrix, ordered_headers,
                                   sorted(columns_importance))
+
+    def get_train_correlations(self,paths_list: list)-> dict:
+        correlations_dictionaries=[model.get_max_path_correlation(paths_list) for model in self.pattern_boosting_models_list if model.trained is True]
+        result = defaultdict(int)
+        for dictionary in correlations_dictionaries:
+                for key, value in dictionary.items():
+                    result[key] = max(result[key], value)
+        return dict(result)
 
     @staticmethod
     def __flatten_concatenation(matrix):
@@ -372,7 +387,8 @@ class WrapperPatternBoosting:
             paths_index += len(model_paths)
         return paths, importance
 
-    def get_selected_paths(self):
+    def get_boosting_matrix_header(self):
+        # note it returns all the paths in the boosting matrix, even the ones that have not been selected
         paths_length = sum(
             len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
 
@@ -382,6 +398,23 @@ class WrapperPatternBoosting:
 
         for model in self.get_trained_pattern_boosting_models():
             model_paths = model.get_boosting_matrix_header()
+
+            paths[paths_index:paths_index + len(model_paths)] = model_paths
+
+            paths_index += len(model_paths)
+        return list(set(paths))
+
+    def get_selected_paths(self):
+        # note it returns all the paths that have been actually used by at least one model
+        paths_length = sum(
+            len(model.get_selected_paths_in_boosting_matrix()) for model in self.get_trained_pattern_boosting_models())
+
+        paths = [()] * paths_length
+
+        paths_index = 0
+
+        for model in self.get_trained_pattern_boosting_models():
+            model_paths = model.get_selected_paths_in_boosting_matrix()
 
             paths[paths_index:paths_index + len(model_paths)] = model_paths
 

@@ -20,7 +20,7 @@ class BoostingMatrix:
         else:
             self.columns_importance = patterns_importance
 
-    def __get_path_column(self, path: tuple) -> int:
+    def get_path_column(self, path: tuple) -> int | None:
         '''
         It returns none if it is not present
         '''
@@ -182,7 +182,7 @@ class BoostingMatrix:
         :return: return the importance measure of the path, it returns 0 if path is not present
                  N.B. there is a similar function "get_importance_of" that returns None if path is not present
         '''
-        column = self.__get_path_column(path)
+        column = self.get_path_column(path)
         if column is None:
             return 0
         else:
@@ -216,7 +216,7 @@ class BoostingMatrix:
         if isinstance(path, int):
             return self.number_of_times_column_is_selected[path]
         elif isinstance(path, tuple):
-            column = self.__get_path_column(path)
+            column = self.get_path_column(path)
             if column is None:
                 return 0
             else:
@@ -230,5 +230,5 @@ class BoostingMatrix:
         return self.matrix
 
     def get_pandas_matrix(self):
-        pd.DataFrame(self.get_matrix(),
+        return pd.DataFrame(self.get_matrix(),
                      columns=self.get_header())

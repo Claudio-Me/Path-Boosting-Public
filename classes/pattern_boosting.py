@@ -401,6 +401,9 @@ class PatternBoosting:
     def get_n_iterations(self):
         return self.n_iterations
 
+    def get_selected_paths_in_boosting_matrix(self):
+        return self.boosting_matrix.get_selected_paths()
+
     def get_dataset(self, dataset: str) -> Dataset:
         '''
         :param dataset: "training" or "test" depending on which of the two we want the observations to come from
@@ -433,3 +436,18 @@ class PatternBoosting:
         importance = self.get_boosting_matrix_columns_importance_values()
         paths = self.get_boosting_matrix_header()
         return paths, importance
+
+    def get_max_path_correlation(self, paths_list: list):
+        boosting_dataframe = self.boosting_matrix.get_pandas_matrix()
+
+
+        highest_correlations = {}
+        corr_matrix = boosting_dataframe.corr()
+        for col_name in paths_list:
+            if col_name in corr_matrix.columns:
+                corr_values = corr_matrix[col_name]
+                corr_values = corr_values[corr_values.index != col_name]  # exclude self-correlation
+                absolute_corr_values = corr_values.abs()  # consider absolute correlation
+                highest_corr_coef = np.nanmax(absolute_corr_values)
+                highest_correlations[col_name] = highest_corr_coef
+        return highest_correlations

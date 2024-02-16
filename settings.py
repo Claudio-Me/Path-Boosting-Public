@@ -7,10 +7,11 @@ import os
 class Settings:
     maximum_number_of_steps = 100
 
-    save_analysis = False
+
+    save_analysis = True
     show_analysis = False
 
-    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
@@ -38,12 +39,12 @@ class Settings:
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
 
-    max_number_of_cores = 10
+    max_number_of_cores = 80
 
     xgb_model_parameters = {
         'n_estimators': 1,
         'booster': 'gbtree',  # gbtree # gblinear
-        'learning_rate': 0.5,
+        'learning_rate': 0.4,
         "eval_metric": "rmse",
         "objective": 'reg:squarederror',
         "reg_lambda": 0

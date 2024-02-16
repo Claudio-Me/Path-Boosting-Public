@@ -194,9 +194,9 @@ class SyntheticDataset:
     def get_number_of_times_all_path_are_selected(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
         matrix = pattern_boosting.boosting_matrix
         n_times_path_is_selected = [matrix.get_number_of_times_path_has_been_selected(path) for path in
-                                    matrix.get_selected_paths()]
+                                    matrix.get_boosting_matrix_header()]
         data = {
-            "Selected Path": matrix.get_selected_paths(),
+            "Selected Path": matrix.get_boosting_matrix_header(),
             "n times has been selected": n_times_path_is_selected
         }
         return pd.DataFrame(data)

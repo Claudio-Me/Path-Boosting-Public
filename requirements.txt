@@ -6,3 +6,5 @@ matplotlib~=3.6.2
 PyAstronomy~=0.18.0
 xgboost~=1.7.3
 mpi4py~=3.1.4
+rpy2~=3.5.6
+seaborn~=0.13.2

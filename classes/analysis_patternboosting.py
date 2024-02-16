@@ -28,13 +28,13 @@ class AnalysisPatternBoosting:
         self.train_error = train_error
         self.test_error = test_error
 
-    def load_and_analyze(self, directory, show=True, save=True):
+    def load_and_analyze(self, directory, show=True, save=True, synthetic_dataset=None):
 
         pattern_boosting = data_reader.load_data(directory=directory, filename="pattern_boosting")
         try:
             synthetic_dataset = data_reader.load_data(directory=directory, filename="synthetic_dataset")
         except:
-            synthetic_dataset = None
+            pass
         self.all_analysis(pattern_boosting, synthetic_dataset, show=show, save=save)
 
     def all_analysis(self, pattern_boosting: PatternBoosting, synthetic_dataset=None, show=True, save=True):
@@ -201,13 +201,6 @@ class AnalysisPatternBoosting:
             if self.test_predictions is None:
                 self.test_predictions = pattern_boosting.predict(pattern_boosting.test_dataset,
                                                                  pattern_boosting.boosting_matrix_matrix_for_test_dataset)
-
-            tmp_weird_graphs = []
-            for number, prediction in enumerate(self.test_predictions):
-                if prediction < 0.18:
-                    tmp_weird_graphs.append(pattern_boosting.test_dataset.get_graph_number(number))
-
-            boosting_matrix_of_weird_graphs = pattern_boosting.generate_boosting_matrix(Dataset(tmp_weird_graphs))
 
             plt.style.use('ggplot')
 
