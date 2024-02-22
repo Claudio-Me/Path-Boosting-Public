@@ -5,14 +5,14 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100
+    maximum_number_of_steps = 80
 
 
     save_analysis = True
     show_analysis = False
 
     dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = True
+    generate_new_dataset = False
 
     # in the error graph Print only the last N learners
     tail = 3800
@@ -39,7 +39,7 @@ class Settings:
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
 
-    max_number_of_cores = 80
+    max_number_of_cores = 20
 
     xgb_model_parameters = {
         'n_estimators': 1,
@@ -62,7 +62,7 @@ class Settings:
 
     plot_tree = False
 
-    n_of_paths_importance_plotted: int = 10
+    n_of_paths_importance_plotted: int = 30
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1

@@ -52,6 +52,22 @@ class AnalysisWrapperPatternBoosting:
             self.performances_on_synthetic_dataset(synthetic_dataset, 'Test')
             self.missed_paths_correlations(synthetic_dataset)
 
+    def sub_tuple(self,t1: tuple[int], t2: tuple[int]) -> bool:
+        """Checks if t1 is a sub-tuple of t2."""
+        lt1, lt2 = len(t1), len(t2)
+        for i in range(lt2 - lt1 + 1):
+            if t1 == t2[i: i + lt1]:
+                return True
+        return False
+
+    def __find_longest_path_containing(self, top_path: tuple[int], all_paths: list[tuple[int]], max_length: int) -> tuple[int]:
+        """Find the longest path that contains the top path."""
+        longest_path = top_path
+        for path in all_paths:
+            if self.sub_tuple(top_path, path) and len(path) > len(longest_path) and len(path)< max_length:
+                longest_path = path
+        return longest_path
+
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.wrapper_pattern_boosting.get_patterns_importance()
         """
@@ -88,8 +104,9 @@ class AnalysisWrapperPatternBoosting:
         # Sort the paths by their importances and select the top `n`
         sorted_pairs = sorted(zip(paths, importances), key=lambda x: x[1], reverse=True)
         top_paths, top_importances = zip(*sorted_pairs[:n])
+        #top_paths = [self.__find_longest_path_containing(top_path, paths, max_length=4) for top_path in top_paths]
 
-        max_len = max(len(path) for path in top_paths)  # Change here
+        max_len = max(len(path) for path in top_paths)
 
         # Creating the heatmap matrix where each row corresponds to a top path
         heatmap_matrix = np.zeros((n, max_len))
@@ -130,6 +147,7 @@ class AnalysisWrapperPatternBoosting:
                                                             folder_relative_path='results', unique_subfolder=True)
 
             fig.savefig(saving_location)
+
     def plot_performance_scatter_plot(self, dataset: str):
         if dataset == 'test' or dataset == 'Test':
             predicted_values = self.test_predictions
@@ -188,7 +206,6 @@ class AnalysisWrapperPatternBoosting:
                                                             folder_relative_path='results', unique_subfolder=True)
 
             fig.savefig(saving_location)
-
 
     def synthetic_dataset_spotted_paths(self, synthetic_dataset: SyntheticDataset) -> pd.DataFrame:
 
@@ -289,11 +306,11 @@ class AnalysisWrapperPatternBoosting:
                         times_is_present = times_is_present + times_present_in_model
             number_of_times_path_is_present[path] = [highest_correlations_missed_paths[path], times_is_present]
 
-        #just change the key from tuple to int
-        dataframe_to_save={}
+        # just change the key from tuple to int
+        dataframe_to_save = {}
         for key in number_of_times_path_is_present.keys():
-            dataframe_to_save[str(key)]=number_of_times_path_is_present[key]
-        dataframe_to_save= pd.DataFrame(dataframe_to_save)
+            dataframe_to_save[str(key)] = number_of_times_path_is_present[key]
+        dataframe_to_save = pd.DataFrame(dataframe_to_save)
         dataframe_to_save = dataframe_to_save.sort_values(0, axis=1, ascending=False)
         dataframe_to_save.index = ["correlation", "times present"]
 

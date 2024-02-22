@@ -22,7 +22,6 @@ def read_data_from_directory(directory):
     print("reading dataset")
     if directory[-1] != "/":
         directory = directory + "/"
-    print("location: " + directory)
     names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
     print(len(names))
