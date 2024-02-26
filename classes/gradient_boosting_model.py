@@ -282,7 +282,7 @@ class GradientBoostingModel:
 
                 return selected_column[-1]
 
-    def __create_xgb_model(self, base_score=0, estimation_type=Settings.estimation_type):
+    def __create_xgb_model(self, base_score=0.0, estimation_type=Settings.estimation_type):
 
         # create a Xgb model
         param = Settings.xgb_model_parameters

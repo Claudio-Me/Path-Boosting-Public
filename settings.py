@@ -80,7 +80,7 @@ class Settings:
     final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
 
     # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0.2
+    test_size = 0.03
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'
