@@ -82,3 +82,4 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
                                                         folder_relative_path='results', unique_subfolder=True)
 
         fig.savefig(saving_location)
+

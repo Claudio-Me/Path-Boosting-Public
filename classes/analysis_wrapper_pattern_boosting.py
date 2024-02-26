@@ -70,6 +70,9 @@ class AnalysisWrapperPatternBoosting:
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.wrapper_pattern_boosting.get_patterns_importance()
+        for value in importances:
+            if value<0:
+                pass
         """
         Generates a heatmap for the `n` most important paths.
 

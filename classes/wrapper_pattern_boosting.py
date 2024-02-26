@@ -191,8 +191,11 @@ class WrapperPatternBoosting:
         errors_lists, weights = list(zip(*[(error, weights) for error, weights in zip(errors_lists, weights) if
                                            not (error is None or error == [])]))
 
-        error = np.array(self.__weighted_average(errors_lists, weights))
-        number_of_trained_models = len(self.pattern_boosting_models_list)
+        if mode == 'average':
+            error = np.array(self.__weighted_average(errors_lists, weights))
+            number_of_trained_models = len(self.pattern_boosting_models_list)
+        else:
+            raise TypeError('Uknown Mode')
 
         # TODO return the error based on the parameter 'mode' that can be average, max, min
         return error

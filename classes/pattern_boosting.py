@@ -85,7 +85,7 @@ class PatternBoosting:
                                                                                            boosting_matrix=self.boosting_matrix,
                                                                                            labels=self.training_dataset.labels,
                                                                                            number_of_learners=iteration_number + 1)
-            if test_dataset is not None and self.settings.algorithm != "Xgb_step":
+            if test_dataset is not None and self.settings.algorithm == "Xgb_step":
                 self.test_error.append(self.evaluate(test_dataset))
 
             # TODO improve this evaluation process to get train error, it seems unnecessary to re-evaluate the whole dataset

@@ -5,7 +5,7 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 80
+    maximum_number_of_steps = 100
 
 
     save_analysis = True
@@ -32,19 +32,19 @@ class Settings:
         considered_metal_centers = None
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 100
+    max_path_length = 101
 
     target_train_error = 0.000001
 
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
 
-    max_number_of_cores = 20
+    max_number_of_cores = 100
 
     xgb_model_parameters = {
         'n_estimators': 1,
         'booster': 'gbtree',  # gbtree # gblinear
-        'learning_rate': 0.4,
+        'learning_rate': 0.3,
         "eval_metric": "rmse",
         "objective": 'reg:squarederror',
         "reg_lambda": 0
