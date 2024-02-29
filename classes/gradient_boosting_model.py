@@ -169,7 +169,7 @@ class GradientBoostingModel:
                 selected_column += 1
 
             results = xgb_model.evals_result()
-            final_train_error = results['validation_0'][Settings.xgb_model_parameters['eval_metric']][-1]
+            final_train_error = results['validation_0'][Settings.xgb_model_parameters["eval_metric"]][-1]
 
             # we assume the eval method is rmse
             final_train_error = final_train_error * final_train_error

@@ -5,13 +5,13 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 100
+    maximum_number_of_steps = 10
 
 
     save_analysis = True
     show_analysis = False
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
@@ -39,7 +39,7 @@ class Settings:
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
 
-    max_number_of_cores = 100
+    max_number_of_cores = 10
 
     xgb_model_parameters = {
         'n_estimators': 1,
@@ -80,7 +80,7 @@ class Settings:
     final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
 
     # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0.03
+    test_size = 0.2
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'
