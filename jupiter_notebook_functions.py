@@ -73,7 +73,7 @@ def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, m
         xgb_settings = Settings.xgb_model_parameters
 
     xgb_settings['n_estimators'] = max_number_of_learners
-    xgb_model = XGBRegressor(**xgb_settings)
+    xgb_model = XGBRegressor(**xgb_settings, base_score=np.mean(y_train))
 
     eval_set = [(x_train, y_train), (x_test, y_test)]
     xgb_model.fit(x_train, y_train, eval_set=eval_set)
@@ -120,31 +120,29 @@ def get_XGB_error_and_variable_importance(max_path_length, frequency_matrix, lab
 
     # for i in range(1, max_number_of_learners + 1,10):
 
-
     xgb_settings['n_estimators'] = max_number_of_learners
-    xgb_model = XGBRegressor(**xgb_settings)
+    xgb_model = XGBRegressor(**xgb_settings, base_score=np.mean(y_train))
 
     eval_set = [(x_train, y_train), (x_test, y_test)]
     xgb_model.fit(x_train, y_train, eval_set=eval_set)
 
-        # test the model
-        # y_test_pred = xgb_model.predict(x_test)
-        # y_train_pred = xgb_model.predict(x_train)
+    # test the model
+    # y_test_pred = xgb_model.predict(x_test)
+    # y_train_pred = xgb_model.predict(x_train)
 
     if Settings.final_evaluation_error == "MSE":
-            results = xgb_model.evals_result()
-            train_error = results['validation_0'][Settings.xgb_model_parameters["eval_metric"]]
-            test_error = results['validation_1'][Settings.xgb_model_parameters["eval_metric"]]
-            # settings eval is rmse so we take the square
-            train_error=[error**2 for error in train_error]
-            test_error=[error ** 2 for error in test_error]
+        results = xgb_model.evals_result()
+        train_error = results['validation_0'][Settings.xgb_model_parameters["eval_metric"]]
+        test_error = results['validation_1'][Settings.xgb_model_parameters["eval_metric"]]
+        # settings eval is rmse so we take the square
+        train_error = [error ** 2 for error in train_error]
+        test_error = [error ** 2 for error in test_error]
 
-            #model_test_error = metrics.mean_squared_error(y_test, y_test_pred)
-            #model_train_error = metrics.mean_squared_error(y_train, y_train_pred)
+        # model_test_error = metrics.mean_squared_error(y_test, y_test_pred)
+        # model_train_error = metrics.mean_squared_error(y_train, y_train_pred)
 
     else:
-            raise ValueError("measure error not found")
-
+        raise ValueError("measure error not found")
 
     # plot_importance(xgb_model)
     # plt.show()

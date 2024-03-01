@@ -209,8 +209,9 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             if len(self.base_learners_list) == 0:
                 # if it is the first time we launch the model
-                # xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
+                #xgb_model = self.__create_xgb_model(base_score=None)
                 xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
+
                 eval_set = [(boosting_matrix, labels)]
                 xgb_model.fit(boosting_matrix, labels, eval_set=eval_set)
 
@@ -287,9 +288,10 @@ class GradientBoostingModel:
         # create a Xgb model
         param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
+
+
             return XGBRegressor(**Settings.xgb_model_parameters,
-                                base_score=base_score
-                                )
+                                base_score=base_score)
         elif estimation_type is EstimationType.classification:
             return XGBClassifier(param, num_boosted_rounds=2)
         else:

@@ -5,11 +5,11 @@ import os
 
 
 class Settings:
-    maximum_number_of_steps = 10
+    maximum_number_of_steps = 100
 
 
     save_analysis = True
-    show_analysis = False
+    show_analysis = True
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
@@ -17,7 +17,7 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    wrapper_boosting = True
+    wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -27,7 +27,6 @@ class Settings:
                                     72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
                                     89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
                                     104, 105, 106, 107, 108, 109, 110, 111, 112]
-
     else:
         considered_metal_centers = None
 
