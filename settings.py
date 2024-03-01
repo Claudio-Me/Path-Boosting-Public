@@ -2,14 +2,15 @@ from classes.enumeration.estimation_type import EstimationType
 import platform
 import pandas as pd
 import os
+import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 100
+    maximum_number_of_steps = 10
 
 
-    save_analysis = True
-    show_analysis = True
+    save_analysis = False
+    show_analysis = False
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
@@ -17,7 +18,7 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    wrapper_boosting = False
+    wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -38,7 +39,7 @@ class Settings:
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
 
-    max_number_of_cores = 10
+    max_number_of_cores = mp.cpu_count()
 
     xgb_model_parameters = {
         'n_estimators': 1,

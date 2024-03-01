@@ -14,6 +14,37 @@ from sklearn import metrics
 from typing import List, Tuple, Optional, Sequence, Iterable
 import pandas as pd
 from collections import defaultdict
+import multiprocessing as mp
+
+
+def predict_test_dataset_graph(args):
+    graph, pattern_boosting_models_list = args
+    prediction = 0.0
+    counter = 0
+
+    for model in pattern_boosting_models_list:
+        try:
+            index = model.test_dataset.get_graphs_list().index(graph)
+            prediction += model.test_dataset_final_predictions[index]
+            counter += 1
+        except ValueError:
+            pass
+    return prediction, counter
+
+
+def predict_train_dataset_graph(args):
+    graph, pattern_boosting_models_list = args
+    prediction = 0.0
+    counter = 0
+
+    for model in pattern_boosting_models_list:
+        try:
+            index = model.train_dataset.get_graphs_list().index(graph)
+            prediction += model.train_dataset_final_predictions[index]
+            counter += 1
+        except ValueError:
+            pass
+    return prediction, counter
 
 
 class WrapperPatternBoosting:
@@ -31,7 +62,63 @@ class WrapperPatternBoosting:
         self.settings = settings
         self.total_boosting_matrix = None
 
-    def predict_test_dataset(self) -> List[float]:
+    def predict_test_dataset_parallel(self) -> List[float] | None:
+        if self.test_dataset is None:
+            warnings.warn("Test dataset not found")
+            return None
+        else:
+            graphs_list = self.test_dataset.get_graphs_list()
+
+            # Define the number of processes to use, e.g., the number of CPU cores
+            num_processes = min(len(graphs_list), self.settings.max_number_of_cores)
+
+            # Create arguments list for multiprocessing
+            args_list = [(graph, self.get_trained_pattern_boosting_models()) for graph in graphs_list]
+
+            # Use multiprocessing Pool to parallelize the task
+            with mp.Pool(num_processes) as pool:
+                results = pool.map(predict_test_dataset_graph, args_list)
+
+            # Aggregation of results and normalization
+            predictions = [result[0] for result in results]
+            counters = [result[1] for result in results]
+
+            # Normalizing the predictions with the counters
+            for i in range(len(predictions)):
+                if counters[i] != 0:
+                    predictions[i] /= counters[i]
+
+            return predictions
+
+    def predict_train_dataset_parallel(self) -> List[float] | None:
+        if self.train_dataset is None:
+            warnings.warn("Train dataset not found")
+            return None
+        else:
+            graphs_list = self.train_dataset.get_graphs_list()
+
+            # Define the number of processes to use, e.g., the number of CPU cores
+            num_processes = min(len(graphs_list), self.settings.max_number_of_cores)
+
+            # Create arguments list for multiprocessing
+            args_list = [(graph, self.get_trained_pattern_boosting_models()) for graph in graphs_list]
+
+            # Use multiprocessing Pool to parallelize the task
+            with mp.Pool(num_processes) as pool:
+                results = pool.map(predict_train_dataset_graph, args_list)
+
+            # Aggregation of results and normalization
+            predictions = [result[0] for result in results]
+            counters = [result[1] for result in results]
+
+            # Normalizing the predictions with the counters
+            for i in range(len(predictions)):
+                if counters[i] != 0:
+                    predictions[i] /= counters[i]
+
+            return predictions
+
+    def predict_test_dataset(self) -> List[float] | None:
         if self.test_dataset is None:
             warnings.warn("Test dataset not found")
             return None
@@ -41,26 +128,21 @@ class WrapperPatternBoosting:
             for i, graph in enumerate(self.test_dataset.get_graphs_list()):
 
                 for model in self.pattern_boosting_models_list:
-                    if model.trained is True:
-                        pass
+
                     try:
-                        if graph in model.test_dataset.get_graphs_list():
-                            pass
+
                         index = model.test_dataset.get_graphs_list().index(graph)
                         predictions[i] += model.test_dataset_final_predictions[index]
                         counters[i] += 1
 
                     except:
                         pass
-                if counters[i] == 0:
-                    print("test")
-                    print(graph.node_to_label[graph.metal_center[0]])
             for i in range(len(predictions)):
                 if counters[i] != 0:
                     predictions[i] = predictions[i] / counters[i]
             return predictions
 
-    def predict_train_dataset(self) -> List[float]:
+    def predict_train_dataset(self) -> List[float] | None:
         if self.train_dataset is None:
             warnings.warn("Train dataset not found")
             return None
@@ -75,9 +157,6 @@ class WrapperPatternBoosting:
                         counters[i] += 1
                     except:
                         pass
-                if counters[i] == 0:
-                    print("train")
-                    print(graph.node_to_label[graph.metal_center[0]])
             for i in range(len(predictions)):
                 if counters[i] != 0:
                     predictions[i] = predictions[i] / counters[i]
@@ -288,6 +367,8 @@ class WrapperPatternBoosting:
     def get_pattern_boosting_models(self):
         return self.pattern_boosting_models_list
 
+
+
     def get_trained_pattern_boosting_models(self):
         return [model for model in self.get_pattern_boosting_models() if model.trained is True]
 
@@ -334,18 +415,20 @@ class WrapperPatternBoosting:
             return boosting_matrix
         else:
             # TODO test this part
-            headers = [model.get_boosting_matrix_header() for model in self.pattern_boosting_models_list if model.trained is True]
+            headers = [model.get_boosting_matrix_header() for model in self.pattern_boosting_models_list if
+                       model.trained is True]
             headers = self.__flatten_concatenation(headers)
             ordered_headers = [header for _, _, header in sorted(zip(headers, transposed_boosting_matrix, headers))]
             return BoostingMatrix(boosting_matrix, ordered_headers,
                                   sorted(columns_importance))
 
-    def get_train_correlations(self,paths_list: list)-> dict:
-        correlations_dictionaries=[model.get_max_path_correlation(paths_list) for model in self.pattern_boosting_models_list if model.trained is True]
+    def get_train_correlations(self, paths_list: list) -> dict:
+        correlations_dictionaries = [model.get_max_path_correlation(paths_list) for model in
+                                     self.pattern_boosting_models_list if model.trained is True]
         result = defaultdict(int)
         for dictionary in correlations_dictionaries:
-                for key, value in dictionary.items():
-                    result[key] = max(result[key], value)
+            for key, value in dictionary.items():
+                result[key] = max(result[key], value)
         return dict(result)
 
     @staticmethod
@@ -423,5 +506,3 @@ class WrapperPatternBoosting:
 
             paths_index += len(model_paths)
         return list(set(paths))
-
-
