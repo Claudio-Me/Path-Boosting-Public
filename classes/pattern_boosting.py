@@ -105,9 +105,13 @@ class PatternBoosting:
                     train_error=self.train_error,
                     default_value=default_importance_value)
             else:
-                second_best_column, second_column_error = self.find_second_best_column(selected_column_number)
+                if len(self.get_boosting_matrix_header())<=1:
+                    improvment=np.var(self.training_dataset.get_labels())
+                    improvment=0
+                else:
+                    second_best_column, second_column_error = self.find_second_best_column(selected_column_number)
 
-                improvment = second_column_error - self.train_error[-1]
+                    improvment = second_column_error - self.train_error[-1]
 
                 self.boosting_matrix.update_column_importance(selected_column_number, improvment)
 

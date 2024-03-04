@@ -60,6 +60,7 @@ if __name__ == '__main__':
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
     if Settings.wrapper_boosting is True:
+        print("Number of tained models: ",len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")

@@ -6,7 +6,7 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 80
+    maximum_number_of_steps = 1000
 
 
     save_analysis = True
@@ -18,7 +18,7 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    wrapper_boosting = True
+    wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -34,7 +34,7 @@ class Settings:
     # do not expand if the paths are longer than this amount
     max_path_length = 101
 
-    target_train_error = 0.000001
+    target_train_error = 0.0000001
 
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True

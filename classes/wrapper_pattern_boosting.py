@@ -39,10 +39,10 @@ def predict_train_dataset_graph(args):
 
     for model in pattern_boosting_models_list:
         try:
-            index = model.train_dataset.get_graphs_list().index(graph)
-            prediction += model.train_dataset_final_predictions[index]
+            index = model.training_dataset.get_graphs_list().index(graph)
+            prediction += model.training_dataset_final_predictions[index]
             counter += 1
-        except ValueError:
+        except:
             pass
     return prediction, counter
 
@@ -106,6 +106,7 @@ class WrapperPatternBoosting:
             # Use multiprocessing Pool to parallelize the task
             with mp.Pool(num_processes) as pool:
                 results = pool.map(predict_train_dataset_graph, args_list)
+
 
             # Aggregation of results and normalization
             predictions = [result[0] for result in results]
@@ -437,6 +438,12 @@ class WrapperPatternBoosting:
         for row in matrix:
             flat_list += row
         return flat_list
+
+    def get_normalized_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
+        paths, importances = self.get_patterns_importance()
+        norm_importances = [100*float(i) / max(importances) for i in importances]
+        return paths,norm_importances
+
 
     def get_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
         '''

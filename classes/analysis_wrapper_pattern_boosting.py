@@ -69,10 +69,8 @@ class AnalysisWrapperPatternBoosting:
         return longest_path
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
-        paths, importances = self.wrapper_pattern_boosting.get_patterns_importance()
-        for value in importances:
-            if value<0:
-                pass
+        paths, importances = self.wrapper_pattern_boosting.get_normalized_patterns_importance()
+
         """
         Generates a heatmap for the `n` most important paths.
 
@@ -107,7 +105,7 @@ class AnalysisWrapperPatternBoosting:
         # Sort the paths by their importances and select the top `n`
         sorted_pairs = sorted(zip(paths, importances), key=lambda x: x[1], reverse=True)
         top_paths, top_importances = zip(*sorted_pairs[:n])
-        #top_paths = [self.__find_longest_path_containing(top_path, paths, max_length=4) for top_path in top_paths]
+        top_paths = [self.__find_longest_path_containing(top_path, paths, max_length=6) for top_path in top_paths]
 
         max_len = max(len(path) for path in top_paths)
 
