@@ -137,7 +137,7 @@ class AnalysisPatternBoosting:
 
         # plot only integers on the x-axis
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        saving_location = data_reader.get_save_location(tittle, '.png')
+        saving_location = data_reader.get_save_location(tittle, '.png',unique_subfolder=True)
 
         if save is True:
             plt.savefig(saving_location)
@@ -160,7 +160,7 @@ class AnalysisPatternBoosting:
         if show is True:
             print(string)
         if save is True:
-            saving_location = data_reader.get_save_location("boosting_matrix_info", '.txt')
+            saving_location = data_reader.get_save_location("boosting_matrix_info", '.txt',unique_subfolder=True)
 
             original_stdout = sys.stdout  # Save a reference to the original standard output
 
@@ -189,7 +189,7 @@ class AnalysisPatternBoosting:
         # ax.set_ylabel('Importance')
         ax.set_title(tittle)
         ax.legend()
-        saving_location = data_reader.get_save_location(tittle, '.png')
+        saving_location = data_reader.get_save_location(tittle, '.png', unique_subfolder=True)
 
         if save is True:
             plt.savefig(saving_location)
@@ -213,7 +213,8 @@ class AnalysisPatternBoosting:
             ax.plot([min_all, max_all], [min_all, max_all], color='red')
 
         if save is True:
-            saving_location = data_reader.get_save_location(file_name="prediction_vs_true_value", file_extension='.png')
+            saving_location = data_reader.get_save_location(file_name="prediction_vs_true_value", file_extension='.png',
+                                                            unique_subfolder=True)
             plt.savefig(saving_location)
         if show is True:
             plt.show()
@@ -248,7 +249,7 @@ class AnalysisPatternBoosting:
         ax.set_xlabel('Path length')
         ax.set_title(tittle)
 
-        saving_location = data_reader.get_save_location(tittle, '.png')
+        saving_location = data_reader.get_save_location(tittle, '.png', unique_subfolder=True)
 
         if save is True:
             plt.savefig(saving_location)
@@ -301,7 +302,7 @@ class AnalysisPatternBoosting:
         ax.set_ylabel('Importance')
         ax.set_title(tittle)
 
-        saving_location = data_reader.get_save_location(file_name=tittle, file_extension='.png')
+        saving_location = data_reader.get_save_location(file_name=tittle, file_extension='.png',unique_subfolder=True)
 
         if save is True:
             plt.savefig(saving_location)

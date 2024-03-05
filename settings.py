@@ -6,11 +6,11 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 1000
+    maximum_number_of_steps = 300
 
 
     save_analysis = True
-    show_analysis = False
+    show_analysis = True
 
     dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
@@ -18,7 +18,7 @@ class Settings:
     # in the error graph Print only the last N learners
     tail = 3800
 
-    wrapper_boosting = False
+    wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -54,11 +54,12 @@ class Settings:
 
     if xgb_model_parameters['booster'] == 'gblinear':
         xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
-        xgb_model_parameters['feature_selector'] = 'thrifty'  # cyclic # greedy # thrifty
-        xgb_model_parameters['top_k'] = 1
+        xgb_model_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
+        #xgb_model_parameters['top_k'] = 1
 
     else:
         xgb_model_parameters['max_depth'] = 1
+        xgb_model_parameters['gamma'] = 0
 
     plot_tree = False
 
