@@ -6,7 +6,7 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 4000
+    maximum_number_of_steps = 5000
 
 
     save_analysis = True

@@ -279,6 +279,8 @@ class WrapperPatternBoosting:
         # TODO return the error based on the parameter 'mode' that can be average, max, min
         return error
 
+    def get_number_of_trained_models(self):
+        return len(self.pattern_boosting_models_list)
     def get_train_models_errors(self) -> Iterable[Sequence[float]]:
         '''
         :return: a nested list where each row is the vector of errors coming from the model
