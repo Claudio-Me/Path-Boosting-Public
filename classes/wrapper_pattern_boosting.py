@@ -107,7 +107,6 @@ class WrapperPatternBoosting:
             with mp.Pool(num_processes) as pool:
                 results = pool.map(predict_train_dataset_graph, args_list)
 
-
             # Aggregation of results and normalization
             predictions = [result[0] for result in results]
             counters = [result[1] for result in results]
@@ -368,8 +367,6 @@ class WrapperPatternBoosting:
     def get_pattern_boosting_models(self):
         return self.pattern_boosting_models_list
 
-
-
     def get_trained_pattern_boosting_models(self):
         return [model for model in self.get_pattern_boosting_models() if model.trained is True]
 
@@ -441,9 +438,8 @@ class WrapperPatternBoosting:
 
     def get_normalized_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
         paths, importances = self.get_patterns_importance()
-        norm_importances = [100*float(i) / max(importances) for i in importances]
-        return paths,norm_importances
-
+        norm_importances = [100 * float(i) / max(importances) for i in importances]
+        return paths, norm_importances
 
     def get_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
         '''
@@ -471,6 +467,7 @@ class WrapperPatternBoosting:
 
         for model in self.get_trained_pattern_boosting_models():
             model_importance = model.get_boosting_matrix_columns_importance_values()
+            model_importance = (model_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
             model_paths = model.get_boosting_matrix_header()
 
             importance[importance_index:importance_index + len(model_importance)] = model_importance

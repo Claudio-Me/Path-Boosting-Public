@@ -105,9 +105,9 @@ class PatternBoosting:
                     train_error=self.train_error,
                     default_value=default_importance_value)
             else:
-                if len(self.get_boosting_matrix_header())<=1:
-                    improvment=np.var(self.training_dataset.get_labels())
-                    improvment=0
+                if len(self.get_boosting_matrix_header()) <= 1:
+                    improvment = np.var(self.training_dataset.get_labels())
+                    improvment = 0
                 else:
                     second_best_column, second_column_error = self.find_second_best_column(selected_column_number)
 
@@ -408,6 +408,32 @@ class PatternBoosting:
     def get_selected_paths_in_boosting_matrix(self):
         return self.boosting_matrix.get_selected_paths()
 
+    def get_dataset_dimension(self, dataset: str) -> int:
+
+
+
+
+        if dataset == "train" or dataset == "training":
+            if hasattr(self, 'training_dataset'):
+                if self.training_dataset is None:
+                    return 0
+                else:
+                    return self.get_dataset("training").get_dimension()
+            else:
+                return 0
+
+        elif dataset == "test" or dataset == "testing":
+            if hasattr(self, 'test_dataset'):
+                if self.test_dataset is None:
+                    return 0
+                else:
+                    return self.get_dataset("test").get_dimension()
+            else:
+                return 0
+
+        else:
+            raise TypeError(f"tipe of dataset must be 'train' or 'test', got {dataset} instead")
+
     def get_dataset(self, dataset: str) -> Dataset:
         '''
         :param dataset: "training" or "test" depending on which of the two we want the observations to come from
@@ -443,7 +469,6 @@ class PatternBoosting:
 
     def get_max_path_correlation(self, paths_list: list):
         boosting_dataframe = self.boosting_matrix.get_pandas_matrix()
-
 
         highest_correlations = {}
         corr_matrix = boosting_dataframe.corr()

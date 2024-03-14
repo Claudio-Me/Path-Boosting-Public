@@ -52,7 +52,7 @@ class AnalysisWrapperPatternBoosting:
             self.performances_on_synthetic_dataset(synthetic_dataset, 'Test')
             self.missed_paths_correlations(synthetic_dataset)
 
-    def sub_tuple(self,t1: tuple[int], t2: tuple[int]) -> bool:
+    def sub_tuple(self, t1: tuple[int], t2: tuple[int]) -> bool:
         """Checks if t1 is a sub-tuple of t2."""
         lt1, lt2 = len(t1), len(t2)
         for i in range(lt2 - lt1 + 1):
@@ -60,11 +60,12 @@ class AnalysisWrapperPatternBoosting:
                 return True
         return False
 
-    def __find_longest_path_containing(self, top_path: tuple[int], all_paths: list[tuple[int]], max_length: int) -> tuple[int]:
+    def __find_longest_path_containing(self, top_path: tuple[int], all_paths: list[tuple[int]], max_length: int) -> \
+    tuple[int]:
         """Find the longest path that contains the top path."""
         longest_path = top_path
         for path in all_paths:
-            if self.sub_tuple(top_path, path) and len(path) > len(longest_path) and len(path)< max_length:
+            if self.sub_tuple(top_path, path) and len(path) > len(longest_path) and len(path) < max_length:
                 longest_path = path
         return longest_path
 
@@ -134,6 +135,7 @@ class AnalysisWrapperPatternBoosting:
         # Setting the labels for the x-axis to represent the subpath lengths
         ax.set_xticks(np.arange(max_len))
         ax.set_xticklabels(range(1, max_len + 1))
+        ax.set_xlim(0, max_len)
 
         plt.title(f'Top {n} Paths by Importance Heatmap')
         plt.ylabel('Paths')
@@ -144,7 +146,7 @@ class AnalysisWrapperPatternBoosting:
             plt.show()
         if self.save is True:
             saving_location = data_reader.get_save_location(file_name='heat_map',
-                                                            file_extension=".png",
+                                                            file_extension=".pdf",
                                                             folder_relative_path='results', unique_subfolder=True)
 
             fig.savefig(saving_location)
@@ -203,7 +205,7 @@ class AnalysisWrapperPatternBoosting:
             plt.show()
         if self.save is True:
             saving_location = data_reader.get_save_location(file_name=dataset + '_dataset_scatterplot',
-                                                            file_extension=".png",
+                                                            file_extension=".pdf",
                                                             folder_relative_path='results', unique_subfolder=True)
 
             fig.savefig(saving_location)

@@ -37,7 +37,7 @@ def compare_performances_on_synthetic_dataset(test_model_preds, oracle_model_pre
 
     if save is True:
         saving_location = data_reader.get_save_location(file_name=dataset + '_Model_vs_Oracle',
-                                                        file_extension=".png",
+                                                        file_extension=".pdf",
                                                         folder_relative_path='results', unique_subfolder=True)
 
 
@@ -78,7 +78,7 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
         fig.show()
 
     if save is True:
-        saving_location = data_reader.get_save_location(file_name=dataset + "_error_evolution", file_extension=".png",
+        saving_location = data_reader.get_save_location(file_name=dataset + "_error_evolution", file_extension=".pdf",
                                                         folder_relative_path='results', unique_subfolder=True)
 
         fig.savefig(saving_location)
