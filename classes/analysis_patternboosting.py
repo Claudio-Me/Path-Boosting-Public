@@ -11,6 +11,7 @@ from settings import Settings
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from data import data_reader
+from collections import defaultdict
 
 import pathlib
 import os
@@ -137,7 +138,7 @@ class AnalysisPatternBoosting:
 
         # plot only integers on the x-axis
         ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        saving_location = data_reader.get_save_location(tittle, '.pdf',unique_subfolder=True)
+        saving_location = data_reader.get_save_location(tittle, '.pdf', unique_subfolder=True)
 
         if save is True:
             plt.savefig(saving_location)
@@ -160,7 +161,7 @@ class AnalysisPatternBoosting:
         if show is True:
             print(string)
         if save is True:
-            saving_location = data_reader.get_save_location("boosting_matrix_info", '.txt',unique_subfolder=True)
+            saving_location = data_reader.get_save_location("boosting_matrix_info", '.txt', unique_subfolder=True)
 
             original_stdout = sys.stdout  # Save a reference to the original standard output
 
@@ -221,29 +222,34 @@ class AnalysisPatternBoosting:
 
     def __plot_bar_plot_of_path_length(self, boosting_matrix: BoostingMatrix, show=True, save=True):
         tittle = "Bar plot of path length"
-        path_length_vector = np.zeros(len(boosting_matrix.header))
+        path_length_vector = np.zeros(len(boosting_matrix.get_selected_paths()))
 
-        for i in range(len(boosting_matrix.header)):
-            path_length_vector[i] = len(boosting_matrix.header[i])
 
-        max_path_length = int(np.amax(path_length_vector))
 
-        path_length_counter = Counter(path_length_vector)
+        # Create a dictionary to count the tuples by their length
+        length_count = defaultdict(int)
+        for t in boosting_matrix.get_selected_paths():
+            length_count[len(t)] += 1
 
-        path_length = path_length_counter.keys()
-        path_length = [str(int(length)) for length in path_length]
-        number_of_paths = list(path_length_counter.values())
-        number_of_paths = [int(n) for n in number_of_paths]
+        # Compute the vector where the index represents the tuple length
+        max_length = max(length_count.keys())
+        number_of_paths = [length_count[i] for i in range(1, max_length + 1)]
 
         plt.style.use('ggplot')
 
         fig, ax = plt.subplots()
 
-        ax.bar(path_length, number_of_paths, color='maroon')
-        # plot only integers on the x axis
-        # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        ax.bar(range(1, len(number_of_paths) + 1), number_of_paths,color='maroon')
 
-        # to have only integers in the y axis
+        # Setting the x-axis labels to be column number + 1
+        ax.set_xticks(range(1, len(number_of_paths) + 1))
+        ax.set_xticklabels([str(i + 1) for i in range(len(number_of_paths))])
+
+
+        # plot only integers on the x-axis
+        # ax.x_axis.set_major_locator(MaxNLocator(integer=True))
+
+        # to have only integers in the y-axis
         ax.locator_params(axis='y', integer=True)
 
         ax.set_xlabel('Path length')
@@ -258,28 +264,25 @@ class AnalysisPatternBoosting:
 
     def __plot_histogram_of_path_length_importance(self, boosting_matrix: BoostingMatrix, show=True, save=True):
         tittle = "Path length importance"
-        path_length_vector = np.zeros(len(boosting_matrix.header))
+        path_length_vector = np.zeros(len(boosting_matrix.get_selected_paths()))
 
-        for i in range(len(boosting_matrix.header)):
-            path_length_vector[i] = len(boosting_matrix.header[i])
+        for i, path in enumerate(boosting_matrix.get_selected_paths()):
+            path_length_vector[i] = len(path)
 
         max_path_length = int(np.amax(path_length_vector))
 
+
         length_importance = [0] * max_path_length
-        paths_importance = np.array(len(boosting_matrix.get_header()))
         index_max = 0
         max_importance = 0
-        for i in range(paths_importance):
-            path_importance = boosting_matrix.get_path_importance(boosting_matrix.get_header()[i])
+        for i, selected_path in enumerate(boosting_matrix.get_selected_paths()):
+
+            path_importance = boosting_matrix.get_path_importance(selected_path)
+            length_importance[len(selected_path) - 1] += path_importance
             if max_importance < path_importance:
                 max_importance = path_importance
-                index_max = i
 
-        for i in range(len(boosting_matrix.get_header())):
-            if i != index_max:
-                path_length = len(boosting_matrix.header[i])
-                path_importance = boosting_matrix.get_path_importance(boosting_matrix.get_header()[i])
-                length_importance[path_length - 1] += path_importance
+
 
         # normalize the importance vector
         length_importance = np.array(length_importance)
@@ -289,25 +292,25 @@ class AnalysisPatternBoosting:
 
         fig, ax = plt.subplots()
 
-        if False:
-            ax.set_yscale('log')
-            tittle = tittle + " (log scale)"
-        # to do: convert range to string
-        path_length_labels = [str(i) for i in range(1, max_path_length + 1)]
+        # Plotting the bar plot
+        ax.bar(range(1, len(length_importance) + 1), length_importance)
 
-        cut_point = 1
-        ax.bar(path_length_labels, length_importance)
+        # Setting the x-axis labels to be column number + 1
+        ax.set_xticks(range(1, len(length_importance) + 1))
+        ax.set_xticklabels([str(i + 1) for i in range(len(length_importance))])
+
 
         ax.set_xlabel('Path length')
         ax.set_ylabel('Importance')
         ax.set_title(tittle)
 
-        saving_location = data_reader.get_save_location(file_name=tittle, file_extension='.pdf',unique_subfolder=True)
+        saving_location = data_reader.get_save_location(file_name=tittle, file_extension='.pdf', unique_subfolder=True)
+        if show is True:
 
+            plt.show()
         if save is True:
             plt.savefig(saving_location)
-        if show is True:
-            plt.show()
+
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.pattern_boosting.get_patterns_importance()

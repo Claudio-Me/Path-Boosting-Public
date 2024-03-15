@@ -91,7 +91,7 @@ class BoostingMatrix:
     def average_path_length(self):
         average_path_length = 0
 
-        for path in self.header:
+        for path in self.get_selected_paths():
             average_path_length = average_path_length + len(path)
         average_path_length = average_path_length / len(self.header)
         return average_path_length
