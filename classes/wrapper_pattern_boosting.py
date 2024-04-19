@@ -469,7 +469,7 @@ class WrapperPatternBoosting:
 
         for model in self.get_trained_pattern_boosting_models():
             model_importance = model.get_boosting_matrix_columns_importance_values()
-            model_importance = (model_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
+            model_importance = np.array(model_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
             model_paths = model.get_boosting_matrix_header()
 
             importance[importance_index:importance_index + len(model_importance)] = model_importance

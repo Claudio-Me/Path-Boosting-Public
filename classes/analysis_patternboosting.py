@@ -141,7 +141,7 @@ class AnalysisPatternBoosting:
         saving_location = data_reader.get_save_location(tittle, '.pdf', unique_subfolder=True)
 
         if save is True:
-            plt.savefig(saving_location)
+            plt.savefig(saving_location, format="pdf")
         if show is True:
             plt.show()
 
@@ -193,7 +193,7 @@ class AnalysisPatternBoosting:
         saving_location = data_reader.get_save_location(tittle, '.pdf', unique_subfolder=True)
 
         if save is True:
-            plt.savefig(saving_location)
+            plt.savefig(saving_location,format="pdf")
         if show is True:
             plt.show()
 
@@ -216,15 +216,13 @@ class AnalysisPatternBoosting:
         if save is True:
             saving_location = data_reader.get_save_location(file_name="prediction_vs_true_value", file_extension='.pdf',
                                                             unique_subfolder=True)
-            plt.savefig(saving_location)
+            plt.savefig(saving_location,format="pdf")
         if show is True:
             plt.show()
 
     def __plot_bar_plot_of_path_length(self, boosting_matrix: BoostingMatrix, show=True, save=True):
         tittle = "Bar plot of path length"
         path_length_vector = np.zeros(len(boosting_matrix.get_selected_paths()))
-
-
 
         # Create a dictionary to count the tuples by their length
         length_count = defaultdict(int)
@@ -239,12 +237,11 @@ class AnalysisPatternBoosting:
 
         fig, ax = plt.subplots()
 
-        ax.bar(range(1, len(number_of_paths) + 1), number_of_paths,color='maroon')
+        ax.bar(range(1, len(number_of_paths) + 1), number_of_paths, color='maroon')
 
         # Setting the x-axis labels to be column number + 1
         ax.set_xticks(range(1, len(number_of_paths) + 1))
         ax.set_xticklabels([str(i + 1) for i in range(len(number_of_paths))])
-
 
         # plot only integers on the x-axis
         # ax.x_axis.set_major_locator(MaxNLocator(integer=True))
@@ -258,7 +255,7 @@ class AnalysisPatternBoosting:
         saving_location = data_reader.get_save_location(tittle, '.pdf', unique_subfolder=True)
 
         if save is True:
-            plt.savefig(saving_location)
+            plt.savefig(saving_location,format="pdf")
         if show is True:
             plt.show()
 
@@ -271,7 +268,6 @@ class AnalysisPatternBoosting:
 
         max_path_length = int(np.amax(path_length_vector))
 
-
         length_importance = [0] * max_path_length
         index_max = 0
         max_importance = 0
@@ -281,8 +277,6 @@ class AnalysisPatternBoosting:
             length_importance[len(selected_path) - 1] += path_importance
             if max_importance < path_importance:
                 max_importance = path_importance
-
-
 
         # normalize the importance vector
         length_importance = np.array(length_importance)
@@ -299,18 +293,15 @@ class AnalysisPatternBoosting:
         ax.set_xticks(range(1, len(length_importance) + 1))
         ax.set_xticklabels([str(i + 1) for i in range(len(length_importance))])
 
-
         ax.set_xlabel('Path length')
         ax.set_ylabel('Importance')
         ax.set_title(tittle)
 
         saving_location = data_reader.get_save_location(file_name=tittle, file_extension='.pdf', unique_subfolder=True)
         if show is True:
-
             plt.show()
         if save is True:
-            plt.savefig(saving_location)
-
+            plt.savefig(saving_location,format="pdf")
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.pattern_boosting.get_patterns_importance()

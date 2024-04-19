@@ -40,7 +40,6 @@ def compare_performances_on_synthetic_dataset(test_model_preds, oracle_model_pre
                                                         file_extension=".pdf",
                                                         folder_relative_path='results', unique_subfolder=True)
 
-
         fig.savefig(saving_location)
 
 
@@ -66,7 +65,7 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
     ax.plot(iterations, error_list)
 
     # Inverse log scale for the y-axis
-    ax.set_yscale("log")
+    #ax.set_yscale("log")
 
     # Add title and labels
     ax.set_title(dataset + ' Error')
@@ -81,5 +80,4 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
         saving_location = data_reader.get_save_location(file_name=dataset + "_error_evolution", file_extension=".pdf",
                                                         folder_relative_path='results', unique_subfolder=True)
 
-        fig.savefig(saving_location)
-
+        fig.savefig(saving_location, format="pdf")

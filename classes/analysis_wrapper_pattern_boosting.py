@@ -35,6 +35,7 @@ class AnalysisWrapperPatternBoosting:
         if self.train_predictions is None:
             self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset_parallel()
 
+
     def plot_all_analysis(self, n: int | None = None, synthetic_dataset: SyntheticDataset | None = None):
         self.plot_top_n_paths_heatmap(n)
 
@@ -61,7 +62,7 @@ class AnalysisWrapperPatternBoosting:
         return False
 
     def __find_longest_path_containing(self, top_path: tuple[int], all_paths: list[tuple[int]], max_length: int) -> \
-    tuple[int]:
+            tuple[int]:
         """Find the longest path that contains the top path."""
         longest_path = top_path
         for path in all_paths:
@@ -149,7 +150,7 @@ class AnalysisWrapperPatternBoosting:
                                                             file_extension=".pdf",
                                                             folder_relative_path='results', unique_subfolder=True)
 
-            fig.savefig(saving_location)
+            fig.savefig(saving_location, format="pdf")
 
     def plot_performance_scatter_plot(self, dataset: str):
         if dataset == 'test' or dataset == 'Test':
@@ -208,7 +209,7 @@ class AnalysisWrapperPatternBoosting:
                                                             file_extension=".pdf",
                                                             folder_relative_path='results', unique_subfolder=True)
 
-            fig.savefig(saving_location)
+            fig.savefig(saving_location,format="pdf")
 
     def synthetic_dataset_spotted_paths(self, synthetic_dataset: SyntheticDataset) -> pd.DataFrame:
 

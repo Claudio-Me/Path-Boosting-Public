@@ -6,7 +6,7 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 5000
+    maximum_number_of_steps = 130
 
 
     save_analysis = True
@@ -16,9 +16,9 @@ class Settings:
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
-    tail = 3800
+    tail = 1000000
 
-    wrapper_boosting = False
+    wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -32,7 +32,7 @@ class Settings:
         considered_metal_centers = None
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 103
+    max_path_length = 4
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
@@ -40,7 +40,7 @@ class Settings:
     target_train_error = 0.0000001
 
     # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = True
+    update_features_importance_by_comparison = False
 
     max_number_of_cores = mp.cpu_count()
 
