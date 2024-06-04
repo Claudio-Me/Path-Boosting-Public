@@ -18,15 +18,7 @@ import sys
 from multiprocessing.dummy import Pool as ThreadPool
 import functools
 
-if __name__ == '__main__':
-    # Testing()
-    print("Number of CPU's: ", Settings.max_number_of_cores)
-    print("Dataset name: ", Settings.dataset_name)
 
-    dataset = load_dataset()
-
-    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                      random_split_seed=Settings.random_split_test_dataset_seed)
 
     # wrapper pattern boosting:
     if Settings.wrapper_boosting is True:
@@ -66,27 +58,9 @@ if __name__ == '__main__':
     if Settings.wrapper_boosting is True:
         print("Number of tained models: ",len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
-    else:
-        data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
     if Settings.wrapper_boosting is True:
-        if Settings.dataset_name == "5k_synthetic_dataset":
-            synthetic_dataset = SyntheticDataset()
-        else:
-            synthetic_dataset = None
+
         analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting,save=Settings.save_analysis, show=Settings.show_analysis)
         analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
 
-
-    else:
-        analysis = AnalysisPatternBoosting()
-        analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
-                                                                          unique_subfolder=True),
-                                  show=Settings.show_analysis,
-                                  save=Settings.save_analysis)
-
-        '''
-        if Settings.dataset_name == "5k_synthetic_dataset":
-            analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False,
-                                  save=True)
-        '''

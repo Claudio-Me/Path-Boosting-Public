@@ -6,17 +6,16 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 130
-
+    maximum_number_of_steps = 50
 
     save_analysis = True
-    show_analysis = True
+    show_analysis = False
 
-    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = False
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    generate_new_dataset = True
 
     # in the error graph Print only the last N learners
-    tail = 1000000
+    tail = 100
 
     wrapper_boosting = True
 
@@ -60,16 +59,17 @@ class Settings:
     if xgb_model_parameters['booster'] == 'gblinear':
         xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
         xgb_model_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
-        #xgb_model_parameters['top_k'] = 1
+        # xgb_model_parameters['top_k'] = 1
 
     else:
         xgb_model_parameters['max_depth'] = 1
         xgb_model_parameters['gamma'] = 0
 
-
     plot_tree = False
 
     n_of_paths_importance_plotted: int = 30
+
+    noise_variance = 1
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1
@@ -85,8 +85,6 @@ class Settings:
 
     # measure used for checkin the final error of the model (to plot error graphs)
     final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
-
-
 
     # the direcroty is relative to the python file location
     r_code_relative_location = 'R_code/m_boost.R'

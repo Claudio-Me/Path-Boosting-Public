@@ -304,7 +304,7 @@ class AnalysisPatternBoosting:
             plt.savefig(saving_location,format="pdf")
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
-        paths, importances = self.pattern_boosting.get_patterns_importance()
+        paths, importances = self.pattern_boosting.get_patterns_normalized_importance()
         """
         Generates a heatmap for the `n` most important paths.
 

@@ -194,6 +194,14 @@ class BoostingMatrix:
         '''
         return self.columns_importance
 
+
+    def get_normalized_columns_importance(self) -> list[float]:
+        '''
+        :return: return column's importance
+        '''
+        return [(100*float(i))/sum(self.columns_importance) for i in self.columns_importance]
+
+
     def different_rows(self):
         # Create a set to store the rows that have already been seen
         seen_rows = set()
@@ -212,7 +220,8 @@ class BoostingMatrix:
 
         return len(seen_rows)
 
-    def get_number_of_times_path_has_been_selected(self, path) -> int:
+    def get_number_of_times_path_has_been_selected(self, path: tuple| int) -> int:
+        # int is interpreted as the number of the column we want to knw
         if isinstance(path, int):
             return self.number_of_times_column_is_selected[path]
         elif isinstance(path, tuple):

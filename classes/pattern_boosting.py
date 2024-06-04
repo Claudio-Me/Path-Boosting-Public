@@ -47,7 +47,8 @@ class PatternBoosting:
             self.training_dataset = Dataset(training_dataset)
 
         elif training_dataset is None:
-            return
+            if self.trained is False:
+                return
         else:
             raise TypeError("Input dataset not recognized")
 
@@ -69,10 +70,11 @@ class PatternBoosting:
             self.global_train_labels_variance = global_train_labels_variance
 
         else:
-            boosting_matrix_matrix = [self.__create_boosting_vector_for_graph(graph) for graph in
-                                      training_dataset.graphs_list]
-            self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
-                                                  self.boosting_matrix.columns_importance)
+            if training_dataset is not None:
+                boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in
+                                      training_dataset.graphs_list])
+                self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
+                                                    self.boosting_matrix.columns_importance)
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             print("Step number ", iteration_number + 1)
@@ -379,6 +381,9 @@ class PatternBoosting:
     def get_boosting_matrix_columns_importance_values(self) -> list[float]:
         return self.boosting_matrix.get_columns_importance()
 
+    def get_boosting_matrix_normalized_columns_importance_values(self) -> list[float]:
+        return self.boosting_matrix.get_normalized_columns_importance()
+
     def __expand_boosting_matrix(self, selected_column_number):
         # Following two lines are jut to have mor readable code, everything can be grouped in one line
         length_selected_path = len(self.boosting_matrix.header[selected_column_number])
@@ -462,8 +467,8 @@ class PatternBoosting:
         else:
             raise TypeError(f"tipe of dataset must be 'train' or 'test', got {dataset} instead")
 
-    def get_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
-        importance = self.get_boosting_matrix_columns_importance_values()
+    def get_patterns_normalized_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
+        importance = self.get_boosting_matrix_normalized_columns_importance_values()
         paths = self.get_boosting_matrix_header()
         return paths, importance
 

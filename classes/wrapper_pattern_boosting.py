@@ -61,6 +61,7 @@ class WrapperPatternBoosting:
         self.train_dataset = None
         self.settings = settings
         self.total_boosting_matrix = None
+        self.trained = False
 
     def predict_test_dataset_parallel(self) -> List[float] | None:
         if self.test_dataset is None:
@@ -281,6 +282,7 @@ class WrapperPatternBoosting:
 
     def get_number_of_trained_models(self):
         return len(self.pattern_boosting_models_list)
+
     def get_train_models_errors(self) -> Iterable[Sequence[float]]:
         '''
         :return: a nested list where each row is the vector of errors coming from the model
@@ -312,23 +314,31 @@ class WrapperPatternBoosting:
 
     def train(self, train_dataset, test_dataset=None):
 
-        # some checks for the input format, whether the input dataset it is already divided by metal centers or not
-        if not isinstance(train_dataset, list):
-            if not isinstance(train_dataset, Dataset):
-                train_dataset = Dataset(train_dataset)
-            train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
+        if self.trained is False:
+
+                # some checks for the input format, whether the input dataset it is already divided by metal centers or not
+            if not isinstance(train_dataset, list):
+                if not isinstance(train_dataset, Dataset):
+                    train_dataset = Dataset(train_dataset)
+                train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
                                                                  considered_metal_centers=self.metal_center_list)
-            if test_dataset is not None:
-                if not isinstance(test_dataset, Dataset):
-                    test_dataset = Dataset(test_dataset)
-                test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
+                if test_dataset is not None:
+                    if not isinstance(test_dataset, Dataset):
+                        test_dataset = Dataset(test_dataset)
+                    test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
                                                                     considered_metal_centers=self.metal_center_list)
-        else:
-            train_datasets_list = train_dataset
-            test_datasets_list = test_dataset
+            else:
+                train_datasets_list = train_dataset
+                test_datasets_list = test_dataset
+            self.trained = True
+
 
         if test_dataset is None:
             test_datasets_list = [None for _ in range(len(train_datasets_list))]
+
+        self.test_dataset_list = test_datasets_list
+
+
 
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
@@ -338,6 +348,27 @@ class WrapperPatternBoosting:
         global_labels = [item for sublist in global_labels for item in sublist]
         global_labels_variance = np.var(global_labels)
         global_labels_variance = np.repeat(global_labels_variance, len(train_datasets_list))
+        # Parallelization
+        # ------------------------------------------------------------------------------------------------------------
+
+        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
+                                        global_labels_variance)
+        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+        array_of_outputs = pool.map(
+            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
+        # -------------------------------------------------------------------------------------------------------------
+        if self.settings.show_analysis is True or self.settings.save_analysis is True:
+            self.test_error = self.get_wrapper_test_error()
+            self.train_error = self.get_wrapper_train_error()
+
+        return array_of_outputs
+
+
+    def re_train(self):
+
+        train_datasets_list=[None]*len(self.pattern_boosting_models_list)
+        test_datasets_list=self.test_dataset_list
+        global_labels_variance=[None]*len(self.pattern_boosting_models_list)
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
 
@@ -469,7 +500,8 @@ class WrapperPatternBoosting:
 
         for model in self.get_trained_pattern_boosting_models():
             model_importance = model.get_boosting_matrix_columns_importance_values()
-            model_importance = np.array(model_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
+            model_importance = np.array(
+                model_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
             model_paths = model.get_boosting_matrix_header()
 
             importance[importance_index:importance_index + len(model_importance)] = model_importance

@@ -97,9 +97,9 @@ class SyntheticDataset:
                                     (39, 6, 5),
                                     (45, 7, 7), (45, 7), (45,),
                                     (48, 8, 7), (48, 8), (48,)]
-        self.target_paths = list(set(a + b + b2 + c + right_ratio + right_ratio_expanded + simple))
-
-        self.variance = 1
+        #self.target_paths = list(set(a + b + b2 + c + right_ratio + right_ratio_expanded + simple))
+        self.target_paths = right_ratio_expanded
+        self.variance = Settings.noise_variance
         random.seed(Settings.random_coefficients_synthetic_dataset_seed)
         np.random.seed(Settings.random_coefficients_synthetic_dataset_seed)
         self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
@@ -119,7 +119,7 @@ class SyntheticDataset:
         self.number_paths_counting = np.array(
             [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for
              graph in dataset.graphs_list])
-        new_labels = self.__formula_new_labels(self.number_paths_counting)
+        new_labels = self.__formula_new_labels(self.number_paths_counting, add_noise=True)
         dataset.labels = list(new_labels)
         a = self.number_paths_counting.sum(axis=1)
         self.number_of_graphs_that_contains_target_path = np.count_nonzero(a)
@@ -157,7 +157,8 @@ class SyntheticDataset:
 
         # add random noise
         if add_noise is True:
-            noise = np.random.normal(0, self.variance, len(y))
+            #noise = np.random.normal(0, self.variance, len(y))
+            noise = np.random.default_rng().normal(loc=0.0, scale=self.variance, size=len(y))
             y = y + noise
 
         # ------------------------------------------------------------------------------------------
@@ -194,9 +195,9 @@ class SyntheticDataset:
     def get_number_of_times_all_path_are_selected(self, pattern_boosting: PatternBoosting) -> pd.DataFrame:
         matrix = pattern_boosting.boosting_matrix
         n_times_path_is_selected = [matrix.get_number_of_times_path_has_been_selected(path) for path in
-                                    matrix.get_boosting_matrix_header()]
+                                    matrix.get_header()]
         data = {
-            "Selected Path": matrix.get_boosting_matrix_header(),
+            "Selected Path": matrix.get_header(),
             "n times has been selected": n_times_path_is_selected
         }
         return pd.DataFrame(data)
