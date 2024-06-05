@@ -142,7 +142,8 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     else:
         raise TypeError("Selected algorithm not recognized")
 
-    folder_name = folder_name + "_max_path_length_" + str(Settings.max_path_length) + "_" + Settings.dataset_name + "_"+Settings.xgb_model_parameters['booster']
+    folder_name = folder_name + "_max_path_length_" + str(
+        Settings.max_path_length) + "_" + Settings.dataset_name + "_" + Settings.xgb_model_parameters['booster']
 
     if Settings.considered_metal_centers is not None:
         folder_name = folder_name + "/wrapped_boosting"
