@@ -6,18 +6,18 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 10
+    maximum_number_of_steps = 3
 
     save_analysis = True
     show_analysis = True
 
-    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = True
+    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    generate_new_dataset = False
 
     # in the error graph Print only the last N learners
     tail = 100
 
-    wrapper_boosting = False
+    wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -31,10 +31,10 @@ class Settings:
         considered_metal_centers = None
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 7
+    max_path_length = 101
 
     # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0.2
+    test_size = 0.01
 
     target_train_error = 0.0000001
 

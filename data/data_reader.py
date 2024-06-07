@@ -93,12 +93,15 @@ def load_dataset_from_binary(directory=None, filename=None):
     return dataset
 
 
-def load_data(filename, directory=None):
+def load_data(filename=None, directory=None):
     if directory is None:
         directory = "data/"
-    if directory[-1] != "/":
-        directory = directory + "/"
-    with open(directory + filename + '.pkl', 'rb') as inp:
+
+    if filename is not None:
+        if directory[-1] != "/":
+            directory = directory + "/"
+        directory= directory + filename + '.pkl'
+    with open(directory, 'rb') as inp:
         data = pickle.load(inp)
     return data
 
