@@ -35,9 +35,10 @@ class AnalysisWrapperPatternBoosting:
         if self.train_predictions is None:
             self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset_parallel()
 
-
     def plot_all_analysis(self, n: int | None = None, synthetic_dataset: SyntheticDataset | None = None):
         self.plot_top_n_paths_heatmap(n)
+        self.plot_top_importance_paths(n)
+        self.plot_top_importance_paths(n, 2)
 
         self.plot_performance_scatter_plot(dataset='Train')
         self.plot_performance_scatter_plot(dataset='Test')
@@ -66,12 +67,71 @@ class AnalysisWrapperPatternBoosting:
         """Find the longest path that contains the top path."""
         longest_path = top_path
         for path in all_paths:
-            if self.sub_tuple(top_path, path) and len(path) > len(longest_path) and len(path) < max_length:
+            if self.sub_tuple(top_path, path) and len(path) > len(longest_path) and len(path) <= max_length:
                 longest_path = path
         return longest_path
 
+    def plot_top_importance_paths(self, n: int, min_length: int = 0):
+        paths, importances = self.wrapper_pattern_boosting.get_normalized_patterns_importance()
+
+        if n is None:
+            n = len(paths)
+        if n > len(paths):
+            raise ValueError(f"n ({n}) cannot be greater than the number of paths ({len(paths)})")
+
+            # Sort the paths by their importances and select the top `n`
+        sorted_pairs = sorted(zip(paths, importances), key=lambda x: x[1], reverse=True)
+        top_paths, top_importances = zip(*sorted_pairs)
+        top_paths = list(top_paths)
+        top_importances = list(top_importances)
+
+        indices_to_remove = []
+
+        # Iterate over top_paths_extended and collect the indices of duplicates
+        for i, path in enumerate(top_paths):
+            if len(path) < min_length:
+                indices_to_remove.append(i)
+
+        # Go through the indices in reverse order so we don't mess up the
+        # subsequent indices after removing an element from the list.
+        for index in sorted(indices_to_remove, reverse=True):
+            del top_paths[index]
+            del top_importances[index]
+
+        top_paths = top_paths[:n]
+        top_importances = top_importances[:n]
+
+        # Create a figure and a single subplot
+        fig, ax = plt.subplots()
+
+        top_paths=[str(path)for path in top_paths]
+        # Create the horizontal bar plot
+        ax.barh(range(len(top_paths)), top_importances, tick_label=top_paths)
+
+        # Configure the plot (optional)
+        ax.set_xlabel('Importance')
+        ax.set_title('Horizontal Bar Plot of Categories and Their Importance')
+
+        # Adjust the layout to prevent cropping
+        fig.tight_layout()
+
+        # Display the plot
+        if self.show is True:
+            plt.show()
+        if self.save is True:
+            saving_location = data_reader.get_save_location(file_name='paths_importance_bar_plot_'+ str(min_length),
+                                                            file_extension=".pdf",
+                                                            folder_relative_path='results', unique_subfolder=True)
+
+            fig.savefig(saving_location, format="pdf")
+
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.wrapper_pattern_boosting.get_normalized_patterns_importance()
+
+        if n is None:
+            n = len(paths)
+        if n > len(paths):
+            raise ValueError(f"n ({n}) cannot be greater than the number of paths ({len(paths)})")
 
         """
         Generates a heatmap for the `n` most important paths.
@@ -107,16 +167,51 @@ class AnalysisWrapperPatternBoosting:
         # Sort the paths by their importances and select the top `n`
         sorted_pairs = sorted(zip(paths, importances), key=lambda x: x[1], reverse=True)
         top_paths, top_importances = zip(*sorted_pairs[:n])
-        top_paths = [self.__find_longest_path_containing(top_path, paths, max_length=6) for top_path in top_paths]
+        top_paths = list(top_paths)
+        top_importances = list(top_importances)
+        max_path_length = 5
+        top_paths_extended = [self.__find_longest_path_containing(top_path, paths, max_length=max_path_length) for
+                              top_path in top_paths]
 
-        max_len = max(len(path) for path in top_paths)
+        seen = {}
+        indices_to_remove = []
+        paths_too_long = []
+        importance_too_long = []
+        max_path_length = 5
+
+        # Iterate over top_paths_extended and collect the indices of duplicates
+        for i, path in enumerate(top_paths_extended):
+            if len(path) > max_path_length:
+                indices_to_remove.append(i)
+                paths_too_long.append(path)
+                importance_too_long.append(top_importances[i])
+            else:
+                if path in seen:
+                    indices_to_remove.append(i)
+                else:
+                    seen[path] = True
+
+        print("top paths that have been excluded because too long:")
+
+        print(paths_too_long)
+        print("importance:")
+        print(importance_too_long)
+
+        # Go through the indices in reverse order so we don't mess up the
+        # subsequent indices after removing an element from the list.
+        for index in sorted(indices_to_remove, reverse=True):
+            del (top_paths[index])
+            del (top_paths_extended[index])
+            del top_importances[index]
+
+        max_len = max(len(path) for path in top_paths_extended)
 
         # Creating the heatmap matrix where each row corresponds to a top path
-        heatmap_matrix = np.zeros((n, max_len))
+        heatmap_matrix = np.zeros((len(top_paths), max_len))
 
         # Iterating through each top path and setting the importance for each subpath
-        for i, path in enumerate(top_paths):
-            for j in range(1, len(path) + 1):
+        for i, path in enumerate(top_paths_extended):
+            for j in range(2, len(path) + 1):
                 # Get the index of the subpath in the original paths list
                 subpath = path[:j]
                 if subpath in paths:
@@ -129,16 +224,18 @@ class AnalysisWrapperPatternBoosting:
         fig.colorbar(c, ax=ax)
 
         # Setting the labels for the y-axis to the paths (top `n` only)
-        y_labels = [f"Path {'-'.join(map(str, path))}" for path in top_paths]
-        ax.set_yticks(np.arange(n))
+        y_labels = [
+            f"Path {'-'.join(map(str, path))}" + "|" + f"{'-'.join(map(str, top_paths_extended[i][len(path):]))}" for
+            i, path in enumerate(top_paths)]
+        ax.set_yticks(np.arange(len(top_paths)))
         ax.set_yticklabels(y_labels)
 
         # Setting the labels for the x-axis to represent the subpath lengths
         ax.set_xticks(np.arange(max_len))
         ax.set_xticklabels(range(1, max_len + 1))
-        ax.set_xlim(0, max_len)
+        ax.set_xlim(0.5, max_len - 0.5)
 
-        plt.title(f'Top {n} Paths by Importance Heatmap')
+        plt.title(f'Top {len(top_paths)} Paths by Importance Heatmap')
         plt.ylabel('Paths')
         plt.xlabel('Subpath Length')
 
@@ -209,7 +306,7 @@ class AnalysisWrapperPatternBoosting:
                                                             file_extension=".pdf",
                                                             folder_relative_path='results', unique_subfolder=True)
 
-            fig.savefig(saving_location,format="pdf")
+            fig.savefig(saving_location, format="pdf")
 
     def synthetic_dataset_spotted_paths(self, synthetic_dataset: SyntheticDataset) -> pd.DataFrame:
 

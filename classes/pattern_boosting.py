@@ -40,6 +40,7 @@ class PatternBoosting:
         training is always the one took as input the first time the function "training" is called
         In future versions it will be possible to give as input a new dataset"""
 
+
         if isinstance(training_dataset, Dataset):
             self.training_dataset = training_dataset
 

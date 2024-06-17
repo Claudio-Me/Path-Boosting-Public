@@ -6,12 +6,12 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 3
+    maximum_number_of_steps = 100
 
     save_analysis = True
     show_analysis = True
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
@@ -34,7 +34,7 @@ class Settings:
     max_path_length = 101
 
     # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0.01
+    test_size = 0.2
 
     target_train_error = 0.0000001
 
@@ -69,7 +69,7 @@ class Settings:
 
     n_of_paths_importance_plotted: int = 30
 
-    noise_variance = 1
+    noise_variance = 0
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1

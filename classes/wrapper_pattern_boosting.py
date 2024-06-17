@@ -316,29 +316,26 @@ class WrapperPatternBoosting:
 
         if self.trained is False:
 
-                # some checks for the input format, whether the input dataset it is already divided by metal centers or not
+            # some checks for the input format, whether the input dataset it is already divided by metal centers or not
             if not isinstance(train_dataset, list):
                 if not isinstance(train_dataset, Dataset):
                     train_dataset = Dataset(train_dataset)
                 train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
-                                                                 considered_metal_centers=self.metal_center_list)
+                                                                     considered_metal_centers=self.metal_center_list)
                 if test_dataset is not None:
                     if not isinstance(test_dataset, Dataset):
                         test_dataset = Dataset(test_dataset)
                     test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
-                                                                    considered_metal_centers=self.metal_center_list)
+                                                                        considered_metal_centers=self.metal_center_list)
             else:
                 train_datasets_list = train_dataset
                 test_datasets_list = test_dataset
             self.trained = True
 
-
         if test_dataset is None:
             test_datasets_list = [None for _ in range(len(train_datasets_list))]
 
         self.test_dataset_list = test_datasets_list
-
-
 
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
@@ -358,17 +355,17 @@ class WrapperPatternBoosting:
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
-            self.test_error = self.get_wrapper_test_error()
+            if test_dataset is not None:
+                self.test_error = self.get_wrapper_test_error()
             self.train_error = self.get_wrapper_train_error()
 
         return array_of_outputs
 
-
     def re_train(self):
 
-        train_datasets_list=[None]*len(self.pattern_boosting_models_list)
-        test_datasets_list=self.test_dataset_list
-        global_labels_variance=[None]*len(self.pattern_boosting_models_list)
+        train_datasets_list = [None] * len(self.pattern_boosting_models_list)
+        test_datasets_list = self.test_dataset_list
+        global_labels_variance = [None] * len(self.pattern_boosting_models_list)
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
 
@@ -477,56 +474,19 @@ class WrapperPatternBoosting:
     def get_patterns_importance(self) -> Tuple[List[Tuple[int]], List[float]]:
         '''
         It returns a list wih the patterns and a list with their importance
-        # extremely optimized version of this:
+        '''
+
         importance = []
         paths = []
 
-        for model in self.get_pattern_boosting_models():
-            importance += model.get_boosting_matrix_columns_importance_values()
+        for model in self.get_trained_pattern_boosting_models():
+            paths_importance = np.array(model.get_boosting_matrix_columns_importance_values())
+            paths_importance = np.array(
+                paths_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
+
+            importance += list(paths_importance)
             paths += model.get_boosting_matrix_header()
-        '''
-
-        importance_length = sum(
-            len(model.get_boosting_matrix_columns_importance_values()) for model in
-            self.get_trained_pattern_boosting_models())
-        paths_length = sum(
-            len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
-
-        importance = [0.0] * importance_length
-        paths = [()] * paths_length
-
-        importance_index = 0
-        paths_index = 0
-
-        for model in self.get_trained_pattern_boosting_models():
-            model_importance = model.get_boosting_matrix_columns_importance_values()
-            model_importance = np.array(
-                model_importance * model.get_dataset_dimension('training')) / self.train_dataset.get_dimension()
-            model_paths = model.get_boosting_matrix_header()
-
-            importance[importance_index:importance_index + len(model_importance)] = model_importance
-            paths[paths_index:paths_index + len(model_paths)] = model_paths
-
-            importance_index += len(model_importance)
-            paths_index += len(model_paths)
         return paths, importance
-
-    def get_boosting_matrix_header(self):
-        # note it returns all the paths in the boosting matrix, even the ones that have not been selected
-        paths_length = sum(
-            len(model.get_boosting_matrix_header()) for model in self.get_trained_pattern_boosting_models())
-
-        paths = [()] * paths_length
-
-        paths_index = 0
-
-        for model in self.get_trained_pattern_boosting_models():
-            model_paths = model.get_boosting_matrix_header()
-
-            paths[paths_index:paths_index + len(model_paths)] = model_paths
-
-            paths_index += len(model_paths)
-        return list(set(paths))
 
     def get_selected_paths(self):
         # note it returns all the paths that have been actually used by at least one model

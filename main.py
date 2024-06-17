@@ -32,9 +32,7 @@ if __name__ == '__main__':
     if Settings.wrapper_boosting is True:
         wrapper_pattern_boosting = WrapperPatternBoosting()
         wrapper_pattern_boosting.train(train_dataset, test_dataset)
-        print("done 1")
-        wrapper_pattern_boosting.re_train()
-        error = wrapper_pattern_boosting.get_wrapper_test_error()
+
         final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
         print("len final test error", len(final_test_error))
         final_test_error = final_test_error[-1]
