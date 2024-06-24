@@ -40,7 +40,8 @@ class GradientBoostingStep:
             model = GradientBoostingModel(ModelType.xgb_one_step)
         selected_column = model.fit_one_step(boosting_matrix.matrix, labels)
         # -------------------------------------------------------------------------------------------------------------
-        print("Selected column ", selected_column)
+        if Settings.verbose is True:
+            print("Selected column ", selected_column)
         # -------------------------------------------------------------------------------------------------------------
         return selected_column, model
 

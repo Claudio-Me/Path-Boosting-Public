@@ -78,7 +78,8 @@ class PatternBoosting:
                                                     self.boosting_matrix.columns_importance)
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
-            print("Step number ", iteration_number + 1)
+            if self.settings.verbose is True:
+                print("Step number ", iteration_number + 1)
             # print("size of pattern boosting: ", asizeof.asizeof(self))
             # print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
 
