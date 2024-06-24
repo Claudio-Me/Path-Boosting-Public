@@ -14,4 +14,6 @@ class ExtendedBoostingMatrix:
         # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
         data_reader.read_data_from_directory()
         for graph in dataset:
+            for path in original_boosting_matrix.get_selected_paths():
+                self.find_path_in()
 
