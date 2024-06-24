@@ -57,11 +57,14 @@ if True:
     # it works only if "algorithm" is Xgb_step
     Settings.update_features_importance_by_comparison = False
 
+    Settings.verbose = False
+
 # load wrapper pattern boosting
 directory = data_reader.get_save_location(file_name="wrapper_pattern_boosting", file_extension=".pkl",
                                           folder_relative_path="results/wrapper_boosting_60k_dataset",
                                           unique_subfolder=False)
 wrapper_pattern_boosting = data_reader.load_data(directory=directory)
+wrapper_pattern_boosting.settings.verbose=False
 
 wrapper_pattern_boosting.re_train()
 error = wrapper_pattern_boosting.get_wrapper_test_error()
