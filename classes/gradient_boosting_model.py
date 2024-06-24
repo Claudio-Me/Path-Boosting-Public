@@ -238,7 +238,7 @@ class GradientBoostingModel:
                 xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
                                                     estimation_type=EstimationType.regression)
                 eval_set = [(boosting_matrix, neg_gradient)]
-                xgb_model.fit(X=boosting_matrix, y=neg_gradient, eval_set=eval_set, verbose=True)
+                xgb_model.fit(X=boosting_matrix, y=neg_gradient, eval_set=eval_set, verbose=Settings.verbose)
 
                 # plot single tree
                 if Settings.plot_tree is True:

@@ -355,7 +355,7 @@ class WrapperPatternBoosting:
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
-            if test_dataset is not None:
+            if test_dataset is not None:    
                 self.test_error = self.get_wrapper_test_error()
             self.train_error = self.get_wrapper_train_error()
 

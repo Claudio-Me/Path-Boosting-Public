@@ -241,3 +241,5 @@ class BoostingMatrix:
     def get_pandas_matrix(self):
         return pd.DataFrame(self.get_matrix(),
                      columns=self.get_header())
+
+

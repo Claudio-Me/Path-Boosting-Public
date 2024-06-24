@@ -18,9 +18,9 @@ import sys
 from multiprocessing.dummy import Pool as ThreadPool
 import functools
 
-# Seggings
+# Settings
 if True:
-    Settings.maximum_number_of_steps = 30
+    Settings.maximum_number_of_steps = 5
 
     Settings.save_analysis = True
     Settings.show_analysis = False
@@ -44,7 +44,7 @@ if True:
                                              104, 105, 106, 107, 108, 109, 110, 111, 112]
     else:
         Settings.considered_metal_centers = None
-        print("nfjskdfsajkfndsjkfndsjkgndsjgndsjknsdjif")
+
 
     # do not expand if the paths are longer than this amount
     Settings.max_path_length = 102

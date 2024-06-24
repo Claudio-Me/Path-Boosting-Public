@@ -92,6 +92,8 @@ class Settings:
     # Base Learner used by mboost
     r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
+    verbose = False
+
     # Possible family names for loss function in R mode
     family = "Gaussian"
     # Gaussian: Gaussian
