@@ -12,7 +12,7 @@ class ExtendedBoostingMatrix:
         pass
     def extend_boosting_matrix(self, original_boosting_matrix: BoostingMatrix, dataset: list[nx.classes.multigraph.MultiGraph]):
         # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
-        data_reader.read_data_from_directory()
+
         for graph in dataset:
             for path in original_boosting_matrix.get_selected_paths():
                 self.find_path_in()
