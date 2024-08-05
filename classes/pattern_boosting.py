@@ -14,6 +14,7 @@ import itertools
 import sys
 import copy
 from typing import List, Tuple
+import numpy.typing as npt
 
 # from pympler import asizeof
 
@@ -39,7 +40,6 @@ class PatternBoosting:
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
         training is always the one took as input the first time the function "training" is called
         In future versions it will be possible to give as input a new dataset"""
-
 
         if isinstance(training_dataset, Dataset):
             self.training_dataset = training_dataset
@@ -73,9 +73,24 @@ class PatternBoosting:
         else:
             if training_dataset is not None:
                 boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in
-                                      training_dataset.graphs_list])
+                                                   training_dataset.graphs_list])
                 self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
-                                                    self.boosting_matrix.columns_importance)
+                                                      self.boosting_matrix.columns_importance)
+
+        if self.settings.save_analysis or self.settings.show_analysis:
+            # cumulative number of paths that has been selected at each step
+            self.n_selected_paths = []
+        if self.settings.dataset_name == "5k_synthetic_dataset":
+            target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
+
+            # (numero totale di "target paths" trovati fino ad ora) / (numero totale di path selezionati senza contare le ripetizioni)
+            self.true_positive_ratio_1 = []
+            times_a_target_path_has_been_selected = 0
+
+            # (numero di volte è stato selezionato un target path) / (numero totale di path selezionati, cioè numero di iterazioni )
+            self.true_positive_ratio_2 = []
+            already_spotted_paths = set()
+            n_spotted_paths = 0
 
         for iteration_number in range(self.settings.maximum_number_of_steps):
             if self.settings.verbose is True:
@@ -110,7 +125,7 @@ class PatternBoosting:
                     default_value=default_importance_value)
             else:
                 if len(self.get_boosting_matrix_header()) <= 1:
-                    improvment = np.var(self.training_dataset.get_labels())
+                    # improvment = np.var(self.training_dataset.get_labels())
                     improvment = 0
                 else:
                     second_best_column, second_column_error = self.find_second_best_column(selected_column_number)
@@ -125,6 +140,23 @@ class PatternBoosting:
             self.__expand_boosting_matrix(selected_column_number)
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
+
+            if self.settings.save_analysis or self.settings.show_analysis:
+                self.n_selected_paths.append(len(self.get_selected_paths_in_boosting_matrix()))
+
+            if self.settings.dataset_name == "5k_synthetic_dataset":
+                selected_path = self.boosting_matrix.get_path_associated_to_column(selected_column_number)
+
+                if selected_path in target_paths:
+                    times_a_target_path_has_been_selected += 1
+                    if not (selected_path in already_spotted_paths):
+                        n_spotted_paths += 1
+                        already_spotted_paths.add(selected_path)
+                    target_paths.remove(selected_path)
+
+                n_selected_paths = len(self.get_selected_paths_in_boosting_matrix())
+                self.true_positive_ratio_1.append(times_a_target_path_has_been_selected / n_selected_paths)
+                self.true_positive_ratio_2.append(n_spotted_paths / (iteration_number + 1))
 
             if self.train_error[-1] < Settings.target_train_error:
                 break
@@ -417,9 +449,6 @@ class PatternBoosting:
 
     def get_dataset_dimension(self, dataset: str) -> int:
 
-
-
-
         if dataset == "train" or dataset == "training":
             if hasattr(self, 'training_dataset'):
                 if self.training_dataset is None:
@@ -487,3 +516,7 @@ class PatternBoosting:
                 highest_corr_coef = np.nanmax(absolute_corr_values)
                 highest_correlations[col_name] = highest_corr_coef
         return highest_correlations
+
+
+    def get_number_of_times_path_has_been_selected(self, path: tuple| int | None =None) -> int| npt.NDArray:
+        return self.boosting_matrix.get_number_of_times_path_has_been_selected(path)

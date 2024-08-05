@@ -19,7 +19,8 @@ from multiprocessing.dummy import Pool as ThreadPool
 import functools
 
 if __name__ == '__main__':
-    # Testing()
+    #Testing()
+
     print("Number of CPU's: ", Settings.max_number_of_cores)
     print("Dataset name: ", Settings.dataset_name)
 

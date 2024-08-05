@@ -274,7 +274,7 @@ class GraphPB:
             raise ValueError("Metal center not found")
         return metal_center_labels
 
-    def get_metal_center_labels(self):
+    def get_metal_center_labels(self) -> list[list]:
         metal_center_labels = []
         warning = True
         for metal_label in self.metal_labels:
@@ -414,7 +414,6 @@ class GraphPB:
 
         return new_dict
 
-
     def set_label_value(self, label):
         self.label = label
 
@@ -424,3 +423,32 @@ class GraphPB:
 
     def __hash__(self):
         return hash(self.adj_matrix)
+
+    def find_labelled_path(self, labelled_path, starting_node=None, path=None, visited_nodes=None):
+        paths_found:list = []
+        if path is None:
+            path = []
+        if visited_nodes is None:
+            visited_nodes = set()
+
+        if starting_node is None:
+            starting_node = self.find_metal_center_nodes()[0]
+        if starting_node not in visited_nodes:
+            if self.get_label_of_node(starting_node) == labelled_path[0]:
+                path = path + [starting_node]
+            else:
+                return []
+            visited_nodes.add(starting_node)
+        if len(labelled_path) == 1:
+            return [path]
+
+        # the next label we are looking for is always in the second position of the array "labelled_path" since the first element is the element we just found
+        if (starting_node, labelled_path[1]) in self.neighbours_with_label:
+            neighbours_with_right_label = self.neighbours_with_label[(starting_node, labelled_path[1])]
+            for neighbour in neighbours_with_right_label:
+                if neighbour not in visited_nodes:
+                    new_paths = self.find_labelled_path(labelled_path[1:], neighbour, path, visited_nodes.copy())
+                    paths_found.extend(new_paths)
+        return paths_found
+
+

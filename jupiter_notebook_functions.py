@@ -11,11 +11,12 @@ from settings import Settings
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from data import data_reader
+import matplotlib.cm as cm
+import periodictable as pt
 
 from xgboost import plot_importance
 
 from sklearn import metrics
-import numpy as np
 from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
 from settings import Settings
@@ -28,7 +29,6 @@ from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 import pandas as pd
 import copy
-import matplotlib.pyplot as plt
 from classes.analysis_patternboosting import AnalysisPatternBoosting
 from data.load_dataset import load_dataset
 from data import data_reader
@@ -38,6 +38,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import functools
 import copy
 from data import data_reader
+import seaborn as sns
 
 import pathlib
 import os
@@ -45,6 +46,7 @@ import sys
 from collections.abc import Iterable
 from matplotlib.ticker import MaxNLocator
 from typing import List
+from classes.dataset import Dataset
 
 
 def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, max_number_of_learners, frequency_matrix,
@@ -295,4 +297,158 @@ def plot_graphs_new_temp_funct(x, y, tittle: str, max_number_of_learners, test_e
     return fig, ax
 
 
-import matplotlib.pyplot as plt
+def early_stopping(test_errors, patience=5):
+    """
+    Implements early stopping to detect overfitting.
+
+    Args:
+    test_errors (list of float): A list of test errors at each iteration.
+    patience (int): Number of epochs to wait before stopping after validation error increases.
+
+    Returns:
+    int: The iteration number where overfitting starts.
+         If no overfitting is detected, returns -1.
+    """
+    best_val_error = float('inf')
+    best_iteration = -1
+    count = 0
+
+    for i in range(len(test_errors)):
+        if test_errors[i] < best_val_error:
+            best_val_error = test_errors[i]
+            best_iteration = i
+            count = 0  # Reset count if new best is found
+        else:
+            count += 1
+            if count >= patience:
+                return best_iteration
+
+    return best_iteration
+
+
+def plot_tpr_vs_iterations(true_positive_ratios: list[float]):
+    """
+    Plots the true positive ratio against the number of iterations.
+    The iterations are inferred based on the length of the true_positive_ratios list.
+
+    :param true_positive_ratios: A list containing the TPR values at each iteration.
+    :type true_positive_ratios: list of float
+    :returns: None
+    """
+    iterations = list(range(1, len(true_positive_ratios) + 1))
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(iterations, true_positive_ratios, marker='o', linestyle='-', color='b', label='True Positive Ratio (TPR)')
+    plt.xlabel('Iterations')
+    plt.ylabel('True Positive Ratio')
+    plt.title('True Positive Ratio vs. Iterations')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("true_positive_ratio.pdf")
+    plt.show()
+
+
+def plot_tpr_vs_iterations_different_definitions(tpr1: list[float], tpr2: list[float], tpr3: list[float]):
+    """
+    Plots the true positive ratio against the number of iterations for three different sets of TPR values.
+
+    :param tpr1: A list containing the TPR values at each iteration for the first set.
+    :type tpr1: list of float
+    :param tpr2: A list containing the TPR values at each iteration for the second set.
+    :type tpr2: list of float
+    :param tpr3: A list containing the TPR values at each iteration for the third set.
+    :type tpr3: list of float
+    :returns: None
+    """
+    # Assuming all input lists have the same length
+    iterations = list(range(1, len(tpr1) + 1))
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(iterations, tpr1, marker='o', linestyle='-', color='b', label='True Positive Ratio 1')
+    plt.plot(iterations, tpr2, marker='s', linestyle='--', color='r', label='True Positive Ratio 2')
+    plt.plot(iterations, tpr3, marker='^', linestyle='-.', color='g', label='True Positive Ratio 3')
+
+    plt.xlabel('Iterations')
+    plt.ylabel('True Positive Ratio')
+    plt.title('True Positive Ratio vs. Iterations')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("true_positive_ratio.pdf")
+    plt.show()
+
+
+import numpy as np
+from sklearn.model_selection import KFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+
+def perform_cross_validation(X: Dataset, k=5):
+    """
+    Perform K-Fold cross-validation on the dataset.
+
+    :param X: Features dataset.
+    :type X: numpy.ndarray
+    :param y: Target labels.
+    :type y: numpy.ndarray
+    :param k: Number of folds for cross-validation.
+    :type k: int
+    :return: List of accuracy scores for each fold.
+    :rtype: list of float
+    """
+
+    kf = KFold(n_splits=k, shuffle=True, random_state=42)
+
+    graphs_list = X.get_graphs_list()
+    overfitting_iteration = []
+
+    for train_index, test_index in kf.split(graphs_list):
+        model = PatternBoosting()
+        train_dataset = Dataset([graphs_list[i] for i in train_index])
+        test_dataset = Dataset([graphs_list[i] for i in test_index])
+
+        model.training(train_dataset, test_dataset)
+        overfitting_iteration.append(early_stopping(test_errors=model.test_error, patience=3))
+
+    return np.average(overfitting_iteration)
+
+
+def print_dict_sorted_by_values(d: dict):
+    """
+    Prints the dictionary sorted by its values.
+
+    :param d: Dictionary to be sorted and printed
+    :type d: dict
+    """
+    # Sort the dictionary by its values
+    sorted_items = sorted(d.items(), key=lambda item: item[1])
+
+    # Print the sorted dictionary
+    for key, value in sorted_items:
+        print(f"{key}: {value}")
+
+
+def plot_label_distribution(label_counts):
+    # Sort the labels based on their tuple values
+    sorted_labels = sorted(label_counts.keys())
+
+    # Convert tuple labels to atomic names and get counts
+    labels_str = [pt.elements[label[0]].symbol  for label in sorted_labels]
+    counts = [label_counts[label] for label in sorted_labels]
+
+    # Normalize counts for colormap
+    norm = plt.Normalize(min(counts), max(counts))
+    colors = cm.viridis(norm(counts))
+
+    plt.figure(figsize=(12, 7))
+
+    # Create a bar plot with the colors representing heights
+    sns.barplot(x=labels_str, y=counts, palette=colors)
+
+    plt.xlabel('Element')
+    plt.ylabel('Counts')
+    plt.title('Distribution of Elements in the Dataset')
+    plt.xticks(rotation=90)  # Rotate labels for better readability
+    plt.savefig("label_distribution.pdf")
+    plt.show()
+    plt.close()

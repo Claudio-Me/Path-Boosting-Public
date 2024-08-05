@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from PyAstronomy import pyasl
 from typing import List, Tuple
+import numpy.typing as npt
 
 
 class BoostingMatrix:
@@ -220,7 +221,7 @@ class BoostingMatrix:
 
         return len(seen_rows)
 
-    def get_number_of_times_path_has_been_selected(self, path: tuple| int) -> int:
+    def get_number_of_times_path_has_been_selected(self, path: tuple| int | None =None) -> int | npt.NDArray:
         # int is interpreted as the number of the column we want to knw
         if isinstance(path, int):
             return self.number_of_times_column_is_selected[path]
@@ -230,11 +231,16 @@ class BoostingMatrix:
                 return 0
             else:
                 return self.number_of_times_column_is_selected[column]
-
+        elif path is None:
+            return self.number_of_times_column_is_selected
+        else:
+            raise ValueError("path must be a tuple or an integer or None")
     def get_selected_paths(self) -> list:
         header = self.get_header()
         return [header[c] for c in self.already_selected_columns]
 
+    def get_path_associated_to_column(self, column: int) -> tuple:
+        return self.get_header()[column]
     def get_matrix(self):
         return self.matrix
 

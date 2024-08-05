@@ -355,7 +355,7 @@ class WrapperPatternBoosting:
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
-            if test_dataset is not None:    
+            if test_dataset is not None:
                 self.test_error = self.get_wrapper_test_error()
             self.train_error = self.get_wrapper_train_error()
 
@@ -488,7 +488,7 @@ class WrapperPatternBoosting:
             paths += model.get_boosting_matrix_header()
         return paths, importance
 
-    def get_selected_paths(self):
+    def get_selected_paths(self) -> list:
         # note it returns all the paths that have been actually used by at least one model
         paths_length = sum(
             len(model.get_selected_paths_in_boosting_matrix()) for model in self.get_trained_pattern_boosting_models())

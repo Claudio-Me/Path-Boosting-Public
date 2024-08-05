@@ -6,7 +6,7 @@ from classes.testing.testing_Graph_class import TestGraphPBClass
 
 class Testing:
     def __init__(self):
-        # TestGraphPBClass()
+        TestGraphPBClass()
         TestDatasetReading()
         # TestPatternBoosting()
 

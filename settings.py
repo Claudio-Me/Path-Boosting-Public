@@ -6,18 +6,18 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 100
+    maximum_number_of_steps = 30
 
     save_analysis = True
     show_analysis = True
 
-    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = False
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    generate_new_dataset = True
 
     # in the error graph Print only the last N learners
-    tail = 100
+    tail = maximum_number_of_steps-150
 
-    wrapper_boosting = True
+    wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if wrapper_boosting is True:
@@ -39,7 +39,7 @@ class Settings:
     target_train_error = 0.0000001
 
     # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = False
+    update_features_importance_by_comparison = True
 
     max_number_of_cores = mp.cpu_count()
 
@@ -73,7 +73,6 @@ class Settings:
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1
-
     parallelization = False
 
     algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step"
@@ -92,7 +91,7 @@ class Settings:
     # Base Learner used by mboost
     r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
-    verbose = False
+    verbose = True
 
     # Possible family names for loss function in R mode
     family = "Gaussian"

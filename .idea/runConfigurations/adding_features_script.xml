@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="launch_wrapper_pattern_boosting" type="PythonConfigurationType" factoryName="Python" singleton="false" nameIsGenerated="true">
+  <configuration default="false" name="adding_features_script" type="PythonConfigurationType" factoryName="Python" singleton="false" nameIsGenerated="true">
     <module name="pattern_boosting" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -17,7 +17,7 @@
       <option name="region" />
       <option name="useCurrentConnection" value="false" />
     </EXTENSION>
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/launch_wrapper_pattern_boosting.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/adding_features_script.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="true" />
