@@ -13,6 +13,7 @@ from data.synthetic_dataset import SyntheticDataset
 from data import data_reader
 import matplotlib.cm as cm
 import periodictable as pt
+import matplotlib.colors as mcolors
 
 from xgboost import plot_importance
 
@@ -47,6 +48,7 @@ from collections.abc import Iterable
 from matplotlib.ticker import MaxNLocator
 from typing import List
 from classes.dataset import Dataset
+import random
 
 
 def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, max_number_of_learners, frequency_matrix,
@@ -326,6 +328,44 @@ def early_stopping(test_errors, patience=5):
     return best_iteration
 
 
+def plot_tpr_vs_iterations_max_min(true_positive_ratios_per_iteration: list[list[float]], save_fig=True):
+    """
+    Plots the true positive ratio with standard deviation error bars, max, and min
+    against the number of iterations.
+    The iterations are inferred based on the length of the true_positive_ratios list.
+
+    :param true_positive_ratios_per_iteration: A list of list containing the TPR values at each iteration for each simulation.
+    :type true_positive_ratios_per_iteration: list of list of float
+    :returns: None
+    """
+    # Convert to numpy array for easier manipulation
+    np_tpr_per_iteration = np.array(true_positive_ratios_per_iteration)
+
+    # Calculate statistics
+    mean_tpr = np.mean(np_tpr_per_iteration, axis=0)
+    max_tpr = np.max(np_tpr_per_iteration, axis=0)
+    min_tpr = np.min(np_tpr_per_iteration, axis=0)
+    std_tpr = np.std(np_tpr_per_iteration, axis=0)  # Calculate the standard deviation
+
+    iterations = list(range(1, len(mean_tpr) + 1))
+
+    plt.figure(figsize=(10, 6))
+    plt.errorbar(iterations, mean_tpr, yerr=std_tpr, fmt='-o', color='b',
+                 label='True Positive Ratio (TPR) with Std. Dev.', ecolor='lightred', elinewidth=3, capsize=0)
+    plt.fill_between(iterations, min_tpr, max_tpr, color='b', alpha=0.1, label='Min-Max Range')
+    # plt.scatter(iterations, max_tpr, marker='^', color='g', label='Max TPR')
+    # plt.scatter(iterations, min_tpr, marker='v', color='r', label='Min TPR')
+
+    plt.xlabel('Iterations')
+    plt.ylabel('True Positive Ratio')
+    plt.title('True Positive Ratio vs. Iterations with Max, Min, and Std. Dev.')
+    plt.legend()
+    plt.grid(True)
+    if save_fig is True:
+        plt.savefig("true_positive_ratio_with_std_dev.pdf")
+    plt.show()
+
+
 def plot_tpr_vs_iterations(true_positive_ratios: list[float]):
     """
     Plots the true positive ratio against the number of iterations.
@@ -383,12 +423,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 
-def perform_cross_validation(X: Dataset, k=5):
+def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5, random_seed=None, patience=3):
     """
     Perform K-Fold cross-validation on the dataset.
 
-    :param X: Features dataset.
-    :type X: numpy.ndarray
+    :param train_dataset: Features dataset.
+    :type train_dataset: numpy.ndarray
     :param y: Target labels.
     :type y: numpy.ndarray
     :param k: Number of folds for cross-validation.
@@ -397,20 +437,38 @@ def perform_cross_validation(X: Dataset, k=5):
     :rtype: list of float
     """
 
-    kf = KFold(n_splits=k, shuffle=True, random_state=42)
+    kf = KFold(n_splits=k, shuffle=True, random_state=random_seed)
 
-    graphs_list = X.get_graphs_list()
-    overfitting_iteration = []
-
+    graphs_list = train_dataset.get_graphs_list()
+    test_errors_list = []
     for train_index, test_index in kf.split(graphs_list):
         model = PatternBoosting()
-        train_dataset = Dataset([graphs_list[i] for i in train_index])
-        test_dataset = Dataset([graphs_list[i] for i in test_index])
+        train_dataset_crossvalidation = Dataset([graphs_list[i] for i in train_index])
+        test_dataset_crossvalidation = Dataset([graphs_list[i] for i in test_index])
 
-        model.training(train_dataset, test_dataset)
-        overfitting_iteration.append(early_stopping(test_errors=model.test_error, patience=3))
+        model.training(train_dataset_crossvalidation, test_dataset_crossvalidation)
+        test_errors_list.append(model.test_error)
 
-    return np.average(overfitting_iteration)
+    test_errors_list = np.array(test_errors_list)
+    test_error_sum = np.sum(test_errors_list, axis=0)
+    overfitting_iteration = 0
+
+    overfitting_iteration = early_stopping(test_errors=test_error_sum, patience=patience)
+
+    if overfitting_iteration <= 2:
+        return None, None, None
+
+    # run the algorithm training over th whole train dataset and see the error in the test dataset
+    model = PatternBoosting()
+    model.settings.maximum_number_of_steps = overfitting_iteration
+
+    model.training(train_dataset, test_dataset)
+    test_error = model.test_error
+
+    # get the number of selected_paths
+    selected_paths = model.get_selected_paths_in_boosting_matrix()
+
+    return overfitting_iteration, test_error, selected_paths
 
 
 def print_dict_sorted_by_values(d: dict):
@@ -428,12 +486,12 @@ def print_dict_sorted_by_values(d: dict):
         print(f"{key}: {value}")
 
 
-def plot_label_distribution(label_counts):
+def plot_label_distribution(label_counts, save_fig=True):
     # Sort the labels based on their tuple values
     sorted_labels = sorted(label_counts.keys())
 
     # Convert tuple labels to atomic names and get counts
-    labels_str = [pt.elements[label[0]].symbol  for label in sorted_labels]
+    labels_str = [pt.elements[label[0]].symbol for label in sorted_labels]
     counts = [label_counts[label] for label in sorted_labels]
 
     # Normalize counts for colormap
@@ -449,6 +507,184 @@ def plot_label_distribution(label_counts):
     plt.ylabel('Counts')
     plt.title('Distribution of Elements in the Dataset')
     plt.xticks(rotation=90)  # Rotate labels for better readability
-    plt.savefig("label_distribution.pdf")
+    if save_fig is True:
+        plt.savefig("label_distribution.pdf")
     plt.show()
     plt.close()
+
+
+def plot_signal_to_noise_ratio(average_y_value, noise_variance_list, variance_errors, mean_errors, min_errors,
+                               max_errors, save_fig=True):
+    # Assuming we're plotting these errors against a sequential index or a list of parameters `x`
+    x_values = (average_y_value * average_y_value) / np.array(noise_variance_list)
+
+    # Create a sorted index based on x_values
+    sorted_indices = np.argsort(x_values)
+    x_values = x_values[sorted_indices]
+    mean_errors = np.array(mean_errors)[sorted_indices]
+    min_errors = np.array(min_errors)[sorted_indices]
+    max_errors = np.array(max_errors)[sorted_indices]
+    variance_errors = np.array(variance_errors)[sorted_indices]
+
+    # Convert variance to standard deviation for error bars
+    std_errors = np.sqrt(variance_errors)
+
+    # Plotting the graph
+    plt.figure(figsize=(10, 6))
+    plt.errorbar(x_values, mean_errors, yerr=std_errors, fmt='o', label='Mean Error ± Std Deviation', ecolor='red',
+                 elinewidth=3, capsize=0)
+    plt.fill_between(x_values, min_errors, max_errors, color='lightgray', alpha=0.2, label='Min-Max Range')
+
+    plt.title('Performances over different Signal to Noise Ratios')
+    plt.xlabel('SNR')
+    plt.ylabel('Test MSE')
+
+    # Round x_values for cleaner display (optional)
+    rounded_x_values = [round(x, 1) for x in x_values]
+
+    # Create a smaller subset of x-ticks
+    # For example, you can select every other tick or a specific number at regular intervals
+    tick_indices = range(0, len(x_values), 1)  # Every other index
+    selected_ticks = [rounded_x_values[i] for i in tick_indices]
+    selected_tick_positions = [x_values[i] for i in tick_indices]
+    # Apply the selected ticks
+    plt.xticks(ticks=selected_tick_positions, labels=selected_ticks,
+               rotation=45)  # Rotate the x-tick labels to prevent overlap
+
+    plt.legend()
+    plt.grid(True)
+    if save_fig is True:
+        plt.savefig("signal_to_noise_ratio.pdf")
+    plt.show()
+
+
+def save_data(data, names, directory, create_unique_subfolder=False):
+    for i, variable in enumerate(data):
+        data_reader.save_data(variable,
+                              filename=names[i],
+                              directory=directory,
+                              create_unique_subfolder=create_unique_subfolder)
+
+
+def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], save_fig=True):
+    """
+    Plots the test error with standard deviation error bars, max, min, and uses a color gradient
+    to indicate the number of series contributing to each data point. Includes a legend for standard deviation.
+    """
+    # Find the maximum length of the test error series
+    max_length = max(len(single_run) for single_run in test_errors_per_iteration)
+
+    # Pad shorter series with np.nan and count valid (non-nan) entries for each iteration
+    padded_test_errors = np.full((len(test_errors_per_iteration), max_length), np.nan)
+    valid_counts = np.zeros(max_length)
+    for i, single_run in enumerate(test_errors_per_iteration):
+        length = len(single_run)
+        padded_test_errors[i, :length] = single_run
+        valid_counts[:length] += 1
+
+    # Calculate statistics using functions that ignore np.nan
+    mean_test_error = np.nanmean(padded_test_errors, axis=0)
+    std_test_error = np.nanstd(padded_test_errors, axis=0)
+
+    # Generate a colormap based on the valid_counts
+    color_map = cm.viridis(valid_counts / max(valid_counts))
+
+    iterations = np.arange(1, max_length + 1)
+
+    plt.figure(figsize=(10, 6))
+
+    # Error bar plot with gradient color coding
+    for i, (mean, std, color) in enumerate(zip(mean_test_error, std_test_error, color_map)):
+        if i == 0:
+            plt.errorbar(i + 1, mean, yerr=std, fmt='-o', markersize=4, color=color, ecolor='lightgrey', elinewidth=3,
+                         capsize=2, label='Std. Dev.')
+        plt.errorbar(i + 1, mean, yerr=std, fmt='-o', markersize=4, color=color, ecolor='lightgrey', elinewidth=3)
+
+    # Create a color bar to indicate the number of series contributing
+    sm = cm.ScalarMappable(cmap=cm.viridis, norm=mcolors.Normalize(vmin=0, vmax=max(valid_counts)))
+    sm.set_array([])
+    cbar = plt.colorbar(sm, orientation='vertical')
+    cbar.set_label('Number of Contributing Series')
+
+    plt.xlabel('Iterations')
+    plt.ylabel('Test Error MSE')
+    plt.title('Test Error')
+    plt.legend(loc='best')  # Adjust the legend location as needed
+    plt.grid(True)
+
+
+    if save_fig:
+        plt.savefig("test_error_with_different_lengths.pdf")
+    plt.show()
+
+
+def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_folds):
+    directory = data_reader.get_save_location(folder_relative_path=folder_relative_path, unique_subfolder=False)
+
+    # check if other simulations have been done if so, load them
+
+    name_addition = str(Settings.noise_variance) + '_scenario_' + str(SyntheticDataset.scenario)
+
+    try:
+        list_overfitting_iterations = data_reader.load_data(directory=directory,
+                                                            filename="list_overfitting_iterations_" + name_addition)
+    except:
+        list_overfitting_iterations = []
+    try:
+        list_of_test_errors = data_reader.load_data(directory=directory,
+                                                    filename="list_of_test_errors_" + name_addition)
+    except:
+        list_of_test_errors = []
+    try:
+        list_n_selected_paths = data_reader.load_data(directory=directory,
+                                                      filename="list_n_selected_paths_" + name_addition)
+    except:
+        list_n_selected_paths = []
+
+    # list_overfitting_iterations = []
+    # list_of_test_errors = []
+    # list_n_selected_paths = []
+
+    # Fixed seed for repetitive results
+    const_seed = Settings.random_split_test_dataset_seed
+
+    n_iterations = 200
+
+    # Seed and retrieve the values
+
+    random_generator = random.Random()
+    random_generator.seed(Settings.random_split_test_dataset_seed + 1)
+    n_min = 0
+    n_max = 20000000
+
+    i = 0
+    while i < n_iterations:
+        print("iteration number ", i)
+
+        dataset = load_dataset()
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
+                                                                          random_split_seed=Settings.random_split_test_dataset_seed)
+
+        overfitting_iteration, test_error, n_selected_paths = perform_cross_validation(train_dataset, test_dataset, k=5,
+                                                                                       random_seed=random_generator.randint(
+                                                                                           n_min,
+                                                                                           n_max))
+        if overfitting_iteration is None:
+            continue
+        i += 1
+        list_overfitting_iterations.append(overfitting_iteration)
+        list_of_test_errors.append(test_error)
+        list_n_selected_paths.append(n_selected_paths)
+
+        # just to save every 10 iteration in order to have a backup
+        if i % 10 == 0:
+            name_addition = str(Settings.noise_variance) + '_scenario_' + str(SyntheticDataset.scenario)
+            save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
+                      names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
+                             'list_n_selected_paths_' + name_addition], directory=directory)
+
+    directory = data_reader.get_save_location(folder_relative_path=folder_relative_path, unique_subfolder=False)
+    name_addition = str(Settings.noise_variance) + '_scenario_' + str(SyntheticDataset.scenario)
+    save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
+              names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
+                     'list_n_selected_paths_' + name_addition], directory=directory)

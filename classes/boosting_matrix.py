@@ -200,7 +200,7 @@ class BoostingMatrix:
         '''
         :return: return column's importance
         '''
-        return [(100*float(i))/sum(self.columns_importance) for i in self.columns_importance]
+        return [(100*float(i))/max(self.columns_importance) for i in self.columns_importance]
 
 
     def different_rows(self):

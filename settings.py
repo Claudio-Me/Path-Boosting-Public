@@ -6,7 +6,7 @@ import multiprocessing as mp
 
 
 class Settings:
-    maximum_number_of_steps = 30
+    maximum_number_of_steps = 300
 
     save_analysis = True
     show_analysis = True
@@ -20,15 +20,13 @@ class Settings:
     wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
-    if wrapper_boosting is True:
-        considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
+    considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
                                     39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
                                     57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
                                     72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
                                     89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
                                     104, 105, 106, 107, 108, 109, 110, 111, 112]
-    else:
-        considered_metal_centers = None
+
 
     # do not expand if the paths are longer than this amount
     max_path_length = 101
@@ -36,7 +34,11 @@ class Settings:
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
 
+    scenario = 1
+
     target_train_error = 0.0000001
+
+    synthetic_dataset_scenario = 1
 
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
@@ -69,7 +71,7 @@ class Settings:
 
     n_of_paths_importance_plotted: int = 30
 
-    noise_variance = 0
+    noise_variance = 0.2
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1
@@ -140,3 +142,45 @@ class Settings:
         return (y - y_hat)
 
     pd.set_option('display.max_columns', None)
+
+
+
+    scenario_1 = list({(28,), (28, 7), (28, 7, 6)})
+    scenario_2 = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
+
+    scenario_3 = [(57, 7, 7), (57, 7), (57,),
+                  (72, 7, 14), (72, 7), (72,),
+                  (78, 6, 7), (78, 6), (78,),
+                  (47, 7, 7), (47, 7), (47,),
+                  (74, 15, 8), (74, 15), (74,),
+                  (80, 7, 7), (80, 7), (80,),
+                  (77, 7, 7), (77, 7), (77,),
+                  (40, 7, 14), (40, 7), (40,),
+                  (21, 7, 14), (21, 7), (21,),
+                  (27, 6, 5), (27, 6), (27,),
+                  (27, 6, 8),
+                  (42, 7, 7), (42, 7), (42,),
+                  (39, 7, 7), (39, 7), (39,),
+                  (39, 7, 14),
+                  (39, 6, 7), (39, 6),
+                  (39, 6, 14),
+                  (39, 6, 5),
+                  (45, 7, 7), (45, 7), (45,),
+                  (48, 8, 7), (48, 8), (48,)]
+
+    if scenario == 1:
+        target_paths = scenario_1
+    elif scenario == 2:
+        target_paths = scenario_2
+    elif scenario == 3:
+        target_paths = scenario_3
+
+    @staticmethod
+    def set_scenario(scenario):
+        Settings.scenario= scenario
+        if scenario == 1:
+            Settings.target_paths = Settings.scenario_1
+        elif scenario == 2:
+            Settings.target_paths = Settings.scenario_2
+        elif scenario == 3:
+            Settings.target_paths = Settings.scenario_3

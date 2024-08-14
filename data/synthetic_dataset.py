@@ -12,7 +12,7 @@ from classes.pattern_boosting import PatternBoosting
 from classes.graph import GraphPB
 from settings import Settings
 from sklearn import metrics
-
+from pathlib import Path
 
 class SyntheticDataset:
     '''
@@ -22,58 +22,16 @@ class SyntheticDataset:
 
     def __init__(self):
 
-        if True:
-            scenario_1 = list({(28,), (28, 7), (28, 7, 6)})
-            scenario_2 = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
 
+        self.target_paths = Settings.target_paths
 
-            right_ratio = [(57, 7, 7),
-                           (72, 7, 14),
-                           (78, 6, 7),
-                           (47, 7, 7),
-                           (74, 15, 8),
-                           (80, 7, 7),
-                           (77, 7, 7),
-                           (40, 7, 14),
-                           (21, 7, 14),
-                           (27, 6, 5),
-                           (27, 6, 8),
-                           (42, 7, 7),
-                           (39, 7, 7),
-                           (39, 7, 14),
-                           (39, 6, 7),
-                           (39, 6, 14),
-                           (39, 6, 5),
-                           (45, 7, 7),
-                           (48, 8, 7)]
-
-            right_ratio_expanded = [(57, 7, 7), (57, 7), (57,),
-                                    (72, 7, 14), (72, 7), (72,),
-                                    (78, 6, 7), (78, 6), (78,),
-                                    (47, 7, 7), (47, 7), (47,),
-                                    (74, 15, 8), (74, 15), (74,),
-                                    (80, 7, 7), (80, 7), (80,),
-                                    (77, 7, 7), (77, 7), (77,),
-                                    (40, 7, 14), (40, 7), (40,),
-                                    (21, 7, 14), (21, 7), (21,),
-                                    (27, 6, 5), (27, 6), (27,),
-                                    (27, 6, 8),
-                                    (42, 7, 7), (42, 7), (42,),
-                                    (39, 7, 7), (39, 7), (39,),
-                                    (39, 7, 14),
-                                    (39, 6, 7), (39, 6),
-                                    (39, 6, 14),
-                                    (39, 6, 5),
-                                    (45, 7, 7), (45, 7), (45,),
-                                    (48, 8, 7), (48, 8), (48,)]
-        self.target_paths = scenario_2
         self.variance = Settings.noise_variance
         random.seed(Settings.random_coefficients_synthetic_dataset_seed)
         np.random.seed(Settings.random_coefficients_synthetic_dataset_seed)
         self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
         for i, coefficient in enumerate(self.coefficients):
-            #self.coefficients[i] = coefficient * pow(10, 2 - len(self.target_paths[i]))
+            # self.coefficients[i] = coefficient * pow(10, 2 - len(self.target_paths[i]))
             self.coefficients[i] = coefficient / len(self.target_paths[i])
 
         self.keep_probability = 0.0
@@ -82,8 +40,8 @@ class SyntheticDataset:
         self.number_paths_counting = None
 
     def create_dataset_from_5k_selection_graph(self, save_on_file=True, filename: str = "5_k_selection_graphs",
-                                               new_file_name="5k_synthetic_dataset"):
-        dataset = load_dataset_from_binary(filename=filename)
+                                               new_file_name="5k_synthetic_dataset", directory=None):
+        dataset = load_dataset_from_binary(directory=directory, filename=filename)
         # each row is a different graph, each column is a different path
         self.number_paths_counting = np.array(
             [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for
@@ -107,7 +65,8 @@ class SyntheticDataset:
         new_dataset = classes.dataset.Dataset(graphs_list=self.new_graphs_list, labels=self.new_labels_list)
 
         if save_on_file is True:
-            save_dataset_in_binary_file(new_dataset, filename=new_file_name)
+            current_dir = Path(__file__).parent.resolve()
+            save_dataset_in_binary_file(new_dataset, directory=current_dir, filename=new_file_name)
 
         return new_dataset
 
@@ -126,7 +85,7 @@ class SyntheticDataset:
 
         # add random noise
         if add_noise is True:
-            #noise = np.random.normal(0, self.variance, len(y))
+            # noise = np.random.normal(0, self.variance, len(y))
             noise = np.random.default_rng().normal(loc=0.0, scale=self.variance, size=len(y))
             y = y + noise
 

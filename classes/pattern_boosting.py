@@ -24,7 +24,8 @@ if Settings.parallelization is True:
 
 class PatternBoosting:
     def __init__(self, settings=Settings(), model: GradientBoostingModel = None):
-        self.settings = settings
+        self.settings = copy.deepcopy(settings)
+        self.settings.target_paths = copy.deepcopy(self.settings.target_paths)
         self.model = model
         self.trained = False
         self.test_error = []
@@ -40,6 +41,8 @@ class PatternBoosting:
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
         training is always the one took as input the first time the function "training" is called
         In future versions it will be possible to give as input a new dataset"""
+
+
 
         if isinstance(training_dataset, Dataset):
             self.training_dataset = training_dataset
@@ -77,18 +80,15 @@ class PatternBoosting:
                 self.boosting_matrix = BoostingMatrix(boosting_matrix_matrix, self.boosting_matrix.header,
                                                       self.boosting_matrix.columns_importance)
 
-        if self.settings.save_analysis or self.settings.show_analysis:
-            # cumulative number of paths that has been selected at each step
-            self.n_selected_paths = []
+        # cumulative number of paths that has been selected at each step
+        self.n_selected_paths = []
         if self.settings.dataset_name == "5k_synthetic_dataset":
-            target_paths = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
+            target_paths = copy.deepcopy(self.settings.target_paths)
 
             # (numero totale di "target paths" trovati fino ad ora) / (numero totale di path selezionati senza contare le ripetizioni)
             self.true_positive_ratio_1 = []
             times_a_target_path_has_been_selected = 0
 
-            # (numero di volte è stato selezionato un target path) / (numero totale di path selezionati, cioè numero di iterazioni )
-            self.true_positive_ratio_2 = []
             already_spotted_paths = set()
             n_spotted_paths = 0
 
@@ -141,8 +141,7 @@ class PatternBoosting:
 
             self.average_path_length.append(self.boosting_matrix.average_path_length())
 
-            if self.settings.save_analysis or self.settings.show_analysis:
-                self.n_selected_paths.append(len(self.get_selected_paths_in_boosting_matrix()))
+            self.n_selected_paths.append(len(self.get_selected_paths_in_boosting_matrix()))
 
             if self.settings.dataset_name == "5k_synthetic_dataset":
                 selected_path = self.boosting_matrix.get_path_associated_to_column(selected_column_number)
@@ -156,7 +155,6 @@ class PatternBoosting:
 
                 n_selected_paths = len(self.get_selected_paths_in_boosting_matrix())
                 self.true_positive_ratio_1.append(times_a_target_path_has_been_selected / n_selected_paths)
-                self.true_positive_ratio_2.append(n_spotted_paths / (iteration_number + 1))
 
             if self.train_error[-1] < Settings.target_train_error:
                 break
@@ -517,6 +515,5 @@ class PatternBoosting:
                 highest_correlations[col_name] = highest_corr_coef
         return highest_correlations
 
-
-    def get_number_of_times_path_has_been_selected(self, path: tuple| int | None =None) -> int| npt.NDArray:
+    def get_number_of_times_path_has_been_selected(self, path: tuple | int | None = None) -> int | npt.NDArray:
         return self.boosting_matrix.get_number_of_times_path_has_been_selected(path)

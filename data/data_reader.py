@@ -11,7 +11,7 @@ import pandas as pd
 import warnings
 import pickle
 from typing import Tuple
-
+from pathlib import Path
 
 def read_data_from_name(dataset_name, directory="data/"):
     return nx.read_gml(directory + dataset_name)
@@ -42,6 +42,7 @@ def split_training_and_test(dataset, test_size, labels: list = None, random_spli
 
 
 def read_dataset_and_labels_from_csv(directory, file_name):
+    directory = str(directory)
     warnings.warn("Weak implementation")
     if directory[-1] != "/":
         directory = directory + "/"
@@ -72,6 +73,7 @@ def read_dataset_and_labels_from_csv(directory, file_name):
 def save_dataset_in_binary_file(dataset, directory=None, filename: str = None):
     if directory is None:
         directory = "data/"
+    directory = str(directory)
     if directory[-1] != "/":
         directory = directory + "/"
     if filename is None:
@@ -83,6 +85,7 @@ def save_dataset_in_binary_file(dataset, directory=None, filename: str = None):
 def load_dataset_from_binary(directory=None, filename=None):
     if directory is None:
         directory = "data/"
+    directory=str(directory)
     if directory[-1] != "/":
         directory = directory + "/"
     if filename is None:
@@ -96,7 +99,7 @@ def load_dataset_from_binary(directory=None, filename=None):
 def load_data(filename=None, directory=None):
     if directory is None:
         directory = "data/"
-
+    directory = str(directory)
     if filename is not None:
         if directory[-1] != "/":
             directory = directory + "/"
@@ -107,7 +110,9 @@ def load_data(filename=None, directory=None):
 
 
 def save_data(data, filename, directory="results", create_unique_subfolder=True):
-    if not (os.getcwd() in directory):
+    directory = str(directory)
+    directory_of_this_file = str(Path(__file__).parent.resolve().parent)
+    if not (directory_of_this_file in directory):
         directory = get_save_location(file_name=filename, file_extension=".pkl", folder_relative_path=directory,
                                       unique_subfolder=create_unique_subfolder)
 
@@ -148,7 +153,7 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     folder_name = folder_name + "_max_path_length_" + str(
         Settings.max_path_length) + "_" + Settings.dataset_name + "_" + Settings.xgb_model_parameters['booster']
 
-    if Settings.considered_metal_centers is not None:
+    if Settings.wrapper_boosting is True:
         folder_name = folder_name + "/wrapped_boosting"
 
     if (not os.path.exists(location + folder_name)) and (unique_subfolder is True):

@@ -24,63 +24,16 @@ selected_paths = wrapper_pattern_boosting.get_selected_paths()
 extended_boosting_matrix = ExtendedBoostingMatrix()
 extended_boosting_matrix.create_extend_boosting_matrix(selected_paths=selected_paths,
                                                        dataset=dataset_original_graphs)
-extended_boosting_matrix.df.loc[:, : 10000] = np.nan
-print(extended_boosting_matrix.df.dtypes)
-new_df = extended_boosting_matrix.df.astype(pd.SparseDtype(float, fill_value=np.nan))
-print("sparse type")
-print(new_df.dtypes)
 
-from scipy.sparse import csc_matrix
-import matplotlib.pyplot as plt
+# save the matrix
+df: pd.DataFrame = extended_boosting_matrix.get_pandas_dataframe()
 
-# First, convert the sparse DataFrame to a scipy sparse matrix
-sparse_matrix = csc_matrix(extended_boosting_matrix.df)
+file_location = data_reader.get_save_location(file_name='extended_boosting_matrix', file_extension='.pkl',
+                                              folder_relative_path='./results/extended_boosting_matrix',
+                                              unique_subfolder=True)
 
-plt.figure(figsize=(10, 10))
-plt.spy(sparse_matrix, markersize=1)
-plt.show()
+df.to_pickle(file_location)
 
+df = pd.read_pickle(file_location)
 
-
-
-
-# Get the sparsity pattern for each SparseDtype column
-locations = []
-for column in new_df.columns:
-    sparse_series = new_df[column]
-    if pd.api.types.is_sparse(sparse_series):
-        sparse_array = sparse_series.array
-        # Get the indices of the non-zero entries
-        non_zero_indices = sparse_array.sp_index.to_int_index().indices
-        col_index = new_df.columns.get_loc(column)
-        locations.extend(zip(non_zero_indices, [col_index] * len(non_zero_indices)))
-
-# Unpack the locations to separate lists of rows and columns
-rows, cols = zip(*locations)
-
-plt.figure(figsize=(10, 6))
-plt.scatter(cols, rows, alpha=0.5)
-plt.xlabel('Columns')
-plt.ylabel('Rows')
-plt.gca().invert_yaxis()  # Invert the y-axis to match the matrix representation
-plt.show()
-
-
-
-
-
-
-non_missing_mask = extended_boosting_matrix.df.notna()
-
-# Stack to get indices of non-missing values
-non_missing_indices = non_missing_mask.stack()
-
-# The indices will be a MultiIndex where the first level is the row index and second level is the column index
-rows, cols = zip(*non_missing_indices.index)
-
-plt.figure(figsize=(10, 6))
-plt.scatter(cols, rows, alpha=0.5)
-plt.xlabel('Columns')
-plt.ylabel('Rows')
-plt.gca().invert_yaxis()  # Invert the y-axis to match the matrix representation
-plt.show()
+extended_boosting_matrix.plot_sparsity_matrix()
