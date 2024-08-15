@@ -3,6 +3,7 @@ import platform
 import pandas as pd
 import os
 import multiprocessing as mp
+import random
 
 
 class Settings:
@@ -75,6 +76,10 @@ class Settings:
 
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1
+
+    random_generator_for_noise_in_synthetic_dataset = random.Random()
+    random_generator_for_noise_in_synthetic_dataset.seed(random_coefficients_synthetic_dataset_seed + 1)
+
     parallelization = False
 
     algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step"

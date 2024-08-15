@@ -27,9 +27,10 @@ class SyntheticDataset:
         self.target_paths = Settings.target_paths
 
         self.variance = Settings.noise_variance
-        random.seed(Settings.random_coefficients_synthetic_dataset_seed)
-        np.random.seed(Settings.random_coefficients_synthetic_dataset_seed)
-        self.coefficients = np.random.uniform(2, 3, len(self.target_paths))
+        random_generator_for_coefficients = random.Random()
+        random_generator_for_coefficients.seed(Settings.random_coefficients_synthetic_dataset_seed)
+        self.coefficients = [random_generator_for_coefficients.uniform(2, 3) for _ in range(len(self.target_paths))]
+
         for i, coefficient in enumerate(self.coefficients):
             # self.coefficients[i] = coefficient * pow(10, 2 - len(self.target_paths[i]))
             self.coefficients[i] = coefficient / len(self.target_paths[i])
@@ -86,7 +87,7 @@ class SyntheticDataset:
         # add random noise
         if add_noise is True:
             # noise = np.random.normal(0, self.variance, len(y))
-            noise = np.random.default_rng().normal(loc=0.0, scale=self.variance, size=len(y))
+            noise = [Settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(2, 3) for _ in range(len(y))]
             y = y + noise
 
         # ------------------------------------------------------------------------------------------

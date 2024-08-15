@@ -34,50 +34,51 @@ import copy
 from analysis_article.set_default_settings import set_default_settings
 
 
-# %%
-
-
-
-def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
-                        maximum_number_of_steps=None, save_fig=False):
+def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
+                              maximum_number_of_steps=None, update_features_importance_by_comparison=True):
     set_default_settings()
-
 
     Settings.noise_variance = noise_variance
 
     Settings.scenario = synthetic_dataset_scenario
     Settings.set_scenario(synthetic_dataset_scenario)
 
+    Settings.update_features_importance_by_comparison = update_features_importance_by_comparison
 
     Settings.save_analysis = False
     Settings.show_analysis = False
-    Settings.dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    Settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     Settings.generate_new_dataset = True
 
-    if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-        Settings.wrapper_boosting = False
-    elif synthetic_dataset_scenario == 3:
-        Settings.wrapper_boosting = True
-
-    if maximum_number_of_steps is None:
+    if dataset_name == '5k_synthetic_dataset':
         if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-            Settings.maximum_number_of_steps = 100
+            Settings.wrapper_boosting = False
         elif synthetic_dataset_scenario == 3:
-            Settings.maximum_number_of_steps = 300
+            Settings.wrapper_boosting = True
+
+        if maximum_number_of_steps is None:
+            if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
+                Settings.maximum_number_of_steps = 100
+            elif synthetic_dataset_scenario == 3:
+                Settings.maximum_number_of_steps = 300
+
+
+    else:
+        Settings.wrapper_boosting = True
 
     final_test_error_vector = []
     final_train_error_vector = []
     missed_paths_counter = []
     n_selected_paths = []
-    n_selected_paths_per_iterations = []
+    n_selected_paths_per_iterartions = []
     overfitting_iteration = []
-
     true_positive_ratio_1 = []
-    true_positive_ratio_2 = []
     selected_paths_set = set()
     cumulative_paths_importance = defaultdict(float)
     cumulative_times_selected = defaultdict(int)
     counts = defaultdict(int)
+    dictionary_paths_importance_stored_in_lists = defaultdict(list)
+    dictionary_n_times_selected_stored_in_lists = defaultdict(list)
 
     for i in range(number_of_simulations):
         print("i")
@@ -94,7 +95,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
         final_train_error = pattern_boosting.train_error[-1]
         final_test_error_vector.append(final_test_error)
         final_train_error_vector.append(final_train_error)
-        n_selected_paths_per_iterations.append(pattern_boosting.n_selected_paths)
+        n_selected_paths_per_iterartions.append(pattern_boosting.n_selected_paths)
         true_positive_ratio_1.append(pattern_boosting.true_positive_ratio_1)
         selected_paths = pattern_boosting.get_selected_paths_in_boosting_matrix()
         n_selected_paths.append(len(selected_paths))
@@ -105,11 +106,13 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
             if value > 0.0:
                 cumulative_paths_importance[name] += value
                 counts[name] += 1
+                dictionary_paths_importance_stored_in_lists[name].append(value)
 
         for name, times_selected in zip(pattern_boosting.get_boosting_matrix_header(),
                                         pattern_boosting.get_number_of_times_path_has_been_selected()):
             if times_selected > 0:
                 cumulative_times_selected[name] += times_selected
+                dictionary_n_times_selected_stored_in_lists[name].append(times_selected)
 
         # compute overfitting iteration
         synthetic_dataset = SyntheticDataset()
@@ -119,59 +122,58 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
             if target_path not in selected_paths:
                 missed_paths.append(target_path)
         missed_paths_counter.append(len(missed_paths))
-    averages_importance = {name: cumulative_paths_importance[name] / number_of_simulations for name in
+
+    for name in dictionary_paths_importance_stored_in_lists:
+        if len(dictionary_paths_importance_stored_in_lists[name]) < number_of_simulations:
+            zeroes = [0] * (number_of_simulations - len(dictionary_paths_importance_stored_in_lists[name]))
+            dictionary_paths_importance_stored_in_lists[name] = dictionary_paths_importance_stored_in_lists[
+                                                                    name] + zeroes
+
+    for name in dictionary_n_times_selected_stored_in_lists:
+        if len(dictionary_n_times_selected_stored_in_lists[name]) < number_of_simulations:
+            zeroes = [0] * (number_of_simulations - len(dictionary_n_times_selected_stored_in_lists[name]))
+            dictionary_n_times_selected_stored_in_lists[name] = dictionary_n_times_selected_stored_in_lists[
+                                                                    name] + zeroes
+
+    averages_importance = {name: (cumulative_paths_importance[name] / number_of_simulations,
+                                  np.std(dictionary_paths_importance_stored_in_lists[name])) for name in
                            cumulative_paths_importance}
-    averages_times_selected = {name: cumulative_times_selected[name] / number_of_simulations for name in
-                               cumulative_times_selected}
+    averages_times_selected = {name: (
+        cumulative_times_selected[name] / number_of_simulations,
+        np.std(dictionary_n_times_selected_stored_in_lists[name]))
+        for name in
+        cumulative_times_selected}
 
+    # Print averages values of results over synthetic dataset
+    print("Averages importances")
+    print_dict_sorted_by_values(averages_importance)
 
+    print("average number of times selected")
+    print_dict_sorted_by_values(averages_times_selected)
 
+    print("final_test_error_vector")
+    print(np.average(final_test_error_vector), np.std(final_test_error_vector))
+    print("final_train_error_vector")
+    print(np.average(final_train_error_vector), np.std(final_train_error_vector))
+    print("n_selected_paths")
+    print(np.average(n_selected_paths), np.std(n_selected_paths))
 
+    print("n_seleted_paths_vector")
+    print(np.average(n_selected_paths_per_iterartions, axis=0), np.std(n_selected_paths_per_iterartions))
+
+    print("overfitting_iteration")
+    print(np.average(overfitting_iteration), np.std(overfitting_iteration))
+
+    print("coefficients for the syinthetic dataset")
     synthetic_dataset = SyntheticDataset()
+    print(synthetic_dataset.target_paths)
+    print(synthetic_dataset.coefficients)
 
-
+    avg_selected_paths_per_iterartions = np.average(n_selected_paths_per_iterartions, axis=0)
     synthetic_dataset = SyntheticDataset()
     n_target_paths = len(synthetic_dataset.target_paths)
 
-    def plot_tpr_vs_iterations_max_min(true_positive_ratios_per_iteration: list[list[float]], save_fig=True):
-        """
-        Plots the true positive ratio with standard deviation error bars, max, and min
-        against the number of iterations.
-        The iterations are inferred based on the length of the true_positive_ratios list.
 
-        :param true_positive_ratios_per_iteration: A list of list containing the TPR values at each iteration for each simulation.
-        :type true_positive_ratios_per_iteration: list of list of float
-        :returns: None
-        """
-        # Convert to numpy array for easier manipulation
-        np_tpr_per_iteration = np.array(true_positive_ratios_per_iteration)
-
-        # Calculate statistics
-        mean_tpr = np.mean(np_tpr_per_iteration, axis=0)
-        max_tpr = np.max(np_tpr_per_iteration, axis=0)
-        min_tpr = np.min(np_tpr_per_iteration, axis=0)
-        std_tpr = np.std(np_tpr_per_iteration, axis=0)  # Calculate the standard deviation
-
-        iterations = list(range(1, len(mean_tpr) + 1))
-
-        plt.figure(figsize=(10, 6))
-        plt.errorbar(iterations, mean_tpr, yerr=std_tpr, fmt='-o', color='b',
-                     label='True Positive Ratio (TPR) with Std. Dev.', ecolor='red', elinewidth=3, capsize=0)
-        plt.fill_between(iterations, min_tpr, max_tpr, color='b', alpha=0.1, label='Min-Max Range')
-
-        plt.xlabel('Iterations')
-        plt.ylabel('True Positive Ratio')
-        plt.title('True Positive Ratio vs. Iterations with Max, Min, and Std. Dev.')
-        plt.legend()
-        plt.grid(True)
-        if save_fig is True:
-            plt.savefig("true_positive_ratio_with_std_dev.pdf")
-        plt.show()
-
-    plot_tpr_vs_iterations_max_min(true_positive_ratio_1, save_fig=save_fig)
-
-
-
-
-# uncomment to use the file as a script
-true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True)
+paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2,
+                          noise_variance=0.2, maximum_number_of_steps=None,
+                          update_features_importance_by_comparison=True)
