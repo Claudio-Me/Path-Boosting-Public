@@ -87,7 +87,7 @@ class SyntheticDataset:
         # add random noise
         if add_noise is True:
             # noise = np.random.normal(0, self.variance, len(y))
-            noise = [Settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(2, 3) for _ in range(len(y))]
+            noise = [Settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(0, self.variance) for _ in range(len(y))]
             y = y + noise
 
         # ------------------------------------------------------------------------------------------

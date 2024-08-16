@@ -70,7 +70,7 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     final_train_error_vector = []
     missed_paths_counter = []
     n_selected_paths = []
-    n_selected_paths_per_iterartions = []
+    n_selected_paths_per_iterations = []
     overfitting_iteration = []
     true_positive_ratio_1 = []
     selected_paths_set = set()
@@ -95,7 +95,7 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
         final_train_error = pattern_boosting.train_error[-1]
         final_test_error_vector.append(final_test_error)
         final_train_error_vector.append(final_train_error)
-        n_selected_paths_per_iterartions.append(pattern_boosting.n_selected_paths)
+        n_selected_paths_per_iterations.append(pattern_boosting.n_selected_paths)
         true_positive_ratio_1.append(pattern_boosting.true_positive_ratio_1)
         selected_paths = pattern_boosting.get_selected_paths_in_boosting_matrix()
         n_selected_paths.append(len(selected_paths))
@@ -123,11 +123,14 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
                 missed_paths.append(target_path)
         missed_paths_counter.append(len(missed_paths))
 
+
+    # add zeroes to every path list such that the length of the list for each path is equal to number of simulations
     for name in dictionary_paths_importance_stored_in_lists:
         if len(dictionary_paths_importance_stored_in_lists[name]) < number_of_simulations:
             zeroes = [0] * (number_of_simulations - len(dictionary_paths_importance_stored_in_lists[name]))
             dictionary_paths_importance_stored_in_lists[name] = dictionary_paths_importance_stored_in_lists[
                                                                     name] + zeroes
+
 
     for name in dictionary_n_times_selected_stored_in_lists:
         if len(dictionary_n_times_selected_stored_in_lists[name]) < number_of_simulations:
@@ -158,22 +161,20 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     print("n_selected_paths")
     print(np.average(n_selected_paths), np.std(n_selected_paths))
 
-    print("n_seleted_paths_vector")
-    print(np.average(n_selected_paths_per_iterartions, axis=0), np.std(n_selected_paths_per_iterartions))
+    # print("n_selected_paths_vector")
+    # print(np.average(n_selected_paths_per_iterations, axis=0), np.std(n_selected_paths_per_iterations))
 
     print("overfitting_iteration")
     print(np.average(overfitting_iteration), np.std(overfitting_iteration))
 
-    print("coefficients for the syinthetic dataset")
+    print("coefficients for the synthetic dataset")
     synthetic_dataset = SyntheticDataset()
     print(synthetic_dataset.target_paths)
     print(synthetic_dataset.coefficients)
 
-    avg_selected_paths_per_iterartions = np.average(n_selected_paths_per_iterartions, axis=0)
+    avg_selected_paths_per_iterations = np.average(n_selected_paths_per_iterations, axis=0)
     synthetic_dataset = SyntheticDataset()
     n_target_paths = len(synthetic_dataset.target_paths)
 
-
-paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2,
-                          noise_variance=0.2, maximum_number_of_steps=None,
-                          update_features_importance_by_comparison=True)
+# uncomment to use the file as a script
+# paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=False)

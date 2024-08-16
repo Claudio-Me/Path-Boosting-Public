@@ -39,7 +39,7 @@ def set_default_settings():
     Settings.target_train_error = 0.0000001
 
     # it works only if "algorithm" is Xgb_step
-    Settings.update_features_importance_by_comparison = True
+    Settings.update_features_importance_by_comparison = False
 
     Settings.max_number_of_cores = mp.cpu_count()
 

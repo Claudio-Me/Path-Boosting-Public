@@ -69,7 +69,6 @@ class BoostingMatrix:
         that is the number of times column's importance has been updated
         :return:
         '''
-        self.number_of_times_column_is_selected[column] += 1
         if len(train_error) <= 1:
             self.update_column_importance(column, default_value)
         else:

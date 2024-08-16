@@ -165,7 +165,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
         plt.legend()
         plt.grid(True)
         if save_fig is True:
-            plt.savefig("true_positive_ratio_with_std_dev.pdf")
+            plt.savefig("true_positive_ratio_scenario_" + str(synthetic_dataset_scenario) + ".pdf")
         plt.show()
 
     plot_tpr_vs_iterations_max_min(true_positive_ratio_1, save_fig=save_fig)
@@ -174,4 +174,4 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
 
 
 # uncomment to use the file as a script
-true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True)
+# true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=3, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True)
