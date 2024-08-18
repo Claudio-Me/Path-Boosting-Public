@@ -28,8 +28,8 @@ class PatternBoosting:
         self.settings.target_paths = copy.deepcopy(self.settings.target_paths)
         self.model = model
         self.trained = False
-        self.test_error = []
-        self.train_error = []
+        self.test_error: list[float] = []
+        self.train_error: list[float] = []
         self.average_path_length = []
         self.number_of_learners = []
         self.gradient_boosting_step = GradientBoostingStep()
@@ -41,8 +41,6 @@ class PatternBoosting:
         """Trains the model, it is possible to call this function multiple times, in this case the dataset used for
         training is always the one took as input the first time the function "training" is called
         In future versions it will be possible to give as input a new dataset"""
-
-
 
         if isinstance(training_dataset, Dataset):
             self.training_dataset = training_dataset

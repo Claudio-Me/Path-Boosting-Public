@@ -441,17 +441,17 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
     kf = KFold(n_splits=k, shuffle=True, random_state=random_seed)
 
     graphs_list = train_dataset.get_graphs_list()
-    test_errors_list = []
+    test_errors_cross_validation_list = []
     for train_index, test_index in kf.split(graphs_list):
         model = PatternBoosting()
         train_dataset_crossvalidation = Dataset([graphs_list[i] for i in train_index])
         test_dataset_crossvalidation = Dataset([graphs_list[i] for i in test_index])
 
         model.training(train_dataset_crossvalidation, test_dataset_crossvalidation)
-        test_errors_list.append(model.test_error)
+        test_errors_cross_validation_list.append(model.test_error)
 
-    test_errors_list = np.array(test_errors_list)
-    test_error_sum = np.sum(test_errors_list, axis=0)
+    test_errors_cross_validation_list = np.array(test_errors_cross_validation_list)
+    test_error_sum = np.sum(test_errors_cross_validation_list, axis=0)
     overfitting_iteration = 0
 
     overfitting_iteration = early_stopping(test_errors=test_error_sum, patience=patience)
@@ -567,7 +567,8 @@ def save_data(data, names, directory, create_unique_subfolder=False):
                               create_unique_subfolder=create_unique_subfolder)
 
 
-def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], save_fig=True):
+def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], save_fig=True,
+                                  name_fig="test_error_with_different_lengths.pdf"):
     """
     Plots the test error with standard deviation error bars, max, min, and uses a color gradient
     to indicate the number of series contributing to each data point. Includes a legend for standard deviation.
@@ -614,7 +615,7 @@ def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], 
     plt.grid(True)
 
     if save_fig:
-        plt.savefig("test_error_with_different_lengths.pdf")
+        plt.savefig(name_fig)
     plt.show()
 
 
@@ -644,8 +645,6 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
     # list_overfitting_iterations = []
     # list_of_test_errors = []
     # list_n_selected_paths = []
-
-
 
     # Seed and retrieve the values
 
@@ -686,6 +685,5 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
     save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
               names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
                      'list_n_selected_paths_' + name_addition], directory=directory)
-
 
     return list_overfitting_iterations, list_of_test_errors, list_n_selected_paths
