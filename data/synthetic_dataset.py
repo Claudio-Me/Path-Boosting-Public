@@ -93,7 +93,7 @@ class SyntheticDataset:
         # ------------------------------------------------------------------------------------------
         return y
 
-    def oracle_model_evaluate(self, graphs_list, labels):  # graphs_list: list[GraphPB]
+    def oracle_model_evaluate(self, graphs_list: list[GraphPB] , labels):  # graphs_list: list[GraphPB]
         if not hasattr(graphs_list, '__iter__'):
             # if graph_list is not a list then I assume it is a singe graph
             graphs_list = [graphs_list]

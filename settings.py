@@ -189,3 +189,5 @@ class Settings:
             Settings.target_paths = Settings.scenario_2
         elif scenario == 3:
             Settings.target_paths = Settings.scenario_3
+
+    cross_validation_k_fold_seed = 5

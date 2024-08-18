@@ -13,6 +13,7 @@ import pickle
 from typing import Tuple
 from pathlib import Path
 
+
 def read_data_from_name(dataset_name, directory="data/"):
     return nx.read_gml(directory + dataset_name)
 
@@ -85,7 +86,7 @@ def save_dataset_in_binary_file(dataset, directory=None, filename: str = None):
 def load_dataset_from_binary(directory=None, filename=None):
     if directory is None:
         directory = "data/"
-    directory=str(directory)
+    directory = str(directory)
     if directory[-1] != "/":
         directory = directory + "/"
     if filename is None:
@@ -103,7 +104,7 @@ def load_data(filename=None, directory=None):
     if filename is not None:
         if directory[-1] != "/":
             directory = directory + "/"
-        directory= directory + filename + '.pkl'
+        directory = directory + filename + '.pkl'
     with open(directory, 'rb') as inp:
         data = pickle.load(inp)
     return data
@@ -129,9 +130,13 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     if last_folder == "pattern_boosting":
         location = os.getcwd()
     elif last_folder == "classes" or last_folder == "data":
+        # it removes the last directory from os.getcwd()
+        location = os.path.dirname(os.getcwd())
+    elif str(last_folder) == "analysis_article":
+        # it removes the last directory from os.getcwd()
         location = os.path.dirname(os.getcwd())
     else:
-        raise Exception("Uknown location")
+        raise Exception("Uknown location ", last_folder)
 
     location = os.path.join(location, folder_relative_path)
     if len(file_extension) > 0 and file_extension[0] != '.':

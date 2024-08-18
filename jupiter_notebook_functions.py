@@ -427,6 +427,7 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
     """
     Perform K-Fold cross-validation on the dataset.
 
+    :param test_dataset: Test dataset.
     :param train_dataset: Features dataset.
     :type train_dataset: numpy.ndarray
     :param y: Target labels.
@@ -466,9 +467,9 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
     test_error = model.test_error
 
     # get the number of selected_paths
-    selected_paths = model.get_selected_paths_in_boosting_matrix()
+    n_selected_paths = len(model.get_selected_paths_in_boosting_matrix())
 
-    return overfitting_iteration, test_error, selected_paths
+    return overfitting_iteration, test_error, n_selected_paths
 
 
 def print_dict_sorted_by_values(d: dict):
@@ -612,7 +613,6 @@ def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], 
     plt.legend(loc='best')  # Adjust the legend location as needed
     plt.grid(True)
 
-
     if save_fig:
         plt.savefig("test_error_with_different_lengths.pdf")
     plt.show()
@@ -623,7 +623,7 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
 
     # check if other simulations have been done if so, load them
 
-    name_addition = str(Settings.noise_variance) + '_scenario_' + str(SyntheticDataset.scenario)
+    name_addition = str(Settings.noise_variance) + '_scenario_' + str(Settings.synthetic_dataset_scenario)
 
     try:
         list_overfitting_iterations = data_reader.load_data(directory=directory,
@@ -645,15 +645,12 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
     # list_of_test_errors = []
     # list_n_selected_paths = []
 
-    # Fixed seed for repetitive results
-    const_seed = Settings.random_split_test_dataset_seed
 
-    n_iterations = 200
 
     # Seed and retrieve the values
 
     random_generator = random.Random()
-    random_generator.seed(Settings.random_split_test_dataset_seed + 1)
+    random_generator.seed(Settings.random_split_test_dataset_seed + 2)
     n_min = 0
     n_max = 20000000
 
@@ -665,7 +662,8 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                           random_split_seed=Settings.random_split_test_dataset_seed)
 
-        overfitting_iteration, test_error, n_selected_paths = perform_cross_validation(train_dataset, test_dataset, k=5,
+        overfitting_iteration, test_error, n_selected_paths = perform_cross_validation(train_dataset, test_dataset,
+                                                                                       k=k_folds,
                                                                                        random_seed=random_generator.randint(
                                                                                            n_min,
                                                                                            n_max))
@@ -678,13 +676,16 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
 
         # just to save every 10 iteration in order to have a backup
         if i % 10 == 0:
-            name_addition = str(Settings.noise_variance) + '_scenario_' + str(SyntheticDataset.scenario)
+            name_addition = str(Settings.noise_variance) + '_scenario_' + str(Settings.synthetic_dataset_scenario)
             save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
                       names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
                              'list_n_selected_paths_' + name_addition], directory=directory)
 
     directory = data_reader.get_save_location(folder_relative_path=folder_relative_path, unique_subfolder=False)
-    name_addition = str(Settings.noise_variance) + '_scenario_' + str(SyntheticDataset.scenario)
+    name_addition = str(Settings.noise_variance) + '_scenario_' + str(Settings.synthetic_dataset_scenario)
     save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
               names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
                      'list_n_selected_paths_' + name_addition], directory=directory)
+
+
+    return list_overfitting_iterations, list_of_test_errors, list_n_selected_paths

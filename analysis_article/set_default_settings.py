@@ -127,3 +127,5 @@ def set_default_settings():
 
     Settings.scenario = 1
     Settings.set_scenario(1)
+
+    Settings.cross_validation_k_fold_seed = 5
