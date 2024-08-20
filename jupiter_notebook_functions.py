@@ -515,9 +515,10 @@ def plot_label_distribution(label_counts, save_fig=True):
 
 
 def plot_signal_to_noise_ratio(average_y_value, noise_variance_list, variance_errors, mean_errors, min_errors,
-                               max_errors, save_fig=True):
+                               max_errors, save_fig=True, name_fig = "signal_to_noise_ratio.pdf"):
     # Assuming we're plotting these errors against a sequential index or a list of parameters `x`
-    x_values = (average_y_value * average_y_value) / np.array(noise_variance_list)
+    # x_values = np.divide(np.square(average_y_value), np.array(noise_variance_list))
+    x_values = noise_variance_list
 
     # Create a sorted index based on x_values
     sorted_indices = np.argsort(x_values)
@@ -536,10 +537,9 @@ def plot_signal_to_noise_ratio(average_y_value, noise_variance_list, variance_er
                  elinewidth=3, capsize=0)
     plt.fill_between(x_values, min_errors, max_errors, color='lightgray', alpha=0.2, label='Min-Max Range')
 
-    plt.title('Performances over different Signal to Noise Ratios')
-    plt.xlabel('SNR')
+    plt.title('Performances with increase noise')
+    plt.xlabel('Added noise variance')
     plt.ylabel('Test MSE')
-
     # Round x_values for cleaner display (optional)
     rounded_x_values = [round(x, 1) for x in x_values]
 
@@ -553,9 +553,10 @@ def plot_signal_to_noise_ratio(average_y_value, noise_variance_list, variance_er
                rotation=45)  # Rotate the x-tick labels to prevent overlap
 
     plt.legend()
+
     plt.grid(True)
     if save_fig is True:
-        plt.savefig("signal_to_noise_ratio.pdf")
+        plt.savefig(name_fig)
     plt.show()
 
 

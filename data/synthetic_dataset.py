@@ -48,6 +48,7 @@ class SyntheticDataset:
             [[graph.number_of_time_path_is_present_in_graph(path) for path in self.target_paths] for
              graph in dataset.graphs_list])
         new_labels = self.__formula_new_labels(self.number_paths_counting, add_noise=True)
+
         dataset.labels = list(new_labels)
         a = self.number_paths_counting.sum(axis=1)
         self.number_of_graphs_that_contains_target_path = np.count_nonzero(a)
@@ -87,7 +88,8 @@ class SyntheticDataset:
         # add random noise
         if add_noise is True:
             # noise = np.random.normal(0, self.variance, len(y))
-            noise = [Settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(0, self.variance) for _ in range(len(y))]
+            noise = [Settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(0, np.sqrt(self.variance)) for _ in range(len(y))]
+
             y = y + noise
 
         # ------------------------------------------------------------------------------------------

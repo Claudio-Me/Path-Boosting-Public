@@ -17,7 +17,7 @@ def set_default_settings():
     # in the error graph Print only the last N learners
     Settings.tail = Settings.maximum_number_of_steps + 1
 
-    Settings.wrapper_boosting = False
+    Settings.wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
     if Settings.wrapper_boosting is True:

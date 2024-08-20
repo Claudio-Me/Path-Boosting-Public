@@ -57,8 +57,10 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
             Settings.wrapper_boosting = True
 
         if maximum_number_of_steps is None:
-            if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-                Settings.maximum_number_of_steps = 100
+            if synthetic_dataset_scenario == 1:
+                Settings.maximum_number_of_steps = 28
+            if synthetic_dataset_scenario == 2:
+                Settings.maximum_number_of_steps = 83
             elif synthetic_dataset_scenario == 3:
                 Settings.maximum_number_of_steps = 300
 
@@ -177,4 +179,4 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     n_target_paths = len(synthetic_dataset.target_paths)
 
 # uncomment to use the file as a script
-# paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=False)
+paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=False)

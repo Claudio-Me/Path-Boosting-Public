@@ -156,12 +156,12 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
 
         plt.figure(figsize=(10, 6))
         plt.errorbar(iterations, mean_tpr, yerr=std_tpr, fmt='-o', color='b',
-                     label='True Positive Ratio (TPR) with Std. Dev.', ecolor='red', elinewidth=3, capsize=0)
+                     label='True Positive Ratio (TPR) with Std. Err.', ecolor='red', elinewidth=3, capsize=0)
         plt.fill_between(iterations, min_tpr, max_tpr, color='b', alpha=0.1, label='Min-Max Range')
 
         plt.xlabel('Iterations')
         plt.ylabel('True Positive Ratio')
-        plt.title('True Positive Ratio vs. Iterations with Max, Min, and Std. Dev.')
+        plt.title('True Positive Ratio vs. Iterations with Max, Min, and Std. Err.')
         plt.legend()
         plt.grid(True)
         if save_fig is True:
