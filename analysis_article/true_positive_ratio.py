@@ -39,7 +39,7 @@ from analysis_article.set_default_settings import set_default_settings
 
 
 def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
-                        maximum_number_of_steps=None, save_fig=False):
+                        maximum_number_of_steps=None, save_fig=False, show_settings=True):
     set_default_settings()
 
 
@@ -168,10 +168,13 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
             plt.savefig("true_positive_ratio_scenario_" + str(synthetic_dataset_scenario) + ".pdf")
         plt.show()
 
+    if show_settings is True:
+        Settings.print_principal_values()
+
     plot_tpr_vs_iterations_max_min(true_positive_ratio_1, save_fig=save_fig)
 
 
 
 
 # uncomment to use the file as a script
-# true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=3, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True)
+# true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=3, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True, show_settings=True)

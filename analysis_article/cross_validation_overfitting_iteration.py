@@ -36,7 +36,7 @@ from analysis_article.set_default_settings import set_default_settings
 
 def cross_validation(number_of_simulations=200, k_folds=5, synthetic_dataset_scenario=1, patience=3,
                      dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
-                     save_fig=False, use_wrapper_boosting=None):
+                     save_fig=False, use_wrapper_boosting=None, show_settings=True):
 
 
     set_default_settings()
@@ -71,7 +71,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, synthetic_dataset_sce
             if synthetic_dataset_scenario == 2:
                 Settings.maximum_number_of_steps = 150
         elif synthetic_dataset_scenario == 3:
-            Settings.maximum_number_of_steps = 300
+            Settings.maximum_number_of_steps = 350
 
     list_overfitting_iterations = []
     list_of_test_errors: list[list[float]] = []
@@ -102,6 +102,9 @@ def cross_validation(number_of_simulations=200, k_folds=5, synthetic_dataset_sce
         list_of_test_errors.append(test_error)
         list_n_selected_paths.append(n_selected_paths)
 
+    if show_settings is True:
+        Settings.print_principal_values()
+
     print("average overfitting iteration:")
     print(np.average(list_overfitting_iterations))
 
@@ -127,4 +130,4 @@ def cross_validation(number_of_simulations=200, k_folds=5, synthetic_dataset_sce
     plot_test_error_vs_iterations(list_of_test_errors, save_fig=save_fig, name_fig=fig_name)
 
 # uncomment to use the file as a script
-cross_validation(number_of_simulations=200, k_folds=5, synthetic_dataset_scenario=2, patience=3, dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None, save_fig=True, use_wrapper_boosting=None)
+cross_validation(number_of_simulations=200, k_folds=5, synthetic_dataset_scenario=3, patience=1, dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None, save_fig=True, use_wrapper_boosting=None, show_settings=True)

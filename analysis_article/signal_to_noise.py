@@ -38,7 +38,7 @@ def signal_to_noise(number_of_simulations=200,
                     noise_variance_list=[0.325, 0.625, 0.875, 1.125, 1.375, 1.625, 0.2, 0.5, 0.75, 1, 1.25, 1.5],
                     synthetic_dataset_scenario=1,
                     dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
-                    save_fig=False, use_wrapper_boosting=None):
+                    save_fig=False, use_wrapper_boosting=None, show_settings=True):
     set_default_settings()
 
     Settings.noise_variance = noise_variance
@@ -114,10 +114,8 @@ def signal_to_noise(number_of_simulations=200,
         different_variances_missed_paths_counter.append(missed_paths_counter)
         different_variances_average_y_value.append(np.average(average_y_value))
 
-
-
-
-
+    if show_settings is True:
+        Settings.print_principal_values()
 
     for i, variance in enumerate(noise_variance_list):
         print(variance)
@@ -135,11 +133,10 @@ def signal_to_noise(number_of_simulations=200,
         print(np.std(different_variances_final_train_error_vector[i]))
 
         print("average missed_paths_counter")
-        print(np.average(different_variances_missed_paths_counter[i]),np.std(different_variances_missed_paths_counter[i]))
+        print(np.average(different_variances_missed_paths_counter[i]),
+              np.std(different_variances_missed_paths_counter[i]))
 
         print("------------------------------------------------")
-
-
 
     # Calculate statistics based on simulation results
     mean_errors = []
@@ -154,18 +151,15 @@ def signal_to_noise(number_of_simulations=200,
         min_errors.append(np.min(x_simulation_errors))
         max_errors.append(np.max(x_simulation_errors))
 
-
-    plot_signal_to_noise_ratio(average_y_value=different_variances_average_y_value, noise_variance_list=noise_variance_list,
+    plot_signal_to_noise_ratio(average_y_value=different_variances_average_y_value,
+                               noise_variance_list=noise_variance_list,
                                variance_errors=variance_errors, mean_errors=mean_errors, min_errors=min_errors,
                                max_errors=max_errors, save_fig=save_fig, name_fig=fig_name)
 
 
-
-
-
-
 signal_to_noise(number_of_simulations=50,
-                    noise_variance_list=[0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625], # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
-                    synthetic_dataset_scenario=2,
-                    dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
-                    save_fig=True, use_wrapper_boosting=None)
+                noise_variance_list=[0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625],
+                # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
+                synthetic_dataset_scenario=2,
+                dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
+                save_fig=True, use_wrapper_boosting=None, show_settings=True)

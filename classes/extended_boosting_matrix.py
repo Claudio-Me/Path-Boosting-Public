@@ -14,64 +14,17 @@ from settings import Settings
 
 class ExtendedBoostingMatrix:
 
-    def __init__(self):
-        self.df: pd.DataFrame | None = None
+    def __init__(self, df: pd.DataFrame | None = None):
+        self.df: pd.DataFrame | None = df
+        if self.df is not None:
+            ExtendedBoostingMatrix.sort_df_columns(self.df)
 
     def create_extend_boosting_matrix(self, selected_paths: list[tuple],
-                                      dataset: list[nx.classes.multigraph.MultiGraph]):
+                                      list_graphs_nx: list[nx.classes.multigraph.MultiGraph], convert_to_sparse=False):
         # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
-        assert isinstance(selected_paths, list)
 
-        # function to help the retrival of attributes in nx graphs
-
-        self.graphs_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in dataset]
-
-        if self.df is None:
-            # this is useless
-            columns_name: list[str] = self.__get_all_possible_node_attributes_in_the_dataset(dataset, selected_paths)
-            columns_name.append("response_variable")
-            self.df = pd.DataFrame(columns=columns_name)
-        else:
-            # concatenate two datasets
-            raise Exception("Concat of two dataset is not implemented yet")
-
-        all_possible_attributes_from_single_graph: set[str] = self.__get_all_possible_attributes(dataset)
-
-        # initialize a list of sets that we will use to create the panda's dataframe
-        list_rows: list[dict] = []
-
-        for i, graph in enumerate(self.graphs_list):
-            # dictionary that contains all the possible values for the same attribute in one graph
-            accumulated_attributes = defaultdict(lambda: [])
-
-            for labelled_path in selected_paths:
-                numbered_paths_found_in_graph = graph.find_labelled_path(labelled_path=labelled_path)
-                node_attributes: dict = {}
-
-                for numbered_path in numbered_paths_found_in_graph:
-                    node_attributes = self.__get_node_attributes_of_nx_graph(graph=dataset[i],
-                                                                             node_id=numbered_path[-1])
-
-                    for attr in node_attributes:
-                        if attr in all_possible_attributes_from_single_graph:
-                            # Accumulate the attribute values in a list
-                            accumulated_attributes[self.__get_column_name(labelled_path, attr)].append(
-                                node_attributes[attr])
-
-                # --------------------------------
-            # Calculate the average of all the accumulated values
-            complete_attributes = {attr: np.mean(values) if values else None for attr, values in
-                                   accumulated_attributes.items()}
-
-            # add response column
-            complete_attributes["response_variable"] = dataset[i].graph[Settings.graph_label_variable]
-
-            list_rows.append(complete_attributes)
-        self.df = pd.DataFrame(list_rows)
-
-        # convert into a sparse dataset
-        self.df = self.df.astype(pd.SparseDtype(float, fill_value=np.nan))
-        self.sort_df_columns()
+        self.df = ExtendedBoostingMatrix.create_extend_boosting_matrix_for(selected_paths, list_graphs_nx,
+                                                                           convert_to_sparse)
 
     @staticmethod
     def find_labels_in_nx_graph(graph: nx.Graph, path: List[int]):
@@ -165,16 +118,21 @@ class ExtendedBoostingMatrix:
 
         """
         # Split the column name on the underscore to extract the string-tuple and the name
+        if column_name == 'target':
+            return 0, (0,)
         string_tuple, _ = column_name.split('_', 1)
+
         # Convert the string-tuple to an actual tuple
         tuple_of_ints = ast.literal_eval(string_tuple)
         # Create a sorting key: (length of the tuple, the tuple itself)
         return (len(tuple_of_ints), tuple_of_ints)
 
-    def sort_df_columns(self):
-        sorted_columns = sorted(self.df.columns, key=self.__column_sort_key)
+    @staticmethod
+    def sort_df_columns(dataframe: pd.DataFrame) -> pd.DataFrame:
+        sorted_columns = sorted(dataframe.columns, key=ExtendedBoostingMatrix.__column_sort_key)
 
-        self.df = self.df.reindex(columns=sorted_columns)
+        dataframe = dataframe.reindex(columns=sorted_columns)
+        return dataframe
 
     @staticmethod
     def __parse_tuple_from_colname(column_name):
@@ -194,6 +152,9 @@ class ExtendedBoostingMatrix:
         >>> __parse_tuple_from_colname("(1,2,)_some_name")
         (1, 2,)
         """
+        if column_name == 'target':
+            return (0,)
+
         string_tuple, _ = column_name.split('_', 1)
         tuple_of_ints = ast.literal_eval(string_tuple)
         return tuple_of_ints
@@ -241,3 +202,80 @@ class ExtendedBoostingMatrix:
 
     def get_pandas_dataframe(self) -> pd.DataFrame:
         return self.df
+
+
+    @staticmethod
+    def get_features_interaction_constraints(selected_paths: list[tuple], all_attributes: list[str] | None = None,
+                                             list_graphs_nx: list[nx.classes.multigraph.MultiGraph] | None = None):
+        # it returns a dictionary where to each labelled path is associated a list containing the name of the columns that contains features relative to said path
+        if all_attributes is None:
+            all_attributes = ExtendedBoostingMatrix.__get_all_possible_attributes(list_graphs_nx)
+
+        dict_of_interaction_constraints = dict()
+        for labelled_path in selected_paths:
+            columns_names = []
+            for attribute in all_attributes:
+                columns_names.append(ExtendedBoostingMatrix.__get_column_name(labelled_path, attribute))
+            dict_of_interaction_constraints[labelled_path] = columns_names
+
+        return dict_of_interaction_constraints
+
+    @staticmethod
+    def create_extend_boosting_matrix_for(selected_paths: list[tuple],
+                                          list_graphs_nx: list[nx.classes.multigraph.MultiGraph],
+                                          convert_to_sparse=False) -> pd.DataFrame:
+        # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
+        assert isinstance(selected_paths, list)
+
+        # function to help the retrival of attributes in nx graphs
+
+        graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in list_graphs_nx]
+
+        columns_name: list[str] = ExtendedBoostingMatrix.__get_all_possible_node_attributes_in_the_dataset(
+            list_graphs_nx,
+            selected_paths)
+        columns_name.append("target")
+        df = pd.DataFrame(columns=columns_name)
+
+        all_possible_attributes_from_single_graph: set[str] = ExtendedBoostingMatrix.__get_all_possible_attributes(
+            list_graphs_nx)
+
+        # initialize a list of sets that we will use to create the panda's dataframe
+        list_rows: list[dict] = []
+
+        for i, graph in enumerate(graphsPB_list):
+            # dictionary that contains all the possible values for the same attribute in one graph
+            accumulated_attributes = defaultdict(lambda: [])
+
+            for labelled_path in selected_paths:
+                numbered_paths_found_in_graph = graph.find_labelled_path(labelled_path=labelled_path)
+                node_attributes: dict = {}
+
+                for numbered_path in numbered_paths_found_in_graph:
+                    node_attributes = ExtendedBoostingMatrix.__get_node_attributes_of_nx_graph(graph=list_graphs_nx[i],
+                                                                                               node_id=numbered_path[
+                                                                                                   -1])
+
+                    for attr in node_attributes:
+                        if attr in all_possible_attributes_from_single_graph:
+                            # Accumulate the attribute values in a list
+                            accumulated_attributes[
+                                ExtendedBoostingMatrix.__get_column_name(labelled_path, attr)].append(
+                                node_attributes[attr])
+
+                # --------------------------------
+            # Calculate the average of all the accumulated values
+            complete_attributes = {attr: np.mean(values) if values else None for attr, values in
+                                   accumulated_attributes.items()}
+
+            # add response column
+            complete_attributes["target"] = list_graphs_nx[i].graph[Settings.graph_label_variable]
+
+            list_rows.append(complete_attributes)
+        extended_boosting_matrix_df: pd.DataFrame = pd.DataFrame(list_rows)
+
+        # convert into a sparse dataset
+        if convert_to_sparse is True:
+            extended_boosting_matrix_df = extended_boosting_matrix_df.astype(pd.SparseDtype(float, fill_value=np.nan))
+        extended_boosting_matrix_df = ExtendedBoostingMatrix.sort_df_columns(extended_boosting_matrix_df)
+        return extended_boosting_matrix_df

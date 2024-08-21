@@ -35,7 +35,7 @@ from analysis_article.set_default_settings import set_default_settings
 
 
 def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
-                              maximum_number_of_steps=None, update_features_importance_by_comparison=True):
+                              maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True):
     set_default_settings()
 
     Settings.noise_variance = noise_variance
@@ -149,6 +149,9 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
         for name in
         cumulative_times_selected}
 
+    if show_settings is True:
+        Settings.print_principal_values()
+
     # Print averages values of results over synthetic dataset
     print("Averages importances")
     print_dict_sorted_by_values(averages_importance)
@@ -179,4 +182,4 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     n_target_paths = len(synthetic_dataset.target_paths)
 
 # uncomment to use the file as a script
-paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=False)
+paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True)

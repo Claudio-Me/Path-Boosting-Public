@@ -16,18 +16,17 @@ class Settings:
     generate_new_dataset = True
 
     # in the error graph Print only the last N learners
-    tail = maximum_number_of_steps-150
+    tail = maximum_number_of_steps - 150
 
     wrapper_boosting = False
 
     # used in wrapped boosting to specify the centers over which split the dataset
     considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
-                                    39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
-                                    57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
-                                    72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
-                                    89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
-                                    104, 105, 106, 107, 108, 109, 110, 111, 112]
-
+                                39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
+                                57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
+                                72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
+                                89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
+                                104, 105, 106, 107, 108, 109, 110, 111, 112]
 
     # do not expand if the paths are longer than this amount
     max_path_length = 101
@@ -148,8 +147,6 @@ class Settings:
 
     pd.set_option('display.max_columns', None)
 
-
-
     scenario_1 = list({(28,), (28, 7), (28, 7, 6)})
     scenario_2 = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
@@ -182,7 +179,7 @@ class Settings:
 
     @staticmethod
     def set_scenario(scenario):
-        Settings.scenario= scenario
+        Settings.scenario = scenario
         if scenario == 1:
             Settings.target_paths = Settings.scenario_1
         elif scenario == 2:
@@ -191,3 +188,11 @@ class Settings:
             Settings.target_paths = Settings.scenario_3
 
     cross_validation_k_fold_seed = 5
+
+    @staticmethod
+    def print_principal_values():
+        print("Settings Principal Values:")
+        for attr, value in vars(Settings).items():
+            if not attr.startswith('__') and not callable(value):
+                if not isinstance(value, list):
+                    print(f"{attr}: {value}")
