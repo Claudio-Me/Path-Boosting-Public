@@ -11,7 +11,7 @@ import pandas as pd
 import warnings
 import pickle
 from typing import Tuple
-from pathlib import Path
+from pathlib import Path, PosixPath
 
 
 def read_data_from_name(dataset_name, directory="data/"):
@@ -21,9 +21,15 @@ def read_data_from_name(dataset_name, directory="data/"):
 def read_data_from_directory(directory):
     # directory can be relative directory
     print("reading dataset")
+    if isinstance(directory, PosixPath):
+        directory=str(directory)
     if directory[-1] != "/":
-        directory = directory + "/"
-    names = glob.glob(directory + '*.gml')
+            directory = directory + "/"
+    names = []
+    for x in os.listdir(directory):
+        if x.endswith(".gml"):
+            names.append(x)
+    #names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
     print(len(names))
     for i, name in enumerate(names):

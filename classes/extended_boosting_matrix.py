@@ -120,12 +120,12 @@ class ExtendedBoostingMatrix:
         # Split the column name on the underscore to extract the string-tuple and the name
         if column_name == 'target':
             return 0, (0,)
-        string_tuple, _ = column_name.split('_', 1)
+        string_tuple, feature_name = column_name.split('_', 1)
 
         # Convert the string-tuple to an actual tuple
         tuple_of_ints = ast.literal_eval(string_tuple)
         # Create a sorting key: (length of the tuple, the tuple itself)
-        return (len(tuple_of_ints), tuple_of_ints)
+        return (len(tuple_of_ints), tuple_of_ints, str(feature_name))
 
     @staticmethod
     def sort_df_columns(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -203,7 +203,6 @@ class ExtendedBoostingMatrix:
     def get_pandas_dataframe(self) -> pd.DataFrame:
         return self.df
 
-
     @staticmethod
     def get_features_interaction_constraints(selected_paths: list[tuple], all_attributes: list[str] | None = None,
                                              list_graphs_nx: list[nx.classes.multigraph.MultiGraph] | None = None):
@@ -231,11 +230,11 @@ class ExtendedBoostingMatrix:
 
         graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in list_graphs_nx]
 
-        columns_name: list[str] = ExtendedBoostingMatrix.__get_all_possible_node_attributes_in_the_dataset(
+        all_possible_columns_name: list[str] = ExtendedBoostingMatrix.__get_all_possible_node_attributes_in_the_dataset(
             list_graphs_nx,
             selected_paths)
-        columns_name.append("target")
-        df = pd.DataFrame(columns=columns_name)
+        all_possible_columns_name.append("target")
+        df = pd.DataFrame(columns=all_possible_columns_name)
 
         all_possible_attributes_from_single_graph: set[str] = ExtendedBoostingMatrix.__get_all_possible_attributes(
             list_graphs_nx)
@@ -273,6 +272,12 @@ class ExtendedBoostingMatrix:
 
             list_rows.append(complete_attributes)
         extended_boosting_matrix_df: pd.DataFrame = pd.DataFrame(list_rows)
+
+        missed_columns = list(set(all_possible_columns_name) - set(extended_boosting_matrix_df.columns))
+        add_dataset = pd.DataFrame(np.nan, index=np.arange(extended_boosting_matrix_df.shape[0]),
+                                   columns=missed_columns)
+        # extended_boosting_matrix_df[missed_columns] = [np.nan]*len(missed_columns)
+        extended_boosting_matrix_df = pd.concat([extended_boosting_matrix_df, add_dataset], axis=1)
 
         # convert into a sparse dataset
         if convert_to_sparse is True:

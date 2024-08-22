@@ -7,18 +7,18 @@ import random
 
 
 class Settings:
-    maximum_number_of_steps = 300
+    maximum_number_of_steps = 200
 
     save_analysis = True
     show_analysis = True
 
-    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5k-selection-graphs"  # "5k_synthetic_dataset" "5k-selection-graphs"  "60k_dataset"
     generate_new_dataset = True
 
     # in the error graph Print only the last N learners
     tail = maximum_number_of_steps - 150
 
-    wrapper_boosting = False
+    wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
     considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block

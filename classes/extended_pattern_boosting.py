@@ -73,21 +73,38 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
         # train, test = train_test_split(self.extended_boosting_matrix_dataframe, test_size=0.2, random_state=0)
 
-        parameters = {'n_estimators': 3,
-                      'booster': 'gbtree',
+        parameters = {'n_estimators': 600,
+                      'depth': 10,
                       'learning_rate': 0.3,
                       "eval_metric": "rmse",
                       "objective": 'reg:squarederror',
                       "reg_lambda": 0,
                       "alpha": 0,
                       "random_state": 0,
-                      "interaction_constraints": self.dict_of_interaction_constraints.items}
+                      "interaction_constraints": self.dict_of_interaction_constraints.items,
+                      'booster': 'gblinear' # 'gbtree'  'gblinear'
+                      }
+
+        if parameters['booster'] == 'gblinear':
+            parameters['updater'] = 'coord_descent'  # shotgun
+            parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
+            # xgb_model_parameters['top_k'] = 1
+
+        else:
+            parameters['max_depth'] = 1
+            parameters['gamma'] = 0
 
 
         train_target = self.train_ebm_dataframe['target']
+
         train = self.train_ebm_dataframe.drop(['target'], axis=1)
+
         test_target = self.test_ebm_dataframe['target']
+
         test = self.test_ebm_dataframe.drop(['target'], axis=1)
+
+        #train = self.train_ebm_dataframe['target']
+        #test = self.test_ebm_dataframe['target']
 
 
         evallist = [(test, test_target)]
@@ -102,7 +119,7 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
 
         if self.settings.plot_analysis is True:
-            ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=pd.DataFrame(test), y_test=pd.DataFrame(test_target))
+            ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=test, y_test=test_target)
 
     def initialize_expanded_pattern_boosting(self, selected_paths: list[tuple[int]] | None = None,
                                              extended_boosting_matrix: ExtendedBoostingMatrix | None = None,
@@ -146,10 +163,12 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
         else:
             raise TypeError("test_data type unrecognized", test_data)
 
+
     @staticmethod
     def training_results(bst, X_test, y_test, threshold=0.5):
-        predictions_prob = bst.predict(X_test)
-        predictions = (predictions_prob > threshold).astype(int)
+
+        predictions = bst.predict(X_test)
+
 
         mse = mean_squared_error(y_test, predictions)
         mae = mean_absolute_error(y_test, predictions)
@@ -160,8 +179,8 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
         print("R-Squared:", r2)
 
         # Plotting the feature importance
-        xgb.plot_importance(bst)
-        plt.show()
+        #xgb.plot_importance(bst)
+        #plt.show()
 
         # Scatter plot of actual vs predicted values
         plt.scatter(y_test, predictions)
