@@ -73,28 +73,9 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
         # train, test = train_test_split(self.extended_boosting_matrix_dataframe, test_size=0.2, random_state=0)
 
-        parameters = {'n_estimators': 600,
-                      'depth': 10,
-                      'learning_rate': 0.3,
-                      "eval_metric": "rmse",
-                      "objective": 'reg:squarederror',
-                      "reg_lambda": 0,
-                      "alpha": 0,
-                      "random_state": 0,
-                      "interaction_constraints": self.dict_of_interaction_constraints.items,
-                      'booster': 'gblinear' # 'gbtree'  'gblinear'
-                      }
-
-        if parameters['booster'] == 'gblinear':
-            parameters['updater'] = 'coord_descent'  # shotgun
-            parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
-            # xgb_model_parameters['top_k'] = 1
-
-        else:
-            parameters['max_depth'] = 1
-            parameters['gamma'] = 0
 
 
+        self.settings.xgb_parameters["interaction_constraints"]=self.dict_of_interaction_constraints.items
         train_target = self.train_ebm_dataframe['target']
 
         train = self.train_ebm_dataframe.drop(['target'], axis=1)
@@ -113,7 +94,7 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
         # xgb_model = xgb.XGBRegressor(**parameters)
 
-        xgb_model = xgb.XGBRegressor(**parameters)
+        xgb_model = xgb.XGBRegressor(**self.settings.xgb_parameters)
         xgb_model = xgb_model.fit( train, train_target, eval_set=evallist)
 
 
@@ -172,7 +153,7 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
         mse = mean_squared_error(y_test, predictions)
         mae = mean_absolute_error(y_test, predictions)
-        r2 = r2_score(y_test, predictions)
+        r2 = r2_score(y_true=y_test, y_pred=predictions)
 
         print("Mean Squared Error:", mse)
         print("Mean Absolute Error:", mae)
