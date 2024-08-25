@@ -12,7 +12,7 @@ class SettingsExtendedPatternBoosting:
                       "reg_lambda": 0,
                       "alpha": 0,
                       "random_state": 0,
-                      'booster': 'gblinear' # 'gbtree'  'gblinear'
+                      'booster': 'gbtree' # 'gbtree'  'gblinear'
                       }
 
         #if self.xgb_parameters['booster'] == 'gblinear':
@@ -23,3 +23,8 @@ class SettingsExtendedPatternBoosting:
         #else:
             #self.xgb_parameters['max_depth'] = 1
             #self.xgb_parameters['gamma'] = 0
+
+    def __repr__(self):
+        attrs = vars(self)
+        return ', '.join(f"{key}={value!r}" for key, value in attrs.items())
+
