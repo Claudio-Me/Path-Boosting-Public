@@ -65,10 +65,12 @@ def signal_to_noise(number_of_simulations=200,
         Settings.wrapper_boosting = True
 
     if maximum_number_of_steps is None:
-        if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-            Settings.maximum_number_of_steps = 100
+        if synthetic_dataset_scenario == 1:
+            Settings.maximum_number_of_steps = 28
+        elif synthetic_dataset_scenario == 2:
+            Settings.maximum_number_of_steps = 82
         elif synthetic_dataset_scenario == 3:
-            Settings.maximum_number_of_steps = 300
+            Settings.maximum_number_of_steps = 290
 
     different_variances_final_test_error_vector = []
     different_variances_final_train_error_vector = []
@@ -160,6 +162,6 @@ def signal_to_noise(number_of_simulations=200,
 signal_to_noise(number_of_simulations=50,
                 noise_variance_list=[0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625],
                 # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
-                synthetic_dataset_scenario=2,
+                synthetic_dataset_scenario=3,
                 dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
                 save_fig=True, use_wrapper_boosting=None, show_settings=True)

@@ -123,7 +123,7 @@ def set_default_settings():
 
     pd.set_option('display.max_columns', None)
 
-    Settings.synthetic_dataset_scenario = 1
+
 
     Settings.scenario = 1
     Settings.set_scenario(1)

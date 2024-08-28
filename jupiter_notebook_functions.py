@@ -522,7 +522,7 @@ def plot_signal_to_noise_ratio(average_y_value, noise_variance_list, variance_er
 
     # Create a sorted index based on x_values
     sorted_indices = np.argsort(x_values)
-    x_values = x_values[sorted_indices]
+    x_values = np.array(x_values)[sorted_indices]
     mean_errors = np.array(mean_errors)[sorted_indices]
     min_errors = np.array(min_errors)[sorted_indices]
     max_errors = np.array(max_errors)[sorted_indices]

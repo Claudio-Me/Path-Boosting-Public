@@ -12,6 +12,8 @@ import xgboost as xgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 
 class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
@@ -74,7 +76,7 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
 
 
-        self.settings.xgb_parameters["interaction_constraints"]=self.dict_of_interaction_constraints.items
+        #self.settings.xgb_parameters["interaction_constraints"]=self.dict_of_interaction_constraints.items
         train_target = self.train_ebm_dataframe['target']
 
         train = self.train_ebm_dataframe.drop(['target'], axis=1)
@@ -145,30 +147,60 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
 
     @staticmethod
-    def training_results(bst, X_test, y_test, threshold=0.5):
+    def training_results(bst, X_test, y_test):
 
         predictions = bst.predict(X_test)
 
+        def calculate_r2_score(y_true, y_pred):
+            # Calculate the sum of squares of residuals
+            ss_res = np.sum((y_true - y_pred) ** 2)
+
+            # Calculate the total sum of squares
+            ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
+
+            # Calculate the R^2 score
+            r2_score = 1 - (ss_res / ss_tot)
+            return r2_score
 
         mse = mean_squared_error(y_test, predictions)
         mae = mean_absolute_error(y_test, predictions)
         r2 = r2_score(y_true=y_test, y_pred=predictions)
+        my_r2 =calculate_r2_score(y_true=y_test, y_pred=predictions)
 
         print("Mean Squared Error:", mse)
         print("Mean Absolute Error:", mae)
         print("R-Squared:", r2)
+        print("My R-Squared:", my_r2)
 
         # Plotting the feature importance
         #xgb.plot_importance(bst)
         #plt.show()
 
         # Scatter plot of actual vs predicted values
-        plt.scatter(y_test, predictions)
-        plt.xlabel('Actual Values')
-        plt.ylabel('Predicted Values')
-        plt.title('Actual vs Predicted Values')
-        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=4)
+        # modify the color map
+        cmap = mpl.cm.Blues(np.linspace(0, 1, 100))
+        cmap = mpl.colors.ListedColormap(cmap[20:, :-1])
+
+        # Create a new figure and a set of subplots
+        fig, ax = plt.subplots()
+
+        # Hexbin plot with adjusted vmin parameter
+        # We set vmin to a fraction, this will make a single point darker than without setting vmin
+        hb = ax.hexbin(y_test, predictions, gridsize=50, cmap=cmap, mincnt=1)
+        cb = fig.colorbar(hb, ax=ax)
+        cb.set_label('Density')
+
+        # Chart details
+        ax.set_xlabel('Actual Values')
+        ax.set_ylabel('Predicted Values')
+        ax.set_title('Actual vs Predicted Values')
+
+        # Identity line
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=4)
+
+        # Display plot
         plt.show()
+
 
         # Optional: Return the metrics if you need them for further analysis
         return {

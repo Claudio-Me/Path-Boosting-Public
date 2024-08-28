@@ -12,7 +12,7 @@ class Settings:
     save_analysis = True
     show_analysis = True
 
-    dataset_name = "5k-selection-graphs"  # "5k_synthetic_dataset" "5k-selection-graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = True
 
     # in the error graph Print only the last N learners
@@ -38,7 +38,6 @@ class Settings:
 
     target_train_error = 0.0000001
 
-    synthetic_dataset_scenario = 1
 
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True

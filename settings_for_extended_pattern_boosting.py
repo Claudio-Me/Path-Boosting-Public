@@ -4,7 +4,7 @@ class SettingsExtendedPatternBoosting:
         self.plot_analysis=True
         self. n_estimators=100
 
-        self.xgb_parameters = {'n_estimators': 10,
+        self.xgb_parameters = {'n_estimators': 100,
                       'depth': 3,
                       'learning_rate': 0.3,
                       "eval_metric": "rmse",
@@ -12,7 +12,7 @@ class SettingsExtendedPatternBoosting:
                       "reg_lambda": 0,
                       "alpha": 0,
                       "random_state": 0,
-                      'booster': 'gbtree' # 'gbtree'  'gblinear'
+                      'booster': 'gblinear' # 'gbtree'  'gblinear'
                       }
 
         #if self.xgb_parameters['booster'] == 'gblinear':

@@ -1,5 +1,6 @@
-from classes.extended_pattern_boosting import ExtendedPatternBoosting
 
+from classes.extended_pattern_boosting import ExtendedPatternBoosting
+from settings_for_extended_pattern_boosting import SettingsExtendedPatternBoosting
 
 from classes.extended_boosting_matrix import ExtendedBoostingMatrix
 from data import data_reader
@@ -25,3 +26,7 @@ extended_pattern_boosting = ExtendedPatternBoosting()
 train_list_graph_nx, test_list_graph_nx = train_test_split(dataset_original_graphs, test_size=0.2, random_state=0)
 
 extended_pattern_boosting.train(list_graphs_nx=train_list_graph_nx, test_data= test_list_graph_nx, selected_paths=selected_paths)
+
+
+settings_for_extended_pattern_boosting=SettingsExtendedPatternBoosting()
+print(settings_for_extended_pattern_boosting)
