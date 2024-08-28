@@ -1,36 +1,7 @@
-import functools
-import warnings
-
-from sklearn import metrics
-import numpy as np
-from classes.boosting_matrix import BoostingMatrix
-from classes.dataset import Dataset
-from settings import Settings
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-from collections import Counter
-from classes.pattern_boosting import PatternBoosting
-from settings import Settings
-from classes.enumeration.estimation_type import EstimationType
-from data.synthetic_dataset import SyntheticDataset
-import pandas as pd
-import copy
-from classes.analysis_patternboosting import AnalysisPatternBoosting
-from data.load_dataset import load_dataset
-from data import data_reader
-from xgboost import XGBRegressor
-from sklearn.model_selection import train_test_split
-from multiprocessing.dummy import Pool as ThreadPool
 from collections import defaultdict
-import copy
-from data import data_reader
-from classes.wrapper_pattern_boosting import WrapperPatternBoosting
+import sys
+sys.path.insert(0,"../")
 from jupiter_notebook_functions import *
-import warnings
-from typing import List, Tuple, Optional
-from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
-import random
-import copy
 from analysis_article.set_default_settings import set_default_settings
 
 
@@ -182,4 +153,4 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     n_target_paths = len(synthetic_dataset.target_paths)
 
 # uncomment to use the file as a script
-paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True)
+# paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True)

@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0,"../")
 from jupiter_notebook_functions import *
 from analysis_article.set_default_settings import set_default_settings
 
@@ -99,6 +101,6 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 
 
 # uncomment to use the file as a script
-cross_validation(number_of_simulations=10, k_folds=5, scenario=1, patience=1,
+cross_validation(number_of_simulations=200, k_folds=5, scenario=3, patience=3,
                  dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=500, save_fig=True,
                  use_wrapper_boosting=None, show_settings=True)

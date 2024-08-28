@@ -1,7 +1,7 @@
+import sys
+sys.path.insert(0,"../")
 from classes.enumeration.estimation_type import EstimationType
-import platform
 import pandas as pd
-import os
 import multiprocessing as mp
 from settings import Settings
 

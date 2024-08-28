@@ -1,47 +1,18 @@
-import functools
-import warnings
-
-from sklearn import metrics
-import numpy as np
-from classes.boosting_matrix import BoostingMatrix
-from classes.dataset import Dataset
-from settings import Settings
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
-from collections import Counter
-from classes.pattern_boosting import PatternBoosting
-from settings import Settings
-from classes.enumeration.estimation_type import EstimationType
-from data.synthetic_dataset import SyntheticDataset
-import pandas as pd
-import copy
-from classes.analysis_patternboosting import AnalysisPatternBoosting
-from data.load_dataset import load_dataset
-from data import data_reader
-from xgboost import XGBRegressor
-from sklearn.model_selection import train_test_split
-from multiprocessing.dummy import Pool as ThreadPool
-from collections import defaultdict
-import copy
-from data import data_reader
-from classes.wrapper_pattern_boosting import WrapperPatternBoosting
+import sys
+sys.path.insert(0,"../")
 from jupiter_notebook_functions import *
-import warnings
-from typing import List, Tuple, Optional
-from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
-import random
-import copy
+
 from analysis_article.set_default_settings import set_default_settings
 
 
 def signal_to_noise(number_of_simulations=200,
                     noise_variance_list=[0.325, 0.625, 0.875, 1.125, 1.375, 1.625, 0.2, 0.5, 0.75, 1, 1.25, 1.5],
                     synthetic_dataset_scenario=1,
-                    dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
+                    dataset_name="5k_synthetic_dataset", maximum_number_of_steps=None,
                     save_fig=False, use_wrapper_boosting=None, show_settings=True):
     set_default_settings()
 
-    Settings.noise_variance = noise_variance
+
 
     Settings.scenario = synthetic_dataset_scenario
     Settings.set_scenario(synthetic_dataset_scenario)
@@ -159,9 +130,9 @@ def signal_to_noise(number_of_simulations=200,
                                max_errors=max_errors, save_fig=save_fig, name_fig=fig_name)
 
 
-signal_to_noise(number_of_simulations=50,
-                noise_variance_list=[0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625],
+signal_to_noise(number_of_simulations=200,
+                noise_variance_list=[0.2, 0.5, 0.8, 1.1, 1.4, 1.7],
                 # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
                 synthetic_dataset_scenario=3,
-                dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
+                dataset_name="5k_synthetic_dataset",  maximum_number_of_steps=None,
                 save_fig=True, use_wrapper_boosting=None, show_settings=True)

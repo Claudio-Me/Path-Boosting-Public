@@ -33,7 +33,7 @@ def read_data_from_directory(directory):
     dataset = [None] * len(names)
     print(len(names))
     for i, name in enumerate(names):
-        dataset[i] = read_data_from_name(name, directory="")
+        dataset[i] = read_data_from_name(name, directory=directory)
 
     # old reading version, very slow
     # dataset = [read_data_from_name(graph_name, directory="") for graph_name in names]
