@@ -7,7 +7,9 @@ import random
 
 
 class Settings:
-    maximum_number_of_steps = 200
+    # -----------------------------------------------------------------------------------------------------------------
+
+    maximum_number_of_steps = 20
 
     save_analysis: bool = True
     show_analysis: bool = True
@@ -16,17 +18,11 @@ class Settings:
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
-    tail = maximum_number_of_steps - 150
+    tail = 1000
 
     wrapper_boosting: bool = True
 
-    # used in wrapped boosting to specify the centers over which split the dataset
-    considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
-                                39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
-                                57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
-                                72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
-                                89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
-                                104, 105, 106, 107, 108, 109, 110, 111, 112]
+    noise_variance = 0.2
 
     # do not expand if the paths are longer than this amount
     max_path_length = 101
@@ -38,9 +34,12 @@ class Settings:
 
     target_train_error = 0.0000001
 
+    # -----------------------------------------------------------------------------------------------------------------
 
     # it works only if "algorithm" is Xgb_step
     update_features_importance_by_comparison = True
+
+    verbose = True
 
     max_number_of_cores = mp.cpu_count()
 
@@ -70,8 +69,6 @@ class Settings:
 
     n_of_paths_importance_plotted: int = 30
 
-    noise_variance = 0.2
-
     random_split_test_dataset_seed = 1
     random_coefficients_synthetic_dataset_seed = 1
 
@@ -95,8 +92,6 @@ class Settings:
 
     # Base Learner used by mboost
     r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
-
-    verbose = True
 
     # Possible family names for loss function in R mode
     family = "Gaussian"
@@ -145,6 +140,14 @@ class Settings:
         return (y - y_hat)
 
     pd.set_option('display.max_columns', None)
+
+    # used in wrapped boosting to specify the centers over which split the dataset
+    considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
+                                39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
+                                57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
+                                72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
+                                89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
+                                104, 105, 106, 107, 108, 109, 110, 111, 112]
 
     scenario_1 = list({(28,), (28, 7), (28, 7, 6)})
     scenario_2 = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})

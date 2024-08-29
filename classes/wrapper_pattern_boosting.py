@@ -1,4 +1,5 @@
 # Takes as input a lyst of parrent boosting models and "merge" them into one
+import copy
 import warnings
 
 from settings import Settings
@@ -19,7 +20,7 @@ import multiprocessing as mp
 
 def predict_test_dataset_graph(args):
     graph, pattern_boosting_models_list = args
-    prediction = 0.0
+    prediction = 0
     counter = 0
 
     for model in pattern_boosting_models_list:
@@ -59,9 +60,118 @@ class WrapperPatternBoosting:
         self.metal_center_list = metal_center_list
         self.test_dataset = None
         self.train_dataset = None
-        self.settings = settings
+        self.settings = copy.deepcopy(settings)
         self.total_boosting_matrix = None
         self.trained = False
+
+    def train(self, train_dataset, test_dataset=None):
+
+        if self.trained is False:
+
+            # some checks for the input format, whether the input dataset it is already divided by metal centers or not
+            if not isinstance(train_dataset, list):
+                if not isinstance(train_dataset, Dataset):
+                    train_dataset = Dataset(train_dataset)
+                train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
+                                                                     considered_metal_centers=self.metal_center_list)
+                if test_dataset is not None:
+                    if not isinstance(test_dataset, Dataset):
+                        test_dataset = Dataset(test_dataset)
+                    test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
+                                                                        considered_metal_centers=self.metal_center_list)
+            else:
+                train_datasets_list = train_dataset
+                test_datasets_list = test_dataset
+            self.trained = True
+
+        if test_dataset is None:
+            test_datasets_list = [None for _ in range(len(train_datasets_list))]
+
+        self.test_dataset_list = test_datasets_list
+
+        self.train_dataset = train_dataset
+        self.test_dataset = test_dataset
+
+        global_labels = [dataset.get_labels() for dataset in train_datasets_list if dataset is not None]
+        # flattern the global variables list
+        global_labels = [item for sublist in global_labels for item in sublist]
+        global_labels_variance = np.var(global_labels)
+        global_labels_variance = np.repeat(global_labels_variance, len(train_datasets_list))
+
+
+
+
+
+        # Parallelization
+        # ------------------------------------------------------------------------------------------------------------
+        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
+                                        global_labels_variance)
+        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+        array_of_outputs = pool.map(
+            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
+        # -------------------------------------------------------------------------------------------------------------
+        if self.settings.show_analysis is True or self.settings.save_analysis is True:
+            if test_dataset is not None:
+                self.test_error = self.get_wrapper_test_error()
+            self.train_error = self.get_wrapper_train_error()
+
+
+
+
+        return array_of_outputs
+
+    def re_train(self):
+
+        train_datasets_list = [None] * len(self.pattern_boosting_models_list)
+        test_datasets_list = self.test_dataset_list
+        global_labels_variance = [None] * len(self.pattern_boosting_models_list)
+        # Parallelization
+        # ------------------------------------------------------------------------------------------------------------
+
+        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
+                                        global_labels_variance)
+        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+        array_of_outputs = pool.map(
+            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
+        # -------------------------------------------------------------------------------------------------------------
+        if self.settings.show_analysis is True or self.settings.save_analysis is True:
+            self.test_error = self.get_wrapper_test_error()
+            self.train_error = self.get_wrapper_train_error()
+
+
+        # -------------------------------------------------------------------------------------------------------------
+        # delete me
+        for graph_number, graph in enumerate(test_dataset.get_graphs_list()):
+            found = False
+            for dataset_index, dataset in enumerate(test_datasets_list):
+                try:
+                    index = dataset.get_graphs_list().index(graph)
+                    print(index)
+                    found = True
+                except:
+                    pass
+            if found == False:
+                print(found)
+        # -----------------------------------------------------------------------------------------------------------
+
+
+
+        # -------------------------------------------------------------------------------------------------------------
+        # delete me
+        for graph_number, graph in enumerate(test_dataset.get_graphs_list()):
+            found = False
+            for dataset_index, model in enumerate(self.get_trained_pattern_boosting_models()):
+                try:
+                    index = model.test_dataset.get_graphs_list().index(graph)
+                    print(index)
+                    found = True
+                except:
+                    pass
+            if found == False:
+                print(found)
+        # -----------------------------------------------------------------------------------------------------------
+
+        return array_of_outputs
 
     def predict_test_dataset_parallel(self) -> List[float] | None:
         if self.test_dataset is None:
@@ -311,75 +421,6 @@ class WrapperPatternBoosting:
         else:
             raise TypeError(
                 f"tipe of dataset must be 'train' or 'test' or 'training' or 'testing', got {dataset_name} instead")
-
-    def train(self, train_dataset, test_dataset=None):
-
-        if self.trained is False:
-
-            # some checks for the input format, whether the input dataset it is already divided by metal centers or not
-            if not isinstance(train_dataset, list):
-                if not isinstance(train_dataset, Dataset):
-                    train_dataset = Dataset(train_dataset)
-                train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
-                                                                     considered_metal_centers=self.metal_center_list)
-                if test_dataset is not None:
-                    if not isinstance(test_dataset, Dataset):
-                        test_dataset = Dataset(test_dataset)
-                    test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
-                                                                        considered_metal_centers=self.metal_center_list)
-            else:
-                train_datasets_list = train_dataset
-                test_datasets_list = test_dataset
-            self.trained = True
-
-        if test_dataset is None:
-            test_datasets_list = [None for _ in range(len(train_datasets_list))]
-
-        self.test_dataset_list = test_datasets_list
-
-        self.train_dataset = train_dataset
-        self.test_dataset = test_dataset
-
-        global_labels = [dataset.get_labels() for dataset in train_datasets_list if dataset is not None]
-        # flattern the global variables list
-        global_labels = [item for sublist in global_labels for item in sublist]
-        global_labels_variance = np.var(global_labels)
-        global_labels_variance = np.repeat(global_labels_variance, len(train_datasets_list))
-        # Parallelization
-        # ------------------------------------------------------------------------------------------------------------
-
-        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
-                                        global_labels_variance)
-        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
-        array_of_outputs = pool.map(
-            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
-        # -------------------------------------------------------------------------------------------------------------
-        if self.settings.show_analysis is True or self.settings.save_analysis is True:
-            if test_dataset is not None:
-                self.test_error = self.get_wrapper_test_error()
-            self.train_error = self.get_wrapper_train_error()
-
-        return array_of_outputs
-
-    def re_train(self):
-
-        train_datasets_list = [None] * len(self.pattern_boosting_models_list)
-        test_datasets_list = self.test_dataset_list
-        global_labels_variance = [None] * len(self.pattern_boosting_models_list)
-        # Parallelization
-        # ------------------------------------------------------------------------------------------------------------
-
-        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
-                                        global_labels_variance)
-        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
-        array_of_outputs = pool.map(
-            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
-        # -------------------------------------------------------------------------------------------------------------
-        if self.settings.show_analysis is True or self.settings.save_analysis is True:
-            self.test_error = self.get_wrapper_test_error()
-            self.train_error = self.get_wrapper_train_error()
-
-        return array_of_outputs
 
     def evaluate(self, dataset: Dataset, boosting_matrix_matrix=None):
 

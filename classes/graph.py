@@ -418,8 +418,19 @@ class GraphPB:
         self.label = label
 
     def __eq__(self, other):
-        return (isinstance(other, self.__class__) and
-                np.all(getattr(other, 'adj_matrix', None) == self.adj_matrix))
+        if isinstance(other, self.__class__):
+            if getattr(other, 'adj_matrix', None).shape == self.adj_matrix.shape:
+                return np.all(getattr(other, 'adj_matrix', None) == self.adj_matrix)
+            else:
+                return False
+        else:
+            return False
+
+
+    def __ne__(self, other):
+        """self != other"""
+        eq = self.__eq__(self, other)
+        return  not eq
 
     def __hash__(self):
         return hash(self.adj_matrix)

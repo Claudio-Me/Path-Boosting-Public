@@ -1,11 +1,12 @@
 import sys
-sys.path.insert(0,"../")
+
+sys.path.insert(0, "../")
 from jupiter_notebook_functions import *
 from analysis_article.set_default_settings import set_default_settings
 
 
-def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=3,
-                     dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None,
+def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=3, dataset_name="5k_synthetic_dataset",
+                     noise_variance=0.2, maximum_number_of_steps=None,
                      save_fig=False, use_wrapper_boosting=None, show_settings=True):
     set_default_settings()
 
@@ -21,7 +22,6 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         Settings.generate_new_dataset = True
         fig_name = "test_error_cross_validation_scenario_" + str(Settings.scenario) + ".pdf"
     elif Settings.dataset_name == "5_k_selection_graphs" or Settings.dataset_name == "60k_dataset":
-        number_of_simulations = 1
         Settings.generate_new_dataset = False
         fig_name = "test_error_cross_validation.pdf"
         Settings.wrapper_boosting = True
@@ -37,9 +37,8 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     if maximum_number_of_steps is None:
         if scenario == 1:
             Settings.maximum_number_of_steps = 80
-        elif maximum_number_of_steps is None:
-            if scenario == 2:
-                Settings.maximum_number_of_steps = 150
+        elif scenario == 2:
+            Settings.maximum_number_of_steps = 150
         elif scenario == 3:
             Settings.maximum_number_of_steps = 350
 
@@ -51,6 +50,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     # launch cross validation
     for i in range(number_of_simulations):
         print("iteration number ", i)
+        print(Settings.maximum_number_of_steps)
 
         dataset = load_dataset()
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
@@ -102,5 +102,5 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 
 # uncomment to use the file as a script
 cross_validation(number_of_simulations=200, k_folds=5, scenario=3, patience=3,
-                 dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=500, save_fig=True,
+                 dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None, save_fig=True,
                  use_wrapper_boosting=None, show_settings=True)

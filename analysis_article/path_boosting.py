@@ -1,5 +1,6 @@
 import sys
 sys.path.insert(0, "../")
+from classes.testing.testing import Testing
 from classes.pattern_boosting import PatternBoosting
 from data import data_reader
 from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
@@ -8,37 +9,34 @@ from data.synthetic_dataset import SyntheticDataset
 from classes.analysis_patternboosting import AnalysisPatternBoosting
 from data.load_dataset import load_dataset
 from classes.wrapper_pattern_boosting import WrapperPatternBoosting
-from analysis_article.set_default_settings import set_default_settings
+import sys
+
+import numpy as np
+
+from classes.testing.testing import Testing
+from classes.pattern_boosting import PatternBoosting
+from data import data_reader
+from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
+from settings import Settings
+from data.synthetic_dataset import SyntheticDataset
+from classes.enumeration.estimation_type import EstimationType
+from data.synthetic_dataset import SyntheticDataset
+from classes.analysis_patternboosting import AnalysisPatternBoosting
+from data.load_dataset import load_dataset
+from classes.dataset import Dataset
+from classes.wrapper_pattern_boosting import WrapperPatternBoosting
+# from pympler import asizeof
+from classes.graph import GraphPB
+import sys
+from multiprocessing.dummy import Pool as ThreadPool
+import functools
 
 
-def launch_path_boosting(
-        synthetic_dataset_scenario=1,
-        dataset_name="5k_synthetic_dataset", maximum_number_of_steps=None,
-        save_analysis=True, show_analysis=True, use_wrapper_boosting=True, show_settings=True):
-    set_default_settings()
+if __name__ == '__main__':
+    #Testing()
 
-
-
-    Settings.maximum_number_of_steps = maximum_number_of_steps
-    Settings.scenario = synthetic_dataset_scenario
-    Settings.set_scenario(synthetic_dataset_scenario)
-
-    Settings.save_analysis = save_analysis
-    Settings.show_analysis = show_analysis
-    Settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    if dataset_name == "5_k_selection_graphs" or dataset_name == "60k_dataset":
-        Settings.generate_new_dataset = False
-    elif dataset_name == "5k_synthetic_dataset":
-        Settings.generate_new_dataset = True
-
-    Settings.wrapper_boosting = use_wrapper_boosting
-
-
-
-    if show_settings is True:
-        Settings.print_principal_values()
-        print("Number of CPU's: ", Settings.max_number_of_cores)
-        print("Dataset name: ", Settings.dataset_name)
+    print("Number of CPU's: ", Settings.max_number_of_cores)
+    print("Dataset name: ", Settings.dataset_name)
 
     dataset = load_dataset()
 
@@ -59,6 +57,7 @@ def launch_path_boosting(
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(train_dataset, test_dataset)
 
+
         final_test_error = pattern_boosting.test_error[-1]
 
     print("final test error:\n", final_test_error)
@@ -78,7 +77,7 @@ def launch_path_boosting(
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
     if Settings.wrapper_boosting is True:
-        print("Number of tained models: ", len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
+        print("Number of tained models: ",len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
@@ -88,8 +87,7 @@ def launch_path_boosting(
             synthetic_dataset = SyntheticDataset()
         else:
             synthetic_dataset = None
-        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting, save=Settings.save_analysis,
-                                                  show=Settings.show_analysis)
+        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting,save=Settings.save_analysis, show=Settings.show_analysis)
         analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
 
 
@@ -105,7 +103,3 @@ def launch_path_boosting(
             analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False,
                                   save=True)
         '''
-
-
-launch_path_boosting(synthetic_dataset_scenario=1, dataset_name="5k_synthetic_dataset", maximum_number_of_steps=10,
-                     save_analysis=True, show_analysis=True, use_wrapper_boosting=True, show_settings=True)
