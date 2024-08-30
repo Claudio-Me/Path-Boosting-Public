@@ -9,7 +9,7 @@ import random
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 20
+    maximum_number_of_steps = 300
 
     save_analysis: bool = True
     show_analysis: bool = True
@@ -30,7 +30,7 @@ class Settings:
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
 
-    scenario = 1
+    scenario = 3
 
     target_train_error = 0.0000001
 

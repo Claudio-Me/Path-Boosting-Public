@@ -58,8 +58,8 @@ class WrapperPatternBoosting:
             raise ValueError("not enough models for each metal center")
         self.pattern_boosting_models_list: list[PatternBoosting] = pattern_boosting_list
         self.metal_center_list = metal_center_list
-        self.test_dataset = None
-        self.train_dataset = None
+        self.test_dataset: Dataset | None = None
+        self.train_dataset: Dataset | None = None
         self.settings = copy.deepcopy(settings)
         self.total_boosting_matrix = None
         self.trained = False
@@ -98,10 +98,6 @@ class WrapperPatternBoosting:
         global_labels_variance = np.var(global_labels)
         global_labels_variance = np.repeat(global_labels_variance, len(train_datasets_list))
 
-
-
-
-
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
@@ -114,9 +110,6 @@ class WrapperPatternBoosting:
             if test_dataset is not None:
                 self.test_error = self.get_wrapper_test_error()
             self.train_error = self.get_wrapper_train_error()
-
-
-
 
         return array_of_outputs
 
@@ -137,39 +130,6 @@ class WrapperPatternBoosting:
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             self.test_error = self.get_wrapper_test_error()
             self.train_error = self.get_wrapper_train_error()
-
-
-        # -------------------------------------------------------------------------------------------------------------
-        # delete me
-        for graph_number, graph in enumerate(test_dataset.get_graphs_list()):
-            found = False
-            for dataset_index, dataset in enumerate(test_datasets_list):
-                try:
-                    index = dataset.get_graphs_list().index(graph)
-                    print(index)
-                    found = True
-                except:
-                    pass
-            if found == False:
-                print(found)
-        # -----------------------------------------------------------------------------------------------------------
-
-
-
-        # -------------------------------------------------------------------------------------------------------------
-        # delete me
-        for graph_number, graph in enumerate(test_dataset.get_graphs_list()):
-            found = False
-            for dataset_index, model in enumerate(self.get_trained_pattern_boosting_models()):
-                try:
-                    index = model.test_dataset.get_graphs_list().index(graph)
-                    print(index)
-                    found = True
-                except:
-                    pass
-            if found == False:
-                print(found)
-        # -----------------------------------------------------------------------------------------------------------
 
         return array_of_outputs
 
@@ -317,12 +277,12 @@ class WrapperPatternBoosting:
                                         global_train_labels_variance=global_labels_variance)
         return pattern_boosting_model
 
-    def get_wrapper_test_error(self) -> Iterable[float]:
+    def get_wrapper_test_error(self) -> np.array:
 
         return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_test_models_errors(), dataset="test")
 
     # need to fix the fact that the tested model errors if not trained they return [], not a list of errors, so everything here does not work
-    def get_wrapper_train_error(self) -> Iterable[float]:
+    def get_wrapper_train_error(self) -> np.array:
         return self.__get_average_of_matrix_of_nested_list_of_errors(self.get_train_models_errors(), dataset="train")
 
     @staticmethod
@@ -545,3 +505,60 @@ class WrapperPatternBoosting:
 
             paths_index += len(model_paths)
         return list(set(paths))
+
+    def get_boosting_matrix_header(self) -> list:
+        paths_in_header = set()
+        for model in self.get_trained_pattern_boosting_models():
+            model_paths = model.get_selected_paths_in_boosting_matrix()
+            paths_in_header.update(model_paths)
+
+        return list(paths_in_header)
+
+    def get_test_error_per_number_of_base_learners(self):
+
+        n_trained_models = len(self.get_trained_pattern_boosting_models())
+
+        output_list = []
+
+        if n_trained_models <= 1:
+            # If n is 1 or less no interpolation is required.
+            return self.test_error
+
+        for i in range(len(self.test_error) - 1):
+            current_value = self.test_error[i]
+            next_value = self.test_error[i + 1]
+            step = (next_value - current_value) / n_trained_models
+            for j in range(n_trained_models):  # Note: this will only add n-1 interpolated values
+                output_list.append(current_value + j * step)
+
+        # Ensure that the last element of the input list is repeated n times
+        last_value = self.test_error[-1]
+        for i in range(n_trained_models):
+            output_list.append(last_value)
+
+        return output_list
+
+    def get_train_error_per_number_of_base_learners(self):
+
+
+        n_trained_models=len(self.get_trained_pattern_boosting_models())
+
+        output_list = []
+
+        if n_trained_models <= 1:
+            # If n is 1 or less no interpolation is required.
+            return self.train_error
+
+        for i in range(len(self.train_error) - 1):
+            current_value = self.train_error[i]
+            next_value = self.train_error[i + 1]
+            step = (next_value - current_value) / n_trained_models
+            for j in range(n_trained_models):  # Note: this will only add n-1 interpolated values
+                output_list.append(current_value + j * step)
+
+        # Ensure that the last element of the input list is repeated n times
+        last_value = self.train_error[-1]
+        for i in range(n_trained_models):
+            output_list.append(last_value)
+
+        return output_list

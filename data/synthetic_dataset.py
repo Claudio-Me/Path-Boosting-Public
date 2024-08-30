@@ -307,3 +307,5 @@ class SyntheticDataset:
         graph = GraphPB.from_GraphNX_to_GraphPB(graph)
 
         return graph
+
+

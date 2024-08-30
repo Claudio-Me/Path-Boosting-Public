@@ -42,11 +42,18 @@ class AnalysisWrapperPatternBoosting:
 
         self.plot_performance_scatter_plot(dataset='Train')
         self.plot_performance_scatter_plot(dataset='Test')
+        density_scatterplot(labels=self.wrapper_pattern_boosting.test_dataset.get_labels(),
+                            predictions=self.test_predictions, save_fig=self.save, show_fig=self.show,
+                            tittle="Performance of the Algorithm on test dataset", fig_name="test_density_scatterplot")
+        density_scatterplot(labels=self.wrapper_pattern_boosting.train_dataset.get_labels(),
+                            predictions=self.train_predictions, save_fig=self.save, show_fig=self.show,
+                            tittle="Performance of the Algorithm on train dataset",
+                            fig_name="train_density_scatterplot")
         if Settings.show_analysis is True or Settings.save_analysis is True:
-            plot_error_evolution(self.wrapper_pattern_boosting.train_error, dataset='Train', show=self.show,
-                                 save=self.save)
-            plot_error_evolution(self.wrapper_pattern_boosting.test_error, dataset='Test', show=self.show,
-                                 save=self.save)
+            plot_error_evolution(self.wrapper_pattern_boosting.get_train_error_per_number_of_base_learners(),
+                                 dataset='Train', show=self.show, save=self.save)
+            plot_error_evolution(self.wrapper_pattern_boosting.get_test_error_per_number_of_base_learners(),
+                                 dataset='Test', show=self.show, save=self.save)
 
         if synthetic_dataset is not None:
             self.synthetic_dataset_spotted_paths(synthetic_dataset)
@@ -104,7 +111,7 @@ class AnalysisWrapperPatternBoosting:
         # Create a figure and a single subplot
         fig, ax = plt.subplots()
 
-        top_paths=[str(path)for path in top_paths]
+        top_paths = [str(path) for path in top_paths]
         # Create the horizontal bar plot
         ax.barh(range(len(top_paths)), top_importances, tick_label=top_paths)
 
@@ -119,7 +126,7 @@ class AnalysisWrapperPatternBoosting:
         if self.show is True:
             plt.show()
         if self.save is True:
-            saving_location = data_reader.get_save_location(file_name='paths_importance_bar_plot_'+ str(min_length),
+            saving_location = data_reader.get_save_location(file_name='paths_importance_bar_plot_' + str(min_length),
                                                             file_extension=".pdf",
                                                             folder_relative_path='results', unique_subfolder=True)
 
@@ -392,8 +399,7 @@ class AnalysisWrapperPatternBoosting:
                 missed_paths.append(path)
 
         highest_correlations_missed_paths = self.wrapper_pattern_boosting.get_train_correlations(missed_paths)
-        if len(highest_correlations_missed_paths.keys()) != missed_paths:
-            print("Some target paths are not present in training dataset")
+
         number_of_times_path_is_present = {}
         for path in highest_correlations_missed_paths.keys():
             times_is_present = 0
@@ -412,12 +418,14 @@ class AnalysisWrapperPatternBoosting:
         for key in number_of_times_path_is_present.keys():
             dataframe_to_save[str(key)] = number_of_times_path_is_present[key]
         dataframe_to_save = pd.DataFrame(dataframe_to_save)
-        dataframe_to_save = dataframe_to_save.sort_values(0, axis=1, ascending=False)
+        if len(dataframe_to_save) != 0:
+            dataframe_to_save = dataframe_to_save.sort_values(0, axis=1, ascending=False)
         dataframe_to_save.index = ["correlation", "times present"]
 
         highest_correlations_missed_paths = pd.DataFrame(number_of_times_path_is_present)
         # sort by correlation value
-        highest_correlations_missed_paths = highest_correlations_missed_paths.sort_values(0, axis=1, ascending=False)
+        if len(highest_correlations_missed_paths) != 0:
+            highest_correlations_missed_paths = highest_correlations_missed_paths.sort_values(0, axis=1, ascending=False)
         highest_correlations_missed_paths.index = ["correlation", "times present"]
 
         if self.show is True:

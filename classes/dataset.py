@@ -1,4 +1,5 @@
 import numpy as np
+from lightgbm import Dataset
 
 from classes.graph import GraphPB
 from settings import Settings
@@ -32,6 +33,20 @@ class Dataset:
                 self.labels: list = labels
             if not (isinstance(self.labels[0], numbers.Number)):
                 warnings.warn("Warning, labels of the graphs are not numbers")
+
+    def remove(self, graph: GraphPB)->bool:
+        try:
+            index = self.graphs_list.index(graph)
+        except:
+            return False
+        del self.graphs_list[index]
+        del self.labels[index]
+        return True
+
+
+    def add(self, graph: GraphPB):
+        self.graphs_list.append(graph)
+        self.labels.append(graph.label)
 
     def get_first_n_entries(self, n):
         return Dataset(self.graphs_list[:n], self.labels[:n])
@@ -70,3 +85,6 @@ class Dataset:
 
     def get_graph_number(self, number):
         return self.get_graphs_list()[number]
+
+
+

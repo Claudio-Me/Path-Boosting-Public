@@ -1,6 +1,9 @@
-from classes.dataset import Dataset
-from settings import Settings
+from collections import defaultdict
 
+from classes.dataset import Dataset
+
+from settings import Settings
+import math
 import pathlib
 import os
 import sys
@@ -12,6 +15,7 @@ import warnings
 import pickle
 from typing import Tuple
 from pathlib import Path, PosixPath
+import copy
 
 
 def read_data_from_name(dataset_name, directory="data/"):
@@ -22,14 +26,14 @@ def read_data_from_directory(directory):
     # directory can be relative directory
     print("reading dataset")
     if isinstance(directory, PosixPath):
-        directory=str(directory)
+        directory = str(directory)
     if directory[-1] != "/":
-            directory = directory + "/"
+        directory = directory + "/"
     names = []
     for x in os.listdir(directory):
         if x.endswith(".gml"):
             names.append(x)
-    #names = glob.glob(directory + '*.gml')
+    # names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
     print(len(names))
     for i, name in enumerate(names):
@@ -44,8 +48,45 @@ def read_data_from_directory(directory):
 def split_training_and_test(dataset, test_size, labels: list = None, random_split_seed=None) -> Tuple[Dataset, Dataset]:
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset, labels)
-    train_dataset, test_dataset = dataset.split_dataset(test_size, random_split_seed)
+    if Settings.dataset_name == "5k_synthetic_dataset":
+        # we have to verify that in the splitting all the target paths are in the training dataset at least once
+        train_dataset, test_dataset = dataset.split_dataset(test_size, random_split_seed)
+
+        found_target_paths = target_paths_contained_in_dataset(train_dataset)
+
+        if len(found_target_paths) == len(Settings.target_paths):
+            return train_dataset, test_dataset
+        else:
+            # not all target paths are in the train dataset
+            target_paths_not_found_in_train_dataset = set(Settings.target_paths) - found_target_paths
+            for path in target_paths_not_found_in_train_dataset:
+                graphs_containing_path = []
+                for graph in test_dataset.get_graphs_list():
+                    if graph.number_of_time_path_is_present_in_graph(path) > 0:
+                        graphs_containing_path.append(graph)
+
+                number_of_graphs_to_be_moved_to_train_dataset = math.ceil(len(graphs_containing_path) / 2)
+                for i in range(number_of_graphs_to_be_moved_to_train_dataset):
+                    train_dataset.add(graphs_containing_path[i])
+                    test_dataset.remove(graphs_containing_path[i])
+
+            return train_dataset, test_dataset
+
+
+    else:
+        train_dataset, test_dataset = dataset.split_dataset(test_size, random_split_seed)
     return train_dataset, test_dataset
+
+
+def target_paths_contained_in_dataset(dataset) -> set:
+    # takes as input a dataset and it returns all the target paths that have been found in the graphs of the dataset
+    found_target_paths = set()
+    for path in Settings.target_paths:
+        for graph in dataset.get_graphs_list():
+            if graph.number_of_time_path_is_present_in_graph(path) > 0:
+                found_target_paths.add(path)
+                break
+    return found_target_paths
 
 
 def read_dataset_and_labels_from_csv(directory, file_name):

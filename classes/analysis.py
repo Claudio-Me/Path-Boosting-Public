@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 from data import data_reader
+import numpy as np
+import matplotlib as mpl
+import pandas as pd
 
 
 def compare_performances_on_synthetic_dataset(test_model_preds, oracle_model_preds, true_values, dataset: str,
@@ -65,7 +68,7 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
     ax.plot(iterations, error_list)
 
     # Inverse log scale for the y-axis
-    #ax.set_yscale("log")
+    # ax.set_yscale("log")
 
     # Add title and labels
     ax.set_title(dataset + ' Error')
@@ -81,3 +84,53 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
                                                         folder_relative_path='results', unique_subfolder=True)
 
         fig.savefig(saving_location, format="pdf")
+
+
+def density_scatterplot(labels, predictions, save_fig: bool = False, show_fig: bool = False,
+                        saving_location: str | None = None, fig_name=None, tittle=None):
+    if isinstance(labels, list):
+        labels = pd.Series(labels)
+    if isinstance(predictions, list):
+        predictions = pd.Series(predictions)
+
+
+    # Scatter plot of actual vs predicted values
+    # modify the color map
+    cmap = mpl.cm.Blues(np.linspace(0, 1, 100))
+    cmap = mpl.colors.ListedColormap(cmap[20:, :-1])
+
+    # Create a new figure and a set of subplots
+    fig, ax = plt.subplots()
+
+    # Hexbin plot with adjusted vmin parameter
+    # We set vmin to a fraction, this will make a single point darker than without setting vmin
+    hb = ax.hexbin(labels, predictions, gridsize=50, cmap=cmap, mincnt=1)
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Density')
+
+    # Chart details
+    ax.set_xlabel('Actual Values')
+    ax.set_ylabel('Predicted Values')
+    if tittle is not None:
+        ax.set_title('Actual vs Predicted Values')
+    else:
+        ax.set_title(tittle)
+
+    # Identity line
+    ax.plot([labels.min(), labels.max()], [labels.min(), labels.max()], 'k--', lw=4)
+
+    # Display plot
+    if show_fig is True:
+        fig.show()
+
+    if save_fig is True:
+        if saving_location is None:
+            if fig_name is None:
+                fig_name = "density_scatterplot"
+            saving_location = data_reader.get_save_location(file_name=fig_name, file_extension=".pdf",
+                                                            folder_relative_path='results', unique_subfolder=True)
+
+
+            fig.savefig(saving_location, format="pdf")
+        else:
+            fig.savefig(saving_location)
