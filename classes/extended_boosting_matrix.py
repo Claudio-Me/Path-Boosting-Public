@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 from PyAstronomy import pyasl
 from typing import List, Tuple
+
+from pandas.core.interchange import dataframe
+
 from classes.boosting_matrix import BoostingMatrix
 import networkx as nx
 from data import data_reader
@@ -25,11 +28,6 @@ class ExtendedBoostingMatrix:
 
         self.df = ExtendedBoostingMatrix.create_extend_boosting_matrix_for(selected_paths, list_graphs_nx,
                                                                            convert_to_sparse)
-
-    @staticmethod
-    def find_labels_in_nx_graph(graph: nx.Graph, path: List[int]):
-        if len(path) == 1:
-            return graph.get_label(path[0])
 
     @staticmethod
     def __get_all_possible_attributes(dataset: list[nx.classes.multigraph.MultiGraph]) -> set[str]:
@@ -284,3 +282,39 @@ class ExtendedBoostingMatrix:
             extended_boosting_matrix_df = extended_boosting_matrix_df.astype(pd.SparseDtype(float, fill_value=np.nan))
         extended_boosting_matrix_df = ExtendedBoostingMatrix.sort_df_columns(extended_boosting_matrix_df)
         return extended_boosting_matrix_df
+
+    @staticmethod
+    def zero_all_elements_exept_the_ones_referring_to_path(x_df: pd.DataFrame, y: pd.Series, path: tuple[int],
+                                                           dict_of_interaction_constraints: dict) -> (
+    pd.DataFrame, pd.Series):
+        # it returns a pd.Dataframe that is a deepcopy of the one given in input, but with it puts nan values in the columns that are not referring to the input path
+        assert (len(x_df) == len(y))
+        assert isinstance(x_df, pd.DataFrame)
+        assert isinstance(y, pd.Series)
+
+        columns_to_keep = dict_of_interaction_constraints[path]
+        new_x_df = x_df.mask([column not in columns_to_keep for column in x_df.columns] & (x_df.notnull()), np.nan,
+                             inplace=False)
+
+        list_of_paths_involved = [ExtendedBoostingMatrix.__parse_tuple_from_colname(column) for column in
+                                  columns_to_keep]
+
+        # Find the length of the longest tuples
+        max_path_length = max(len(tup) for tup in list_of_paths_involved)
+
+        # Find the indices of all tuples that have the maximum length
+        indices_of_longest_tuples = [index for index, tup in enumerate(list_of_paths_involved) if
+                                     len(tup) == max_path_length]
+
+        columns_relative_only_to_last_path = [columns_to_keep[index] for index in indices_of_longest_tuples]
+
+        # remove all the observations that have nan in the
+
+        df_with_y = pd.concat([new_x_df, y], axis=1)
+
+        df_with_y.dropna(subset=columns_relative_only_to_last_path, inplace=True)
+
+        zeroed_y = df_with_y[y.name]
+        zeroed_x_df = df_with_y.drop(y.name, axis=1)
+
+        return zeroed_x_df, zeroed_y

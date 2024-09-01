@@ -16,7 +16,7 @@ import matplotlib as mpl
 from classes import analysis
 
 
-class ExtendedPatternBoosting(ExtendedBoostingMatrix):
+class ExtendedPatternBoosting:
 
     def __init__(self, extended_boosting_matrix: ExtendedBoostingMatrix | None = None,
                  nx_graphs_dataset: list[nx.classes.multigraph.MultiGraph] = None, boosting_matrix=None,
@@ -24,6 +24,7 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
                  settings: SettingsExtendedPatternBoosting | None = None,
                  dict_of_interaction_constraints: dict | None = None):
 
+        # to be able to call ExtendedPatternBoosting methods inside the __init__ method
         super().__init__()
 
         # they are initialized in the function 'initialize_expanded_boosting_matrix'
@@ -75,7 +76,7 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
         # train, test = train_test_split(self.extended_boosting_matrix_dataframe, test_size=0.2, random_state=0)
 
-        # self.settings.xgb_parameters["interaction_constraints"]=self.dict_of_interaction_constraints.items
+        self.settings.main_xgb_parameters["interaction_constraints"]=self.dict_of_interaction_constraints.items
         train_target = self.train_ebm_dataframe['target']
 
         train = self.train_ebm_dataframe.drop(['target'], axis=1)
@@ -91,11 +92,25 @@ class ExtendedPatternBoosting(ExtendedBoostingMatrix):
 
         # xgb_model = xgb.XGBRegressor(**parameters)
 
-        xgb_model = xgb.XGBRegressor(**self.settings.xgb_parameters)
+        xgb_model = xgb.XGBRegressor(**self.settings.main_xgb_parameters)
         xgb_model = xgb_model.fit(train, train_target, eval_set=evallist)
 
         if self.settings.plot_analysis is True:
             ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=test, y_test=test_target)
+
+
+
+    def __find_best_column(self,target_prediction):
+        # it returns the best column to be selected, chosen by running xgb on the train_extended_boosting_matrix
+        self.train_ebm_dataframe
+        self.dict_of_interaction_constraints
+        for path in self.dict_of_interaction_constraints.keys():
+            xgb_model = xgb.XGBRegressor(**self.settings.choose_column_xgb_parameters)
+            xgb_model = xgb_model.fit(train, train_target, eval_set=evallist)
+
+
+        ExtendedBoostingMatrix.zero_all_elements_exept_the_ones_referring_to_path()
+
 
     def initialize_expanded_pattern_boosting(self, selected_paths: list[tuple[int]] | None = None,
                                              extended_boosting_matrix: ExtendedBoostingMatrix | None = None,
