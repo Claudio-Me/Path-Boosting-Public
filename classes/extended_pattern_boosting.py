@@ -9,13 +9,13 @@ from classes.extended_boosting_matrix import ExtendedBoostingMatrix
 from classes.boosting_matrix import BoostingMatrix
 import networkx as nx
 from settings_for_extended_pattern_boosting import SettingsExtendedPatternBoosting
-import xgboost as xgb
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from classes import analysis
 from sklearn.feature_selection import SelectFromModel
+import ast
 
 
 class ExtendedPatternBoosting:
@@ -126,18 +126,29 @@ class ExtendedPatternBoosting:
     def __find_best_path(x_df: pd.DataFrame, y_target: pd.Series) -> tuple:
         # it returns the best column to be selected, chosen by running xgb on boosting matrix with zeroes and ones
 
+        x_df.columns = ExtendedPatternBoosting.__tuples_to_strings(x_df.columns)
+
         print(f"{y_target.head()=}")
 
         choose_column_xgb_parameters = SettingsExtendedPatternBoosting().choose_column_xgb_parameters
         xgb_local_model = xgb.XGBRegressor(**choose_column_xgb_parameters)
 
+        xgb_local_model = xgb_local_model.fit(x_df, y_target)
+        # xgb_local_model.get_booster().get_score(importance_type='weight')
+        xgb.plot_tree(xgb_local_model)
+        plt.show()
+
+        selected_column = np.argsort(xgb_local_model.feature_importances_)
+        print(f"{xgb_local_model.feature_importances_=}")
+
+
+        # xgb_local_model.get_booster().get_score(importance_type='gain')
+
         # alternative way to select best column using sklearn
         #selector=SelectFromModel(xgb_local_model,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
         #best_path=selector.get_feature_names_out(x_df.columns)[0]
 
-        xgb_local_model = xgb_local_model.fit(x_df, y_target)
-        selected_column = np.argsort(xgb_local_model.feature_importances_)
-        print(f"{xgb_local_model.feature_importances_=}")
+
         selected_column = selected_column[-1]
 
         best_path = x_df.columns[selected_column]
@@ -257,3 +268,11 @@ class ExtendedPatternBoosting:
     @staticmethod
     def neg_gradient(y, y_hat):
         return (y - y_hat)
+
+    @staticmethod
+    def __tuples_to_strings(tuples_list):
+        return [str(tup) for tup in tuples_list]
+
+    @staticmethod
+    def __strings_to_tuples(strings_list):
+        return [ast.literal_eval(s) for s in strings_list]

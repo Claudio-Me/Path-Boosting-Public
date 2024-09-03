@@ -5,7 +5,7 @@ class SettingsExtendedPatternBoosting:
         self. n_estimators=5
 
         self.main_xgb_parameters = {'n_estimators': 1,
-                      'max_depth': 3,
+                      'max_depth': 1,
                       'learning_rate': 0.3,
                       "eval_metric": "rmse",
                       "objective": 'reg:squarederror',
@@ -17,7 +17,7 @@ class SettingsExtendedPatternBoosting:
 
         self.choose_column_xgb_parameters = {'n_estimators': 1,
                                     'max_depth': 1,
-                                    'learning_rate': 0.3,
+                                    'learning_rate': 1,
                                     "eval_metric": "rmse",
                                     "objective": 'reg:squarederror',
                                     "reg_lambda": 0,

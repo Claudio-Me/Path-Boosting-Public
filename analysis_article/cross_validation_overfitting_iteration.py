@@ -41,6 +41,8 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
             Settings.maximum_number_of_steps = 150
         elif scenario == 3:
             Settings.maximum_number_of_steps = 350
+    else:
+        Settings.maximum_number_of_steps = maximum_number_of_steps
 
     list_overfitting_iterations = []
     list_of_test_errors: list[list[float]] = []
@@ -101,6 +103,6 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 
 
 # uncomment to use the file as a script
-cross_validation(number_of_simulations=200, k_folds=5, scenario=3, patience=3,
-                 dataset_name="5k_synthetic_dataset", noise_variance=0.2, maximum_number_of_steps=None, save_fig=True,
-                 use_wrapper_boosting=None, show_settings=True)
+cross_validation(number_of_simulations=1, k_folds=5, scenario=3, patience=100,
+                 dataset_name="5_k_selection_graphs", noise_variance=0.2, maximum_number_of_steps=2000, save_fig=True,
+                 use_wrapper_boosting=False, show_settings=True)
