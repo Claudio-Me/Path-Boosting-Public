@@ -218,6 +218,25 @@ class ExtendedBoostingMatrix:
         return dict_of_interaction_constraints
 
     @staticmethod
+    def create_boosting_matrix(selected_paths: list[tuple],
+                               list_graphs_nx: list[nx.classes.multigraph.MultiGraph]) -> pd.DataFrame:
+        # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
+        assert isinstance(selected_paths, list)
+
+        # function to help the retrival of attributes in nx graphs
+        graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in list_graphs_nx]
+        dictionary_for_dataframe = defaultdict(list)
+        column_names = []
+        for path in selected_paths:
+            column_names.append(path)
+            for graph in graphsPB_list:
+                dictionary_for_dataframe[path].append(graph.number_of_time_path_is_present_in_graph(path_label=path))
+
+        boosting_matrix_df = pd.DataFrame(dictionary_for_dataframe)
+        boosting_matrix_df.columns = column_names
+        return boosting_matrix_df
+
+    @staticmethod
     def create_extend_boosting_matrix_for(selected_paths: list[tuple],
                                           list_graphs_nx: list[nx.classes.multigraph.MultiGraph],
                                           convert_to_sparse=False) -> pd.DataFrame:
@@ -284,17 +303,15 @@ class ExtendedBoostingMatrix:
         return extended_boosting_matrix_df
 
     @staticmethod
-    def zero_all_elements_exept_the_ones_referring_to_path(x_df: pd.DataFrame, y: pd.Series, path: tuple[int],
-                                                           dict_of_interaction_constraints: dict) -> (
-    pd.DataFrame, pd.Series):
+    def zero_all_elements_except_the_ones_referring_to_path(x_df: pd.DataFrame, y: pd.Series, path: tuple[int],
+                                                            dict_of_interaction_constraints: dict) -> (
+            pd.DataFrame, pd.Series):
         # it returns a pd.Dataframe that is a deepcopy of the one given in input, but with it puts nan values in the columns that are not referring to the input path
         assert (len(x_df) == len(y))
         assert isinstance(x_df, pd.DataFrame)
         assert isinstance(y, pd.Series)
 
         columns_to_keep = dict_of_interaction_constraints[path]
-        new_x_df = x_df.mask([column not in columns_to_keep for column in x_df.columns] & (x_df.notnull()), np.nan,
-                             inplace=False)
 
         list_of_paths_involved = [ExtendedBoostingMatrix.__parse_tuple_from_colname(column) for column in
                                   columns_to_keep]
@@ -308,13 +325,17 @@ class ExtendedBoostingMatrix:
 
         columns_relative_only_to_last_path = [columns_to_keep[index] for index in indices_of_longest_tuples]
 
+        nan_df = pd.DataFrame(np.nan, index=x_df.index, columns=x_df.columns)
+        nan_df[columns_to_keep] = x_df[columns_to_keep]
+        # nan_df = x_df.mask([column not in columns_to_keep for column in x_df.columns] & (x_df.notnull()), np.nan, inplace=False)
+
         # remove all the observations that have nan in the
 
-        df_with_y = pd.concat([new_x_df, y], axis=1)
+        nan_df = pd.concat([nan_df, y], axis=1)
 
-        df_with_y.dropna(subset=columns_relative_only_to_last_path, inplace=True)
+        nan_df.dropna(subset=columns_relative_only_to_last_path, inplace=True)
 
-        zeroed_y = df_with_y[y.name]
-        zeroed_x_df = df_with_y.drop(y.name, axis=1)
+        zeroed_y = nan_df[y.name]
+        zeroed_x_df = nan_df.drop(y.name, axis=1)
 
         return zeroed_x_df, zeroed_y

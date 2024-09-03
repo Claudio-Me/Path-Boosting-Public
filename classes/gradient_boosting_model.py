@@ -166,6 +166,7 @@ class GradientBoostingModel:
             selected_column = np.argsort(xgb_model.feature_importances_)
             selected_column = selected_column[-1]
             if selected_column >= first_column_number:
+                # this is because secon selected column will be actually one spot after the addition of selected column
                 selected_column += 1
 
             results = xgb_model.evals_result()

@@ -157,7 +157,7 @@ def load_data(filename=None, directory=None):
     return data
 
 
-def save_data(data, filename, directory="results", create_unique_subfolder=True):
+def save_data(data, filename, directory="results", create_unique_subfolder=True)-> str:
     directory = str(directory)
     directory_of_this_file = str(Path(__file__).parent.resolve().parent)
     if not (directory_of_this_file in directory):
@@ -168,7 +168,7 @@ def save_data(data, filename, directory="results", create_unique_subfolder=True)
         directory = directory + filename + ".pkl"
     with open(directory, 'wb') as outp:
         pickle.dump(data, outp, pickle.HIGHEST_PROTOCOL)
-
+    return directory
 
 def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results",
                       unique_subfolder=False) -> str:
