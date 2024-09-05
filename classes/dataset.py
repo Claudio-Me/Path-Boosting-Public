@@ -1,5 +1,4 @@
 import numpy as np
-from lightgbm import Dataset
 
 from classes.graph import GraphPB
 from settings import Settings
