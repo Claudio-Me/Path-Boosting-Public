@@ -245,6 +245,7 @@ class PatternBoosting:
 
         # old way
         # boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
+        boosting_matrix_matrix=np.array(boosting_matrix_matrix_rows)
         if convert_to_boosting_matrix is False:
             return boosting_matrix_matrix
         else:
