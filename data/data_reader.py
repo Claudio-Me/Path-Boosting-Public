@@ -199,6 +199,8 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
         folder_name = "Xgb_" + str(Settings.maximum_number_of_steps)
     elif Settings.algorithm == "Xgb_step":
         folder_name = "Xgb_step_" + str(Settings.maximum_number_of_steps)
+    elif Settings.algorithm == "decision_tree":
+        folder_name = "decision_tree_step_" + str(Settings.maximum_number_of_steps)
     else:
         raise TypeError("Selected algorithm not recognized")
 

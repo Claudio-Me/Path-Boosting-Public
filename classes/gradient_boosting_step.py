@@ -13,6 +13,7 @@ import gc
 import os
 import numpy as np
 from classes.enumeration.model_type import ModelType
+from classes.decision_tree_model import DecisionTreeModel
 
 
 class GradientBoostingStep:
@@ -32,8 +33,21 @@ class GradientBoostingStep:
         elif Settings.algorithm == "Xgb_step":
 
             return self.__step_using_xgboost(model, boosting_matrix, labels)
+        elif Settings.algorithm == "decision_tree":
+            return self.__step_using_decision_trees(model, boosting_matrix, labels)
         else:
             raise TypeError("Selected algorithm not recognized")
+
+    def __step_using_decision_trees(self, model, boosting_matrix, labels):
+        if model is None:
+            model = DecisionTreeModel()
+        selected_column = model.fit_one_step(boosting_matrix.matrix, labels)
+        # -------------------------------------------------------------------------------------------------------------
+        if Settings.verbose is True:
+            print("Selected column ", selected_column)
+        # -------------------------------------------------------------------------------------------------------------
+        return selected_column, model
+
 
     def __step_using_xgboost(self, model: GradientBoostingModel, boosting_matrix: BoostingMatrix, labels):
         if model is None:

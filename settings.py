@@ -14,13 +14,13 @@ class Settings:
     save_analysis: bool = True
     show_analysis: bool = True
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
 
     # in the error graph Print only the last N learners
     tail = 1000
 
-    wrapper_boosting: bool = True
+    wrapper_boosting: bool = False
 
     noise_variance = 0.2
 
@@ -77,7 +77,7 @@ class Settings:
 
     parallelization = False
 
-    algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step"
+    algorithm = "decision_tree"  # "Full_xgb" "R" "Xgb_step" "decision_tree"
 
     graph_label_variable = "target_tzvp_homo_lumo_gap"
 

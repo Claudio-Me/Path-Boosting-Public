@@ -163,7 +163,7 @@ class PatternBoosting:
             if self.settings.verbose is True:
                 print("computing test boosting matrix")
                 if self.settings.wrapper_boosting is True:
-                    print("metal center ", self.training_dataset.graphs_list[0].metal_center)
+                    print("metal center ", self.training_dataset.graphs_list[0].get_metal_center_labels())
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
                 test_dataset)
             if self.settings.verbose is True:
@@ -194,7 +194,8 @@ class PatternBoosting:
         boosting_matrix = self.boosting_matrix
         labels = self.training_dataset.labels
 
-        if self.settings.algorithm == "Xgb_step" and self.trained is True:
+        if (
+                self.settings.algorithm == "Xgb_step" or self.settings.algorithm == "decision_tree") and self.trained is True:
             return model.select_second_best_column(boosting_matrix, first_column_number, labels,
                                                    global_labels_variance=self.global_train_labels_variance)
         else:
@@ -250,7 +251,7 @@ class PatternBoosting:
 
         # old way
         # boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
-        boosting_matrix_matrix=np.array(boosting_matrix_matrix_rows)
+        boosting_matrix_matrix = np.array(boosting_matrix_matrix_rows)
         if convert_to_boosting_matrix is False:
             return boosting_matrix_matrix
         else:
@@ -273,9 +274,9 @@ class PatternBoosting:
         return boosting_matrix_matrix
 
     def __create_boosting_vector_for_graph(self, graph: GraphPB) -> np.array:
-        boosting_vector=[0]*len(self.boosting_matrix.get_header())
-        for i,label_path in enumerate(self.boosting_matrix.get_header()):
-            boosting_vector[i]= graph.number_of_time_path_is_present_in_graph(label_path)
+        boosting_vector = [0] * len(self.boosting_matrix.get_header())
+        for i, label_path in enumerate(self.boosting_matrix.get_header()):
+            boosting_vector[i] = graph.number_of_time_path_is_present_in_graph(label_path)
 
         # old way
         # boosting_vector = [graph.number_of_time_path_is_present_in_graph(label_path) for label_path in self.boosting_matrix.get_header()]
