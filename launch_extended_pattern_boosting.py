@@ -26,11 +26,9 @@ if True:
                                                         selected_paths=selected_paths,
                                                         settings=SettingsExtendedPatternBoosting())
 
-    save_directory = data_reader.save_data(data=extended_pattern_boosting, filename='extended_path_boosting',
-                                           directory='extended_path_boosting', create_unique_subfolder=False)
+    save_directory = data_reader.save_data(data=extended_pattern_boosting, filename='extended_path_boosting',                                           directory='extended_path_boosting', create_unique_subfolder=False)
 
-save_directory = data_reader.get_save_location(file_name='extended_path_boosting', file_extension = '.pkl', folder_relative_path="extended_path_boosting",
-                      unique_subfolder=False)
+save_directory = data_reader.get_save_location(file_name='extended_path_boosting', file_extension = '.pkl', folder_relative_path="extended_path_boosting",                       unique_subfolder=False)
 
 extended_pattern_boosting = data_reader.load_data(directory=save_directory)
 

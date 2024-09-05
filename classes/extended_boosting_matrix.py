@@ -212,7 +212,10 @@ class ExtendedBoostingMatrix:
         for labelled_path in selected_paths:
             columns_names = []
             for attribute in all_attributes:
-                columns_names.append(ExtendedBoostingMatrix.__get_column_name(labelled_path, attribute))
+
+                for i in range(len(labelled_path), 0, -1):
+                    sub_tuple=labelled_path[:i]
+                    columns_names.append(ExtendedBoostingMatrix.__get_column_name(sub_tuple, attribute))
             dict_of_interaction_constraints[labelled_path] = columns_names
 
         return dict_of_interaction_constraints
@@ -231,6 +234,7 @@ class ExtendedBoostingMatrix:
             column_names.append(path)
             for graph in graphsPB_list:
                 dictionary_for_dataframe[path].append(graph.number_of_time_path_is_present_in_graph(path_label=path))
+
 
         boosting_matrix_df = pd.DataFrame(dictionary_for_dataframe)
         boosting_matrix_df.columns = column_names

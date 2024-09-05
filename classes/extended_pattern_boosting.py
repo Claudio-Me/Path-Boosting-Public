@@ -8,6 +8,8 @@ from classes.dataset import Dataset
 from classes.extended_boosting_matrix import ExtendedBoostingMatrix
 from classes.boosting_matrix import BoostingMatrix
 import networkx as nx
+
+from settings import Settings
 from settings_for_extended_pattern_boosting import SettingsExtendedPatternBoosting
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import seaborn as sns
@@ -16,6 +18,7 @@ import matplotlib as mpl
 from classes import analysis
 from sklearn.feature_selection import SelectFromModel
 import ast
+import random
 
 
 class ExtendedPatternBoosting:
@@ -94,24 +97,26 @@ class ExtendedPatternBoosting:
                 # evals_results=xgb_model.eval_result()
                 # last_training_error=evals_results['validation_0'][self.settings.main_xgb_parameters['eval_metric']][-1]
 
-                self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
-                new_xgb_model = xgb.XGBRegressor(**self.settings.main_xgb_parameters)
+
 
                 predictions = xgb_model.predict(x_df_train)
                 negative_gradient = self.neg_gradient(y=y_train.to_numpy(), y_hat=np.array(predictions))
 
                 best_path = self.__find_best_path(self.train_bm_df, pd.Series(negative_gradient))
 
-                #--------------------------------------------------------
-                print("best path")
-                print(best_path)
-                #------------------------------------------------------
-
                 zeroed_x_df, zeroed_y = ExtendedBoostingMatrix.zero_all_elements_except_the_ones_referring_to_path(
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
-                xgb_model = new_xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist, xgb_model=xgb_model)
 
+                self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
+                new_xgb_model = xgb.XGBRegressor(**self.settings.main_xgb_parameters)
+
+                xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist, xgb_model=xgb_model)
+                if self.settings.show_tree is True:
+
+                    print(xgb_model.get_booster().get_dump())
+                    xgb.plot_tree(xgb_model)
+                    plt.show()
         if self.settings.plot_analysis is True:
             ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=x_df_test, y_test=y_test)
 
@@ -126,20 +131,38 @@ class ExtendedPatternBoosting:
     def __find_best_path(x_df: pd.DataFrame, y_target: pd.Series) -> tuple:
         # it returns the best column to be selected, chosen by running xgb on boosting matrix with zeroes and ones
 
-        x_df.columns = ExtendedPatternBoosting.__tuples_to_strings(x_df.columns)
+        # x_df.columns = ExtendedPatternBoosting.__tuples_to_strings(x_df.columns)
 
-        print(f"{y_target.head()=}")
+
+        # -------------------------------------------------------------------
+        # delete me
+        #print(f"{y_target.head()=}")
+        # -------------------------------------------------------------------
 
         choose_column_xgb_parameters = SettingsExtendedPatternBoosting().choose_column_xgb_parameters
         xgb_local_model = xgb.XGBRegressor(**choose_column_xgb_parameters)
 
-        xgb_local_model = xgb_local_model.fit(x_df, y_target)
+
+        #y_target = pd.Series(np.random.randint(0, 9, y_target.shape))
+
+
+        #x_df=pd.DataFrame(np.random.randint(0, 9, x_df.shape))
+
+        xgb_local_model = xgb_local_model.fit(X=x_df, y=y_target)
         # xgb_local_model.get_booster().get_score(importance_type='weight')
-        xgb.plot_tree(xgb_local_model)
-        plt.show()
+
+
+
+        if SettingsExtendedPatternBoosting().show_tree is True:
+            xgb.plot_tree(xgb_local_model)
+            plt.show()
 
         selected_column = np.argsort(xgb_local_model.feature_importances_)
+
+        # -------------------------------------------------------------------
+        # delete me
         print(f"{xgb_local_model.feature_importances_=}")
+        # -------------------------------------------------------------------
 
 
         # xgb_local_model.get_booster().get_score(importance_type='gain')
@@ -152,8 +175,15 @@ class ExtendedPatternBoosting:
         selected_column = selected_column[-1]
 
         best_path = x_df.columns[selected_column]
+        del xgb_local_model
 
-        return best_path
+        # -------------------------------------------------------------------
+        # delete me
+        print(f"{best_path=}")
+        # -------------------------------------------------------------------
+
+
+        return random.choice(list(x_df.columns))
 
     def initialize_expanded_pattern_boosting(self, selected_paths: list[tuple[int]] | None = None,
                                              train_data: pd.DataFrame | list[
@@ -217,10 +247,10 @@ class ExtendedPatternBoosting:
             raise TypeError("test_data type unrecognized", test_data)
 
         if test_boosting_matrix is not None:
-            self.train_bm_df = pd.DataFrame(test_boosting_matrix)
-            self.train_bm_df.columns = self.selected_paths
+            self.test_bm_df = pd.DataFrame(test_boosting_matrix)
+            self.test_bm_df.columns = self.selected_paths
         elif isinstance(test_data, list):
-            self.train_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
+            self.test_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
                                                                              list_graphs_nx=test_data)
         else:
             raise Exception(

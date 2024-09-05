@@ -160,11 +160,13 @@ class PatternBoosting:
         self.training_dataset_final_predictions = self.predict(self.training_dataset, self.boosting_matrix)
 
         if test_dataset is not None and self.settings.algorithm == "Xgb_step":
-            print("computing test error")
+            print("computing test boosting matrix")
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
                 test_dataset)
+            print("predicting test dataset final error")
             self.test_dataset_final_predictions = self.predict(self.test_dataset,
                                                                self.boosting_matrix_matrix_for_test_dataset)
+            print("evaluate progression")
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
 
     def find_second_best_column(self, first_column_number: int) -> tuple[int, float]:
@@ -237,8 +239,12 @@ class PatternBoosting:
         '''
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
-        boosting_matrix_matrix = np.array(
-            [self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
+        boosting_matrix_matrix_rows = []
+        for graph in graphs_list:
+            boosting_matrix_matrix_rows.append(self.__create_boosting_vector_for_graph(graph))
+
+        # old way
+        # boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
         if convert_to_boosting_matrix is False:
             return boosting_matrix_matrix
         else:
@@ -261,8 +267,12 @@ class PatternBoosting:
         return boosting_matrix_matrix
 
     def __create_boosting_vector_for_graph(self, graph: GraphPB) -> np.array:
-        boosting_vector = [graph.number_of_time_path_is_present_in_graph(path_label) for path_label in
-                           self.boosting_matrix.get_header()]
+        boosting_vector=[0]*len(self.boosting_matrix.get_header())
+        for i,label_path in enumerate(self.boosting_matrix.get_header()):
+            boosting_vector[i]= graph.number_of_time_path_is_present_in_graph(label_path)
+
+        # old way
+        # boosting_vector = [graph.number_of_time_path_is_present_in_graph(label_path) for label_path in self.boosting_matrix.get_header()]
         return np.array(boosting_vector)
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
