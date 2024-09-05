@@ -160,13 +160,18 @@ class PatternBoosting:
         self.training_dataset_final_predictions = self.predict(self.training_dataset, self.boosting_matrix)
 
         if test_dataset is not None and self.settings.algorithm == "Xgb_step":
-            print("computing test boosting matrix")
+            if self.settings.verbose is True:
+                print("computing test boosting matrix")
+                if self.settings.wrapper_boosting is True:
+                    print("metal center ", self.training_dataset.graphs_list[0].metal_center)
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
                 test_dataset)
-            print("predicting test dataset final error")
+            if self.settings.verbose is True:
+                print("predicting test dataset final error")
             self.test_dataset_final_predictions = self.predict(self.test_dataset,
                                                                self.boosting_matrix_matrix_for_test_dataset)
-            print("evaluate progression")
+            if self.settings.verbose is True:
+                print("evaluate progression")
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
 
     def find_second_best_column(self, first_column_number: int) -> tuple[int, float]:
