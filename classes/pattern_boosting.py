@@ -106,10 +106,11 @@ class PatternBoosting:
                 self.test_error.append(self.evaluate(test_dataset))
 
             # TODO improve this evaluation process to get train error, it seems unnecessary to re-evaluate the whole dataset
-            if self.settings.algorithm != "Xgb_step":
-                self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
-            else:
+            if self.settings.algorithm == "Xgb_step" or self.settings.algorithm == "decision_tree":
                 self.train_error.append(self.model.get_last_training_error() * self.model.get_last_training_error())
+
+            else:
+                self.train_error.append(self.evaluate(self.training_dataset, self.boosting_matrix.matrix))
 
             if self.settings.update_features_importance_by_comparison is False:
                 if len(self.train_error) <= 1:

@@ -324,7 +324,41 @@ class GraphPB:
             return sum(result)
     '''
 
-    def number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
+    def number_of_time_path_is_present_in_graph(self, path_label):
+        """
+        Count the occurrences of a path with the given labels starting from nodes with label `start_label`
+
+        :param start_label: The label of the path's starting nodes
+        :param path_labels: The labels of the path in the order they are to be traversed
+        :return: The count of how many times the labeled path is present in graph
+        """
+
+        path_count = 0
+
+        if not (path_label[0] in self.label_to_node):
+            return 0
+
+        # Get all nodes with the starting label
+        start_nodes = self.get_nodes_with_label(path_label[0])
+
+        def explore_path(node, labels, visited):
+            # Recursive function to explore the labeled path
+            if not labels:
+                return 1  # All labels matched, this is a valid path
+            count = 0
+            next_label = labels[0]
+            for neighbour in self.neighbours_with_label[(node, next_label)]:
+                if neighbour not in visited:  # Prevent revisiting nodes
+                    count += explore_path(neighbour, labels[1:], visited.union({neighbour}))
+            return count
+
+        for start_node in start_nodes:
+            # Initialize the path with the starting node
+            path_count += explore_path(start_node, path_label, {start_node})
+
+        return path_count
+
+    def old_number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
         """
         Takes in input a path label (path_label) and returns the number of times this path is present in the graph not to be
         confused with the function "number_of_times_selected_path_is_present" that count only the already selected paths

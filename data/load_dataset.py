@@ -19,7 +19,10 @@ def load_dataset(dataset_name=None):
             dataset = load_dataset_from_binary(directory=current_dir, filename="5_k_selection_graphs")
         else:
             print("Creating 5k dataset")
-            dataset = read_data_from_directory(dataset_path)
+            if Settings.generate_from_binary_file is False:
+                dataset = read_data_from_directory(dataset_path)
+            else:
+                dataset = load_dataset_from_binary(directory=current_dir, filename="5_k_selection_graphs_original")
             dataset = Dataset(dataset)
             save_dataset_in_binary_file(dataset=dataset, directory=current_dir, filename="5_k_selection_graphs")
 
@@ -30,8 +33,12 @@ def load_dataset(dataset_name=None):
             dataset = load_dataset_from_binary(directory=current_dir, filename="60k_dataset")
         else:
             print("Creating 60k dataset")
-            dataset_path = current_dir / 'dNatQ_graphs'
-            dataset = read_data_from_directory(dataset_path)
+            if Settings.generate_from_binary_file is False:
+                dataset_path = current_dir / 'dNatQ_graphs'
+                dataset = read_data_from_directory(dataset_path)
+            else:
+                dataset = load_dataset_from_binary(directory=current_dir, filename="60k_dataset_nx_graphs")
+
             dataset = Dataset(dataset)
             save_dataset_in_binary_file(dataset=dataset, directory=current_dir, filename="60k_dataset")
 

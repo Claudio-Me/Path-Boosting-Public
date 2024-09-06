@@ -33,10 +33,13 @@ def read_data_from_directory(directory):
     for x in os.listdir(directory):
         if x.endswith(".gml"):
             names.append(x)
+    names.sort()
     # names = glob.glob(directory + '*.gml')
     dataset = [None] * len(names)
     print(len(names))
+
     for i, name in enumerate(names):
+        print(i)
         dataset[i] = read_data_from_name(name, directory=directory)
 
     # old reading version, very slow
