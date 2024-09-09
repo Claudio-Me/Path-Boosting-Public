@@ -39,7 +39,6 @@ def read_data_from_directory(directory):
     print(len(names))
 
     for i, name in enumerate(names):
-        print(i)
         dataset[i] = read_data_from_name(name, directory=directory)
 
     # old reading version, very slow
