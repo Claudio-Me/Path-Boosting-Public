@@ -1,6 +1,7 @@
 import warnings
 from classes.graph import GraphPB
 from classes.boosting_matrix import BoostingMatrix
+from launch_extended_pattern_boosting import selected_paths
 from settings import Settings
 from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
@@ -166,7 +167,7 @@ class PatternBoosting:
                 if self.settings.wrapper_boosting is True:
                     print("metal center ", self.training_dataset.graphs_list[0].get_metal_center_labels())
             self.boosting_matrix_matrix_for_test_dataset = self.create_boosting_matrix_for(
-                test_dataset)
+                test_dataset, selected_paths=set(self.boosting_matrix.get_selected_paths()))
             if self.settings.verbose is True:
                 print("predicting test dataset final error")
             self.test_dataset_final_predictions = self.predict(self.test_dataset,
@@ -215,7 +216,7 @@ class PatternBoosting:
             warnings.warn("This model is not trained")
             return None
         if boosting_matrix_matrix is None:
-            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset)
+            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset, selected_paths=set(self.boosting_matrix.get_selected_paths()))
         test_error = self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
         return test_error
 
@@ -237,7 +238,7 @@ class PatternBoosting:
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
-    def create_boosting_matrix_for(self, graphs_list, convert_to_boosting_matrix=False) -> np.ndarray | BoostingMatrix:
+    def create_boosting_matrix_for(self, graphs_list, convert_to_boosting_matrix=False, selected_paths=None) -> np.ndarray | BoostingMatrix:
         '''
         :param convert_to_boosting_matrix: to decide if at the end the boosting matrices should be converted in the class BoostingMatrix
         :param graphs_list: list of graphs in dataset format or list
@@ -248,7 +249,7 @@ class PatternBoosting:
             graphs_list = graphs_list.get_graphs_list()
         boosting_matrix_matrix_rows = []
         for graph in graphs_list:
-            boosting_matrix_matrix_rows.append(self.__create_boosting_vector_for_graph(graph))
+            boosting_matrix_matrix_rows.append(self.__create_boosting_vector_for_graph(graph,selected_paths=selected_paths))
 
         # old way
         # boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
@@ -264,24 +265,30 @@ class PatternBoosting:
             warnings.warn("This model is not trained")
             return None
         if boosting_matrix_matrix is None:
-            boosting_matrix_matrix = self.generate_boosting_matrix(dataset)
+            boosting_matrix_matrix = self.generate_boosting_matrix(dataset, selected_paths=set(
+                self.boosting_matrix.get_selected_paths()))
 
         error = self.model.evaluate(boosting_matrix_matrix, dataset.labels)
         return error
 
-    def generate_boosting_matrix(self, dataset: Dataset) -> np.array:
+    def generate_boosting_matrix(self, dataset: Dataset, selected_paths=None) -> np.array:
         boosting_matrix_matrix = np.array(
-            [self.__create_boosting_vector_for_graph(graph) for graph in dataset.get_graphs_list()])
+            [self.__create_boosting_vector_for_graph(graph, selected_paths=selected_paths) for graph in
+             dataset.get_graphs_list()])
         return boosting_matrix_matrix
 
-    def __create_boosting_vector_for_graph(self, graph: GraphPB) -> np.array:
-        boosting_vector = [0] * len(self.boosting_matrix.get_header())
-        for i, label_path in enumerate(self.boosting_matrix.get_header()):
-            boosting_vector[i] = graph.number_of_time_path_is_present_in_graph(label_path)
+    def __create_boosting_vector_for_graph(self, graph: GraphPB, selected_paths=None) -> np.array:
 
-        # old way
-        # boosting_vector = [graph.number_of_time_path_is_present_in_graph(label_path) for label_path in self.boosting_matrix.get_header()]
-        return np.array(boosting_vector)
+        boosting_vector = [0] * len(self.boosting_matrix.get_header())
+
+        for i, label_path in enumerate(self.boosting_matrix.get_header()):
+            if selected_paths is not None:
+                if label_path in selected_paths:
+                    boosting_vector[i] = graph.number_of_time_path_is_present_in_graph(label_path)
+                else:
+                    boosting_vector[i] = 0
+            else:
+                boosting_vector[i] = graph.number_of_time_path_is_present_in_graph(label_path)
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
         """

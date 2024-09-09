@@ -401,9 +401,10 @@ class WrapperPatternBoosting:
     def get_trained_pattern_boosting_models(self):
         return [model for model in self.get_pattern_boosting_models() if model.trained is True]
 
-    def create_boosting_matrices_for(self, graphs_list, convert_to_boosting_matrix=False) -> list[
-                                                                                                 np.array] | list[
-                                                                                                 BoostingMatrix]:
+    def create_boosting_matrices_for(self, graphs_list, convert_to_boosting_matrix=False, selected_paths=None) -> list[
+                                                                                                                      np.array] | \
+                                                                                                                  list[
+                                                                                                                      BoostingMatrix]:
         '''
         :param graphs_list: list or dataset of graphs
         :param convert_to_boosting_matrix: to decide if at the end the boosting matrices should be converted in the class BoostingMatrix
@@ -412,12 +413,15 @@ class WrapperPatternBoosting:
         '''
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
-        matrices_list = [model.create_boosting_matrix_for(graphs_list, convert_to_boosting_matrix) for model in
-                         self.pattern_boosting_models_list if model.trained is True]
+        matrices_list = [
+            model.create_boosting_matrix_for(graphs_list, convert_to_boosting_matrix, selected_paths=selected_paths) for
+            model in
+            self.pattern_boosting_models_list if model.trained is True]
         return matrices_list
 
     def create_ordered_boosting_matrix(self, graphs_list: list | Dataset,
-                                       convert_to_boosting_matrix: bool = False) -> np.ndarray | BoostingMatrix:
+                                       convert_to_boosting_matrix: bool = False,
+                                       selected_paths=None) -> np.ndarray | BoostingMatrix:
         '''
         :param graphs_list: list or dataset of graphs
         :param convert_to_boosting_matrix: to decide if at the end the boosting matrices should be converted in the class BoostingMatrix
@@ -427,7 +431,7 @@ class WrapperPatternBoosting:
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
 
-        boosting_matrices_list = self.create_boosting_matrices_for(graphs_list)
+        boosting_matrices_list = self.create_boosting_matrices_for(graphs_list, selected_paths=selected_paths)
         boosting_matrix = np.hstack(boosting_matrices_list)
 
         list_columns_importance = [model.get_boosting_matrix_columns_importance_values for model in
@@ -540,8 +544,7 @@ class WrapperPatternBoosting:
 
     def get_train_error_per_number_of_base_learners(self):
 
-
-        n_trained_models=len(self.get_trained_pattern_boosting_models())
+        n_trained_models = len(self.get_trained_pattern_boosting_models())
 
         output_list = []
 
@@ -562,3 +565,7 @@ class WrapperPatternBoosting:
             output_list.append(last_value)
 
         return output_list
+
+
+
+

@@ -63,9 +63,11 @@ def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, m
     print("Frequency matrix ready")
 
     if isinstance(pattern_boosting, PatternBoosting):
-        x_test = pattern_boosting.create_boosting_matrix_for(pattern_boosting.test_dataset)
+        x_test = pattern_boosting.create_boosting_matrix_for(pattern_boosting.test_dataset, selected_paths=set(
+            pattern_boosting.boosting_matrix.get_selected_paths()))
     elif isinstance(pattern_boosting, WrapperPatternBoosting):
-        x_test = pattern_boosting.create_ordered_boosting_matrix(pattern_boosting.test_dataset)
+        x_test = pattern_boosting.create_ordered_boosting_matrix(pattern_boosting.test_dataset, selected_paths=set(
+            pattern_boosting.get_selected_paths()))
     else:
         raise TypeError("Unknown pattern Boosting type")
 
@@ -515,7 +517,7 @@ def plot_label_distribution(label_counts, save_fig=True):
 
 
 def plot_signal_to_noise_ratio(average_y_value, noise_variance_list, variance_errors, mean_errors, min_errors,
-                               max_errors, save_fig=True, name_fig = "signal_to_noise_ratio.pdf"):
+                               max_errors, save_fig=True, name_fig="signal_to_noise_ratio.pdf"):
     # Assuming we're plotting these errors against a sequential index or a list of parameters `x`
     # x_values = np.divide(np.square(average_y_value), np.array(noise_variance_list))
     x_values = noise_variance_list
