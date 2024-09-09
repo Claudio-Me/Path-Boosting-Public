@@ -354,7 +354,7 @@ class GraphPB:
 
         for start_node in start_nodes:
             # Initialize the path with the starting node
-            path_count += explore_path(start_node, path_label, {start_node})
+            path_count += explore_path(start_node, path_label[1:], {start_node})
 
         return path_count
 

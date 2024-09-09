@@ -31,13 +31,13 @@ class Settings:
     show_analysis: bool = False
 
     dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = True
+    generate_new_dataset = False
     generate_from_binary_file = True
 
     # in the error graph Print only the last N learners
     tail = 1000
 
-    wrapper_boosting: bool = False
+    wrapper_boosting: bool = True
 
     noise_variance = 0.2
 

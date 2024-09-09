@@ -150,6 +150,7 @@ class ExtendedPatternBoosting:
 
         xgb_local_model = xgb_local_model.fit(X=x_df, y=y_target)
         # xgb_local_model.get_booster().get_score(importance_type='weight')
+        # xgb_local_model.get_booster().get_dump()
 
 
 
