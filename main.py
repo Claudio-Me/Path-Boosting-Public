@@ -1,16 +1,12 @@
-import numpy as np
-
 from classes.testing.testing import Testing
 from classes.pattern_boosting import PatternBoosting
 from data import data_reader
 from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
 from settings import Settings
-from data.synthetic_dataset import SyntheticDataset
-from classes.enumeration.estimation_type import EstimationType
+
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis_patternboosting import AnalysisPatternBoosting
 from data.load_dataset import load_dataset
-from classes.dataset import Dataset
 from classes.wrapper_pattern_boosting import WrapperPatternBoosting
 # from pympler import asizeof
 from classes.graph import GraphPB

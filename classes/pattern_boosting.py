@@ -1,7 +1,6 @@
 import warnings
 from classes.graph import GraphPB
 from classes.boosting_matrix import BoostingMatrix
-from launch_extended_pattern_boosting import selected_paths
 from settings import Settings
 from classes.gradient_boosting_step import GradientBoostingStep
 from classes.dataset import Dataset
@@ -289,6 +288,7 @@ class PatternBoosting:
                     boosting_vector[i] = 0
             else:
                 boosting_vector[i] = graph.number_of_time_path_is_present_in_graph(label_path)
+        return np.array(boosting_vector)
 
     def __get_new_columns(self, new_paths, graphs_that_contain_selected_column_path):
         """

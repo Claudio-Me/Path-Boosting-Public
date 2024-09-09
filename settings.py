@@ -30,7 +30,7 @@ class Settings:
     save_analysis: bool = False
     show_analysis: bool = False
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = True
     generate_from_binary_file = True
 
