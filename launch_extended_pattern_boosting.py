@@ -30,7 +30,7 @@ if True:
 
 save_directory = data_reader.get_save_location(file_name='extended_path_boosting', file_extension = '.pkl', folder_relative_path="extended_path_boosting",                       unique_subfolder=False)
 
-extended_pattern_boosting = data_reader.load_data(directory=save_directory)
+extended_pattern_boosting: ExtendedPatternBoosting = data_reader.load_data(directory=save_directory)
 
 extended_pattern_boosting.train()
 

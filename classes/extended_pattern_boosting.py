@@ -157,12 +157,9 @@ class ExtendedPatternBoosting:
             xgb.plot_tree(xgb_local_model)
             plt.show()
 
-        selected_column = np.argsort(xgb_local_model.feature_importances_)
+        selected_columns = np.argsort(xgb_local_model.feature_importances_)
 
-        # -------------------------------------------------------------------
-        # delete me
-        print(f"{xgb_local_model.feature_importances_=}")
-        # -------------------------------------------------------------------
+
 
 
         # xgb_local_model.get_booster().get_score(importance_type='gain')
@@ -172,18 +169,15 @@ class ExtendedPatternBoosting:
         #best_path=selector.get_feature_names_out(x_df.columns)[0]
 
 
-        selected_column = selected_column[-1]
+        selected_columns = selected_columns[-1]
 
-        best_path = x_df.columns[selected_column]
+        best_path = x_df.columns[selected_columns]
         del xgb_local_model
 
-        # -------------------------------------------------------------------
-        # delete me
-        print(f"{best_path=}")
-        # -------------------------------------------------------------------
 
 
-        return random.choice(list(x_df.columns))
+
+        return best_path
 
     def initialize_expanded_pattern_boosting(self, selected_paths: list[tuple[int]] | None = None,
                                              train_data: pd.DataFrame | list[

@@ -413,7 +413,7 @@ class GraphPB:
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}
 
-        adj_matrix = np.array(nx.to_numpy_matrix(nx_Graph))
+        adj_matrix = nx.to_numpy_array(nx_Graph)
 
         adj_list = nx.to_dict_of_lists(nx_Graph)
         adj_list = {int(k): [int(i) for i in v] for k, v in adj_list.items()}
