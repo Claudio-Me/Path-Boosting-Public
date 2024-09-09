@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from PyAstronomy import pyasl
+# TODO uncomment this import, for now it is just because server does not have the library installed
+# from PyAstronomy import pyasl
 from typing import List, Tuple
 import numpy.typing as npt
 
@@ -78,6 +79,7 @@ class BoostingMatrix:
         self.number_of_times_column_is_selected[column] += 1
         self.columns_importance[column] += value_to_add
 
+
     def translate_header_to_atom_symbols(self):
         an = pyasl.AtomicNo()
         translated_header = []
@@ -129,7 +131,8 @@ class BoostingMatrix:
         string = "Boosting matrix header:\n"
         string = string + str(self.header) + '\n\n'
         string = string + "Selected Paths:\n"
-        string = string + str(self.translate_header_to_atom_symbols()) + '\n\n'
+        # TODO uncomment the follwing line, it is commented now because on the server we do not have PyAstronomy library
+        # string = string + str(self.translate_header_to_atom_symbols()) + '\n\n'
 
         string = string + "number of added paths: " + str(len(self.header)) + '\n'
         string = string + "Number of selected paths " + str(np.count_nonzero(self.columns_importance)) + '\n'
@@ -141,8 +144,8 @@ class BoostingMatrix:
         string = string + "Different rows in boosting matrix: " + str(self.different_rows()) + "\n\n"
 
         string = string + "Paths sorted by importance: \n"
-        string = string + str(
-            sorted(zip(self.columns_importance, self.translate_header_to_atom_symbols()), reverse=True)) + '\n'
+        # TODO uncomment the follwing line, it is commented now because on the server we do not have PyAstronomy library
+        # string = string + str(sorted(zip(self.columns_importance, self.translate_header_to_atom_symbols()), reverse=True)) + '\n'
         string = string + str(sorted(zip(self.columns_importance, self.get_header()), reverse=True))
         return string
 
