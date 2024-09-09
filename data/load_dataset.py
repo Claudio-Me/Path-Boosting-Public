@@ -38,7 +38,6 @@ def load_dataset(dataset_name=None):
                 dataset = read_data_from_directory(dataset_path)
             else:
                 dataset = load_dataset_from_binary(directory=current_dir, filename="60k_dataset_nx_graphs")
-
             dataset = Dataset(dataset)
             save_dataset_in_binary_file(dataset=dataset, directory=current_dir, filename="60k_dataset")
 
