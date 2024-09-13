@@ -576,34 +576,3 @@ class PatternBoosting:
     def get_number_of_times_path_has_been_selected(self, path: tuple | int | None = None) -> int | npt.NDArray:
         return self.boosting_matrix.get_number_of_times_path_has_been_selected(path)
 
-    # TODO remove the method getsize
-    @staticmethod
-    def getsize(obj):
-        """sum size of object & members."""
-        BLACKLIST = type, ModuleType, FunctionType
-        if isinstance(obj, BLACKLIST):
-            raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))
-        seen_ids = set()
-        size = 0
-        objects = [obj]
-        while objects:
-            need_referents = []
-            for obj in objects:
-                if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
-                    seen_ids.add(id(obj))
-                    size += sys.getsizeof(obj)
-                    need_referents.append(obj)
-            objects = get_referents(*need_referents)
-        return size / 1000000
-
-    # TODO remove the method get_pickle_size
-
-    @staticmethod
-    def get_pickle_size(my_object):
-        # Serialize the object into a bytes object
-        serialized_object = pickle.dumps(my_object)
-
-        # Get the size of the serialized bytes object
-        size_in_bytes = len(serialized_object)
-        # convert into mb
-        return size_in_bytes / 1000000

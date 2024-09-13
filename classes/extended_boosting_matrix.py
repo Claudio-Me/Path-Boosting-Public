@@ -13,6 +13,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import ast
 from settings import Settings
+import copy
 
 
 class ExtendedBoostingMatrix:
@@ -33,21 +34,22 @@ class ExtendedBoostingMatrix:
     def __get_all_possible_attributes(dataset: list[nx.classes.multigraph.MultiGraph]) -> set[str]:
         unique_attributes = set()
         for graph in dataset:
-            for node, attributes in graph.nodes(data=True):
+            nodes_attributes_list = copy.deepcopy(graph.nodes(data=True))
+            for node, attributes in nodes_attributes_list:
                 unique_attributes.update(attributes.keys())
         if 'node_position' in unique_attributes:
             unique_attributes.remove('node_position')
         if 'node_label' in unique_attributes:
             unique_attributes.remove('node_label')
         # add "n_times_present", it refers to the attribute "(path)_times_present"
-        unique_attributes.update('n_times_present')
+        unique_attributes.add('n_times_present')
         return unique_attributes
 
     @staticmethod
     # finds all the possible attributes of the node
     def __get_node_attributes_of_nx_graph(graph, node_id) -> dict | None:
         if str(node_id) in graph.nodes:
-            return graph.nodes[str(node_id)]
+            return copy.deepcopy(graph.nodes[str(node_id)])
         else:
             return None
 
@@ -59,7 +61,7 @@ class ExtendedBoostingMatrix:
 
         columns_name = set()
         for path in selected_paths:
-            # add the underscore to omegenize the input, otherwise when split('_',1) is called (it is done in another method) it returns only one argument
+            # add the underscore to omogenize the input, otherwise when split('_',1) is called (it is done in another method) it returns only one argument
             for attribute in sorted(unique_attributes):
                 columns_name.add(ExtendedBoostingMatrix.__get_column_name(path, attribute))
 
@@ -280,13 +282,13 @@ class ExtendedBoostingMatrix:
             for labelled_path in selected_paths:
                 numbered_paths_found_in_graph = graph.find_labelled_path(labelled_path=labelled_path)
                 node_attributes: dict = {}
-                # TODO add column with path name + '_'
+
                 for numbered_path in numbered_paths_found_in_graph:
                     node_attributes = ExtendedBoostingMatrix.__get_node_attributes_of_nx_graph(graph=list_graphs_nx[i],
                                                                                                node_id=numbered_path[
                                                                                                    -1])
                     # add the column counting the number of time labelled path is present in the graph
-                    node_attributes[str(labelled_path) + '_' + "n_times_present"] = len(numbered_paths_found_in_graph)
+                    node_attributes["n_times_present"] = len(numbered_paths_found_in_graph)
 
                     for attr in node_attributes:
                         if attr in all_possible_attributes_from_single_graph:

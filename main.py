@@ -2,6 +2,7 @@ import functools
 import logging
 import sys
 import tracemalloc
+from datetime import datetime
 from multiprocessing.dummy import Pool as ThreadPool
 
 from classes.analysis_patternboosting import AnalysisPatternBoosting
@@ -16,6 +17,7 @@ from data import data_reader
 from data.load_dataset import load_dataset
 from data.synthetic_dataset import SyntheticDataset
 from settings import Settings
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,8 @@ if __name__ == '__main__':
 
     # Ensure that the log directory exists and initalize logger
     os.makedirs(os.path.dirname(filename), exist_ok=True)
-    logging.basicConfig(filename=filename, level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename=filename, level=logging.DEBUG,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     # Testing()
 
     logger.info("Starting the program")
