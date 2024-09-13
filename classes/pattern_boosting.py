@@ -16,6 +16,12 @@ import copy
 from typing import List, Tuple
 import numpy.typing as npt
 
+# TODO delete this four imports
+import sys
+from types import ModuleType, FunctionType
+from gc import get_referents
+import pickle
+
 # from pympler import asizeof
 
 if Settings.parallelization is True:
@@ -93,6 +99,31 @@ class PatternBoosting:
         for iteration_number in range(self.settings.maximum_number_of_steps):
             if self.settings.verbose is True:
                 print("Step number ", iteration_number + 1)
+
+            # -------------------------------------------------------------------------------------------------------
+            # TODO the following is just for debugging
+            if False:
+                print(f"{self.getsize(self.training_dataset)=}")
+                print('\n')
+                print(f"{self.getsize(self.boosting_matrix)=}")
+                print(f"{self.get_pickle_size(self.boosting_matrix)=}")
+                print('\n')
+                print(f"{self.getsize(self.boosting_matrix.get_matrix())=}")
+                print(f"{self.get_pickle_size(self.boosting_matrix.get_matrix())=}")
+                print('\n')
+                print(f"{self.getsize(self.model)=}")
+                print(f"{self.get_pickle_size(self.model)=}")
+                print('\n')
+                print(f"{self.getsize(self)=}")
+                print(f"{self.get_pickle_size(self)=}")
+                print('\n')
+                print("difference=", self.getsize(self) - (
+                            self.getsize(self.training_dataset) + self.getsize(self.boosting_matrix) + self.getsize(
+                        self.model)))
+                print('\n')
+
+            # -------------------------------------------------------------------------------------------------------
+
             # print("size of pattern boosting: ", asizeof.asizeof(self))
             # print("size of trainig dataset: ", asizeof.asizeof(self.training_dataset))
 
@@ -215,7 +246,8 @@ class PatternBoosting:
             warnings.warn("This model is not trained")
             return None
         if boosting_matrix_matrix is None:
-            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset, selected_paths=set(self.boosting_matrix.get_selected_paths()))
+            boosting_matrix_matrix = self.create_boosting_matrix_for(dataset, selected_paths=set(
+                self.boosting_matrix.get_selected_paths()))
         test_error = self.model.evaluate_progression(boosting_matrix_matrix, dataset.labels)
         return test_error
 
@@ -237,7 +269,8 @@ class PatternBoosting:
         prediction = self.model.predict_my(boosting_matrix_matrix)
         return prediction
 
-    def create_boosting_matrix_for(self, graphs_list, convert_to_boosting_matrix=False, selected_paths=None) -> np.ndarray | BoostingMatrix:
+    def create_boosting_matrix_for(self, graphs_list, convert_to_boosting_matrix=False,
+                                   selected_paths=None) -> np.ndarray | BoostingMatrix:
         '''
         :param convert_to_boosting_matrix: to decide if at the end the boosting matrices should be converted in the class BoostingMatrix
         :param graphs_list: list of graphs in dataset format or list
@@ -248,7 +281,8 @@ class PatternBoosting:
             graphs_list = graphs_list.get_graphs_list()
         boosting_matrix_matrix_rows = []
         for graph in graphs_list:
-            boosting_matrix_matrix_rows.append(self.__create_boosting_vector_for_graph(graph,selected_paths=selected_paths))
+            boosting_matrix_matrix_rows.append(
+                self.__create_boosting_vector_for_graph(graph, selected_paths=selected_paths))
 
         # old way
         # boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
@@ -329,6 +363,7 @@ class PatternBoosting:
                 selected_path_label))
             for graph_number in graphs_that_contain_selected_column_path]
 
+        # TODO unzip the list instead of the following two lines
         counts = [graph_counts for graph_paths, graph_counts in new_paths]
         paths = [graph_paths for graph_paths, graph_counts in new_paths]
         new_paths = list(set([path for graph_paths in paths for path in graph_paths]))
@@ -540,3 +575,35 @@ class PatternBoosting:
 
     def get_number_of_times_path_has_been_selected(self, path: tuple | int | None = None) -> int | npt.NDArray:
         return self.boosting_matrix.get_number_of_times_path_has_been_selected(path)
+
+    # TODO remove the method getsize
+    @staticmethod
+    def getsize(obj):
+        """sum size of object & members."""
+        BLACKLIST = type, ModuleType, FunctionType
+        if isinstance(obj, BLACKLIST):
+            raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))
+        seen_ids = set()
+        size = 0
+        objects = [obj]
+        while objects:
+            need_referents = []
+            for obj in objects:
+                if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
+                    seen_ids.add(id(obj))
+                    size += sys.getsizeof(obj)
+                    need_referents.append(obj)
+            objects = get_referents(*need_referents)
+        return size / 1000000
+
+    # TODO remove the method get_pickle_size
+
+    @staticmethod
+    def get_pickle_size(my_object):
+        # Serialize the object into a bytes object
+        serialized_object = pickle.dumps(my_object)
+
+        # Get the size of the serialized bytes object
+        size_in_bytes = len(serialized_object)
+        # convert into mb
+        return size_in_bytes / 1000000

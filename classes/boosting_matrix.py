@@ -13,7 +13,7 @@ class BoostingMatrix:
         assert isinstance(matrix, np.ndarray)
 
         self.already_selected_columns = set()
-        self.matrix = matrix
+        self.matrix = matrix.astype(int)
         self.number_of_times_column_is_selected = np.zeros(len(matrix_header), dtype=int)
         # matrix header contains the label_path for each column of the matrix
         self.header = matrix_header

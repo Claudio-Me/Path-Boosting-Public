@@ -14,9 +14,14 @@ import sys
 from multiprocessing.dummy import Pool as ThreadPool
 import functools
 
+import tracemalloc
 
 if __name__ == '__main__':
-    #Testing()
+    # Testing()
+
+    # starting the memory monitoring
+    tracemalloc.start()
+    print(tracemalloc.get_traced_memory())
 
     print("Number of CPU's: ", Settings.max_number_of_cores)
     print("Dataset name: ", Settings.dataset_name)
@@ -40,7 +45,6 @@ if __name__ == '__main__':
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(train_dataset, test_dataset)
 
-
         final_test_error = pattern_boosting.test_error[-1]
 
     print("final test error:\n", final_test_error)
@@ -60,7 +64,7 @@ if __name__ == '__main__':
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
     if Settings.wrapper_boosting is True:
-        print("Number of tained models: ",len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
+        print("Number of tained models: ", len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
@@ -70,16 +74,19 @@ if __name__ == '__main__':
             synthetic_dataset = SyntheticDataset()
         else:
             synthetic_dataset = None
-        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting,save=Settings.save_analysis, show=Settings.show_analysis)
-        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
+        if Settings.save_analysis or Settings.show_analysis:
+            analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting, save=Settings.save_analysis,
+                                                      show=Settings.show_analysis)
+            analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
 
 
     else:
-        analysis = AnalysisPatternBoosting()
-        analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
-                                                                          unique_subfolder=True),
-                                  show=Settings.show_analysis,
-                                  save=Settings.save_analysis)
+        if Settings.save_analysis or Settings.show_analysis:
+            analysis = AnalysisPatternBoosting()
+            analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
+                                                                              unique_subfolder=True),
+                                      show=Settings.show_analysis,
+                                      save=Settings.save_analysis)
 
         '''
         if Settings.dataset_name == "5k_synthetic_dataset":

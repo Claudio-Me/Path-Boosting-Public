@@ -8,36 +8,26 @@ import sys
 from numbers import Number
 from collections import deque
 from collections.abc import Set, Mapping
-import sys
-from types import ModuleType, FunctionType
-from gc import get_referents
 
-# Custom objects know their class.
-# Function objects seem to know way too much, including modules.
-# Exclude modules as well.
-BLACKLIST = type, ModuleType, FunctionType
-
-
-ZERO_DEPTH_BASES = (str, bytes, Number, range, bytearray)
 
 
 
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 200
+    maximum_number_of_steps = 17
 
     save_analysis: bool = False
     show_analysis: bool = False
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
     generate_from_binary_file = True
 
     # in the error graph Print only the last N learners
     tail = 1000
 
-    wrapper_boosting: bool = True
+    wrapper_boosting: bool = False
 
     noise_variance = 0.2
 
@@ -54,7 +44,7 @@ class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
     # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = True
+    update_features_importance_by_comparison = False
 
     verbose = True
 
@@ -218,44 +208,3 @@ class Settings:
 
 
 
-    def getsize_white_list(obj_0):
-        """Recursively iterate to sum size of object & members."""
-        _seen_ids = set()
-
-        def inner(obj):
-            obj_id = id(obj)
-            if obj_id in _seen_ids:
-                return 0
-            _seen_ids.add(obj_id)
-            size = sys.getsizeof(obj)
-            if isinstance(obj, ZERO_DEPTH_BASES):
-                pass  # bypass remaining control flow and return
-            elif isinstance(obj, (tuple, list, Set, deque)):
-                size += sum(inner(i) for i in obj)
-            elif isinstance(obj, Mapping) or hasattr(obj, 'items'):
-                size += sum(inner(k) + inner(v) for k, v in getattr(obj, 'items')())
-            # Check for custom object instances - may subclass above too
-            if hasattr(obj, '__dict__'):
-                size += inner(vars(obj))
-            if hasattr(obj, '__slots__'):  # can have __slots__ with __dict__
-                size += sum(inner(getattr(obj, s)) for s in obj.__slots__ if hasattr(obj, s))
-            return size
-
-        return inner(obj_0)
-
-    def getsize_black_list(obj):
-        """sum size of object & members."""
-        if isinstance(obj, BLACKLIST):
-            raise TypeError('getsize() does not take argument of type: ' + str(type(obj)))
-        seen_ids = set()
-        size = 0
-        objects = [obj]
-        while objects:
-            need_referents = []
-            for obj in objects:
-                if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
-                    seen_ids.add(id(obj))
-                    size += sys.getsizeof(obj)
-                    need_referents.append(obj)
-            objects = get_referents(*need_referents)
-        return size

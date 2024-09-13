@@ -39,7 +39,8 @@ class ExtendedBoostingMatrix:
             unique_attributes.remove('node_position')
         if 'node_label' in unique_attributes:
             unique_attributes.remove('node_label')
-
+        # add "n_times_present", it refers to the attribute "(path)_times_present"
+        unique_attributes.update('n_times_present')
         return unique_attributes
 
     @staticmethod
@@ -53,10 +54,12 @@ class ExtendedBoostingMatrix:
     @staticmethod
     def __get_all_possible_node_attributes_in_the_dataset(dataset: list[nx.classes.multigraph.MultiGraph],
                                                           selected_paths: list[tuple]) -> list[str]:
+        # it returns all the possible combination between path and attributes
         unique_attributes = ExtendedBoostingMatrix.__get_all_possible_attributes(dataset)
 
         columns_name = set()
         for path in selected_paths:
+            # add the underscore to omegenize the input, otherwise when split('_',1) is called (it is done in another method) it returns only one argument
             for attribute in sorted(unique_attributes):
                 columns_name.add(ExtendedBoostingMatrix.__get_column_name(path, attribute))
 
@@ -222,22 +225,31 @@ class ExtendedBoostingMatrix:
 
     @staticmethod
     def create_boosting_matrix(selected_paths: list[tuple],
-                               list_graphs_nx: list[nx.classes.multigraph.MultiGraph]) -> pd.DataFrame:
+                               list_graphs_nx: list[nx.classes.multigraph.MultiGraph],
+                               ebm_dataframe: pd.DataFrame = None) -> pd.DataFrame:
         # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
         assert isinstance(selected_paths, list)
 
-        # function to help the retrival of attributes in nx graphs
-        graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in list_graphs_nx]
-        dictionary_for_dataframe = defaultdict(list)
-        column_names = []
-        for path in selected_paths:
-            column_names.append(path)
-            for graph in graphsPB_list:
-                dictionary_for_dataframe[path].append(graph.number_of_time_path_is_present_in_graph(path_label=path))
+        if ebm_dataframe is not None:
+            column_names = [str(path) + '_' + "n_times_present" for path in selected_paths]
+            boosting_matrix_df = ebm_dataframe[column_names]
+            boosting_matrix_df.columns = selected_paths
+            return boosting_matrix_df
 
-        boosting_matrix_df = pd.DataFrame(dictionary_for_dataframe)
-        boosting_matrix_df.columns = column_names
-        return boosting_matrix_df
+
+        else:
+            # function to help the retrival of attributes in nx graphs
+            graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in list_graphs_nx]
+            dictionary_for_dataframe = defaultdict(list)
+
+            for path in selected_paths:
+                for graph in graphsPB_list:
+                    dictionary_for_dataframe[path].append(
+                        graph.number_of_time_path_is_present_in_graph(path_label=path))
+
+            boosting_matrix_df = pd.DataFrame(dictionary_for_dataframe, dtype='int')
+            boosting_matrix_df.columns = selected_paths
+            return boosting_matrix_df
 
     @staticmethod
     def create_extend_boosting_matrix_for(selected_paths: list[tuple],
@@ -254,7 +266,6 @@ class ExtendedBoostingMatrix:
             list_graphs_nx,
             selected_paths)
         all_possible_columns_name.append("target")
-        df = pd.DataFrame(columns=all_possible_columns_name)
 
         all_possible_attributes_from_single_graph: set[str] = ExtendedBoostingMatrix.__get_all_possible_attributes(
             list_graphs_nx)
@@ -269,11 +280,13 @@ class ExtendedBoostingMatrix:
             for labelled_path in selected_paths:
                 numbered_paths_found_in_graph = graph.find_labelled_path(labelled_path=labelled_path)
                 node_attributes: dict = {}
-
+                # TODO add column with path name + '_'
                 for numbered_path in numbered_paths_found_in_graph:
                     node_attributes = ExtendedBoostingMatrix.__get_node_attributes_of_nx_graph(graph=list_graphs_nx[i],
                                                                                                node_id=numbered_path[
                                                                                                    -1])
+                    # add the column counting the number of time labelled path is present in the graph
+                    node_attributes[str(labelled_path) + '_' + "n_times_present"] = len(numbered_paths_found_in_graph)
 
                     for attr in node_attributes:
                         if attr in all_possible_attributes_from_single_graph:
@@ -293,6 +306,7 @@ class ExtendedBoostingMatrix:
             list_rows.append(complete_attributes)
         extended_boosting_matrix_df: pd.DataFrame = pd.DataFrame(list_rows)
 
+        # some columns might be selected by the previous run in pattern boosting but not found in the new dataset
         missed_columns = list(set(all_possible_columns_name) - set(extended_boosting_matrix_df.columns))
         add_dataset = pd.DataFrame(np.nan, index=np.arange(extended_boosting_matrix_df.shape[0]),
                                    columns=missed_columns)

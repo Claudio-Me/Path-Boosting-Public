@@ -511,6 +511,7 @@ class WrapperPatternBoosting:
         return list(set(paths))
 
     def get_boosting_matrix_header(self) -> list:
+        # it returns the list of selected paths
         paths_in_header = set()
         for model in self.get_trained_pattern_boosting_models():
             model_paths = model.get_selected_paths_in_boosting_matrix()

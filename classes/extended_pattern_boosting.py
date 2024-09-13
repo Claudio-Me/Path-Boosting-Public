@@ -85,6 +85,7 @@ class ExtendedPatternBoosting:
         evallist = [(x_df_train, y_train), (x_df_test, y_test)]
 
         for n_iteration in range(self.settings.n_estimators):
+            print("Iteration ", n_iteration + 1)
 
             if n_iteration == 0:
                 best_path = self.__find_best_path(self.train_bm_df, y_train)
@@ -92,12 +93,12 @@ class ExtendedPatternBoosting:
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
                 xgb_model = xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
+                # xgb_model.get_booster().get_score(importance_type='weight')
+                # xgb_model.get_booster().get_dump()
 
             else:
                 # evals_results=xgb_model.eval_result()
                 # last_training_error=evals_results['validation_0'][self.settings.main_xgb_parameters['eval_metric']][-1]
-
-
 
                 predictions = xgb_model.predict(x_df_train)
                 negative_gradient = self.neg_gradient(y=y_train.to_numpy(), y_hat=np.array(predictions))
@@ -109,13 +110,22 @@ class ExtendedPatternBoosting:
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
 
                 self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
-                new_xgb_model = xgb.XGBRegressor(**self.settings.main_xgb_parameters)
 
                 xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist, xgb_model=xgb_model)
-                if self.settings.show_tree is True:
+                # TODO delete this if statement
+                if len(xgb_model.get_booster().get_score(importance_type='weight')) < 1:
+                    print("sum of all the entries in the zeroed dataframe")
+                    total = zeroed_x_df.sum().sum()
 
-                    print(xgb_model.get_booster().get_dump())
-                    xgb.plot_tree(xgb_model)
+                    print(total)
+
+                    print("best path, but the matrix does not split on")
+                    print(best_path)
+                # xgb_model.get_booster().get_score(importance_type='weight')
+                # xgb_model.get_booster().get_dump()
+                if self.settings.show_tree is True:
+                    print(xgb_model.get_booster().get_dump()[-1])
+                    xgb.plot_tree(xgb_model, num_trees=n_iteration)
                     plt.show()
         if self.settings.plot_analysis is True:
             ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=x_df_test, y_test=y_test)
@@ -133,26 +143,21 @@ class ExtendedPatternBoosting:
 
         # x_df.columns = ExtendedPatternBoosting.__tuples_to_strings(x_df.columns)
 
-
         # -------------------------------------------------------------------
         # delete me
-        #print(f"{y_target.head()=}")
+        # print(f"{y_target.head()=}")
         # -------------------------------------------------------------------
 
         choose_column_xgb_parameters = SettingsExtendedPatternBoosting().choose_column_xgb_parameters
         xgb_local_model = xgb.XGBRegressor(**choose_column_xgb_parameters)
 
+        # y_target = pd.Series(np.random.randint(0, 9, y_target.shape))
 
-        #y_target = pd.Series(np.random.randint(0, 9, y_target.shape))
-
-
-        #x_df=pd.DataFrame(np.random.randint(0, 9, x_df.shape))
+        # x_df=pd.DataFrame(np.random.randint(0, 9, x_df.shape))
 
         xgb_local_model = xgb_local_model.fit(X=x_df, y=y_target)
         # xgb_local_model.get_booster().get_score(importance_type='weight')
         # xgb_local_model.get_booster().get_dump()
-
-
 
         if SettingsExtendedPatternBoosting().show_tree is True:
             xgb.plot_tree(xgb_local_model)
@@ -160,23 +165,16 @@ class ExtendedPatternBoosting:
 
         selected_columns = np.argsort(xgb_local_model.feature_importances_)
 
-
-
-
         # xgb_local_model.get_booster().get_score(importance_type='gain')
 
         # alternative way to select best column using sklearn
-        #selector=SelectFromModel(xgb_local_model,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
-        #best_path=selector.get_feature_names_out(x_df.columns)[0]
-
+        # selector=SelectFromModel(xgb_local_model,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
+        # best_path=selector.get_feature_names_out(x_df.columns)[0]
 
         selected_columns = selected_columns[-1]
 
         best_path = x_df.columns[selected_columns]
         del xgb_local_model
-
-
-
 
         return best_path
 
@@ -214,11 +212,12 @@ class ExtendedPatternBoosting:
             self.dict_of_interaction_constraints = dict_of_interaction_constraints
 
         if train_boosting_matrix is not None:
-            self.train_bm_df = pd.DataFrame(train_boosting_matrix)
+            self.train_bm_df = pd.DataFrame(train_boosting_matrix, dtype='int')
             self.train_bm_df.columns = self.selected_paths
         elif isinstance(train_data, list):
             self.train_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
-                                                                             list_graphs_nx=train_data)
+                                                                             list_graphs_nx=train_data,
+                                                                             ebm_dataframe=self.train_ebm_dataframe)
         else:
             raise Exception(
                 "impossible to create boosting matrix for train data, provide boosting matrix or list of graph")
@@ -242,11 +241,12 @@ class ExtendedPatternBoosting:
             raise TypeError("test_data type unrecognized", test_data)
 
         if test_boosting_matrix is not None:
-            self.test_bm_df = pd.DataFrame(test_boosting_matrix)
+            self.test_bm_df = pd.DataFrame(test_boosting_matrix, dtype='int')
             self.test_bm_df.columns = self.selected_paths
         elif isinstance(test_data, list):
             self.test_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
-                                                                             list_graphs_nx=test_data)
+                                                                            list_graphs_nx=test_data,
+                                                                            ebm_dataframe=self.test_ebm_dataframe)
         else:
             raise Exception(
                 "impossible to create boosting matrix for test data, provide boosting matrix or list of graph")
