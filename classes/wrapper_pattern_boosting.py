@@ -1,27 +1,34 @@
 # Takes as input a lyst of parrent boosting models and "merge" them into one
 import copy
+import functools
+import logging
+import multiprocessing as mp
+import tracemalloc
 import warnings
+from collections import defaultdict
+from multiprocessing.dummy import Pool as ThreadPool
+from typing import Iterable, List, Optional, Sequence, Tuple
 
-from settings import Settings
+import numpy as np
+import pandas as pd
+from sklearn import metrics
+
+from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
 from classes.graph import GraphPB
-from classes.boosting_matrix import BoostingMatrix
-from data.load_dataset import split_dataset_by_metal_centers
 from classes.pattern_boosting import PatternBoosting
-from multiprocessing.dummy import Pool as ThreadPool
-import functools
-import numpy as np
-from sklearn import metrics
-from typing import List, Tuple, Optional, Sequence, Iterable
-import pandas as pd
-from collections import defaultdict
-import multiprocessing as mp
+from data.load_dataset import split_dataset_by_metal_centers
+from settings import Settings
 
+logger = logging.getLogger(__name__)
 
 def predict_test_dataset_graph(args):
     graph, pattern_boosting_models_list = args
     prediction = 0
     counter = 0
+
+    logger.info(f"Predicting graph {graph}")
+    logger.debug(f"Memory at the beginning of the prediction: {tracemalloc.get_traced_memory()}")
 
     for model in pattern_boosting_models_list:
         try:

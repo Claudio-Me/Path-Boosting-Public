@@ -1,27 +1,40 @@
-from classes.testing.testing import Testing
-from classes.pattern_boosting import PatternBoosting
-from data import data_reader
-from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoosting
-from settings import Settings
+import functools
+import logging
+import sys
+import tracemalloc
+from multiprocessing.dummy import Pool as ThreadPool
 
-from data.synthetic_dataset import SyntheticDataset
 from classes.analysis_patternboosting import AnalysisPatternBoosting
-from data.load_dataset import load_dataset
-from classes.wrapper_pattern_boosting import WrapperPatternBoosting
+from classes.analysis_wrapper_pattern_boosting import \
+    AnalysisWrapperPatternBoosting
 # from pympler import asizeof
 from classes.graph import GraphPB
-import sys
-from multiprocessing.dummy import Pool as ThreadPool
-import functools
+from classes.pattern_boosting import PatternBoosting
+from classes.testing.testing import Testing
+from classes.wrapper_pattern_boosting import WrapperPatternBoosting
+from data import data_reader
+from data.load_dataset import load_dataset
+from data.synthetic_dataset import SyntheticDataset
+from settings import Settings
 
-import tracemalloc
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
+    now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"logs/log_{now}.log"
+
+    # Ensure that the log directory exists and initalize logger
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    logging.basicConfig(filename=filename, level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     # Testing()
+
+    logger.info("Starting the program")
 
     # starting the memory monitoring
     tracemalloc.start()
     print(tracemalloc.get_traced_memory())
+
+    logger.info("Number of CPU's: ", Settings.max_number_of_cores)
 
     print("Number of CPU's: ", Settings.max_number_of_cores)
     print("Dataset name: ", Settings.dataset_name)
