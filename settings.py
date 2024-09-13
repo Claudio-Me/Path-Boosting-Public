@@ -19,19 +19,19 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 17
+    maximum_number_of_steps = 150
 
     save_analysis: bool = False
     show_analysis: bool = False
 
-    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
     generate_from_binary_file = True
 
     # in the error graph Print only the last N learners
     tail = 1000
 
-    wrapper_boosting: bool = False
+    wrapper_boosting: bool = True
 
     noise_variance = 0.2
 
@@ -44,6 +44,8 @@ class Settings:
     scenario = 3
 
     target_train_error = 0.0000001
+
+    plot_log_info: bool = True
 
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -211,7 +213,13 @@ class Settings:
                     print(f"{attr}: {value}")
 
 
-
+    @staticmethod
+    def log_principal_settings_values(logger):
+        logger.info("Settings Principal Values:")
+        for attr, value in vars(Settings).items():
+            if not attr.startswith('__') and not callable(value):
+                if not isinstance(value, list):
+                    logger.info(f"{attr}: {value}")
 
 
     # TODO remove the method getsize

@@ -1,9 +1,9 @@
 # Takes as input a lyst of parrent boosting models and "merge" them into one
 import copy
 import functools
-import logging
+
 import multiprocessing as mp
-import tracemalloc
+
 import warnings
 from collections import defaultdict
 from multiprocessing.dummy import Pool as ThreadPool
@@ -20,15 +20,19 @@ from classes.pattern_boosting import PatternBoosting
 from data.load_dataset import split_dataset_by_metal_centers
 from settings import Settings
 
-logger = logging.getLogger(__name__)
+# TODO remove logging info
+if Settings.plot_log_info is True:
+    import logging
+    import tracemalloc
+
+    logger = logging.getLogger(__name__)
+
 
 def predict_test_dataset_graph(args):
     graph, pattern_boosting_models_list = args
     prediction = 0
     counter = 0
 
-    logger.info(f"Predicting graph {graph}")
-    logger.debug(f"Memory at the beginning of the prediction: {tracemalloc.get_traced_memory()}")
 
     for model in pattern_boosting_models_list:
         try:
@@ -72,6 +76,13 @@ class WrapperPatternBoosting:
         self.trained = False
 
     def train(self, train_dataset, test_dataset=None):
+        # ----------------------------------------------------------------------------------------------------------
+        # TODO remove memory tracer
+        # TODO remove memory tracer
+        if Settings.plot_log_info is True:
+            traced_memory=[memory_value/1000000 for memory_value in tracemalloc.get_traced_memory()]
+            logger.debug(f"Memory at the beginning of the prediction: {traced_memory}")
+        # ----------------------------------------------------------------------------------------------------------
 
         if self.trained is False:
 
@@ -105,6 +116,13 @@ class WrapperPatternBoosting:
         global_labels_variance = np.var(global_labels)
         global_labels_variance = np.repeat(global_labels_variance, len(train_datasets_list))
 
+        # ----------------------------------------------------------------------------------------------------------
+        # TODO remove memory tracer
+        if Settings.plot_log_info is True:
+            traced_memory=[memory_value/1000000 for memory_value in tracemalloc.get_traced_memory()]
+            logger.debug(f"Memory at the beginning of the parallelization: {traced_memory}")
+        # ----------------------------------------------------------------------------------------------------------
+
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
@@ -113,6 +131,15 @@ class WrapperPatternBoosting:
         array_of_outputs = pool.map(
             functools.partial(self.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
+
+        # ----------------------------------------------------------------------------------------------------------
+        # TODO remove memory tracer
+        if Settings.plot_log_info is True:
+            traced_memory=[memory_value/1000000 for memory_value in tracemalloc.get_traced_memory()]
+            logger.debug(f"Memory at the end of parallelization of the prediction: {traced_memory}")
+        # ----------------------------------------------------------------------------------------------------------
+
+
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             if test_dataset is not None:
                 self.test_error = self.get_wrapper_test_error()

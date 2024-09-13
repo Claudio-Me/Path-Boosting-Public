@@ -8,6 +8,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 from classes.analysis_patternboosting import AnalysisPatternBoosting
 from classes.analysis_wrapper_pattern_boosting import \
     AnalysisWrapperPatternBoosting
+from classes.dataset import Dataset
 # from pympler import asizeof
 from classes.graph import GraphPB
 from classes.pattern_boosting import PatternBoosting
@@ -25,24 +26,44 @@ if __name__ == '__main__':
     now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"logs/log_{now}.log"
 
-    # Ensure that the log directory exists and initalize logger
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    logging.basicConfig(filename=filename, level=logging.DEBUG,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    # Testing()
 
-    logger.info("Starting the program")
 
-    # starting the memory monitoring
-    tracemalloc.start()
-    print(tracemalloc.get_traced_memory())
-
-    logger.info("Number of CPU's: ", Settings.max_number_of_cores)
 
     print("Number of CPU's: ", Settings.max_number_of_cores)
     print("Dataset name: ", Settings.dataset_name)
 
     dataset = load_dataset()
+
+    # ----------------------------------------------------------------------------------------------------------
+    # TODO remove the following line, we are just duplicating the dataset
+    # TODO remove memory tracer
+
+    if Settings.plot_log_info is True:
+        # Ensure that the log directory exists and initalize logger
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        logging.basicConfig(filename=filename, level=logging.DEBUG,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # Testing()
+
+        logger.info("Starting the program")
+
+        # starting the memory monitoring
+        tracemalloc.start()
+        print(tracemalloc.get_traced_memory())
+
+        Settings.log_principal_settings_values(logger=logger)
+
+
+    graph_list = dataset.get_graphs_list()
+    new_graph_list = []
+    for i in range():
+        new_graph_list= new_graph_list + graph_list
+
+    dataset = Dataset(new_graph_list)
+    logger.info("number of observations: "+ str(len(new_graph_list)) )
+    # ----------------------------------------------------------------------------------------------------------
+
+
 
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)

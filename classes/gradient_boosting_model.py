@@ -60,10 +60,15 @@ class GradientBoostingModel:
         if self.model is not ModelType.xgb_one_step:
             raise ValueError("predict_progression only works with 'Xgb_step' algorithm")
         else:
-
+            """
             predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
+            """
+            predictions = []
+            for xgb_model, matrix_dimension in zip(self.base_learners_list, self.base_learners_dimension):
+                predictions.append(xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]))
+            predictions=np.array(predictions)
             return predictions.cumsum(axis=0)
 
     def evaluate_progression(self, boosting_matrix_matrix, labels) -> list[float]:
@@ -210,7 +215,7 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             if len(self.base_learners_list) == 0:
                 # if it is the first time we launch the model
-                #xgb_model = self.__create_xgb_model(base_score=None)
+                # xgb_model = self.__create_xgb_model(base_score=None)
                 xgb_model = self.__create_xgb_model(base_score=np.mean(labels))
 
                 eval_set = [(boosting_matrix, labels)]
@@ -289,7 +294,6 @@ class GradientBoostingModel:
         # create a Xgb model
         param = Settings.xgb_model_parameters
         if estimation_type is EstimationType.regression:
-
 
             return XGBRegressor(**Settings.xgb_model_parameters,
                                 base_score=base_score)
