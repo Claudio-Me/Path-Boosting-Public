@@ -54,13 +54,7 @@ if __name__ == '__main__':
         Settings.log_principal_settings_values(logger=logger)
 
 
-    graph_list = dataset.get_graphs_list()
-    new_graph_list = []
-    for i in range():
-        new_graph_list= new_graph_list + graph_list
 
-    dataset = Dataset(new_graph_list)
-    logger.info("number of observations: "+ str(len(new_graph_list)) )
     # ----------------------------------------------------------------------------------------------------------
 
 

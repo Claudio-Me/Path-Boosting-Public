@@ -47,10 +47,16 @@ class GradientBoostingModel:
             return predictions_vector
 
         elif self.model is ModelType.xgb_one_step:
-
+            """
             predictions = np.array([xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]) for
                                     xgb_model, matrix_dimension in
                                     zip(self.base_learners_list, self.base_learners_dimension)])
+            """
+            predictions = []
+            for xgb_model, matrix_dimension in zip(self.base_learners_list, self.base_learners_dimension):
+                predictions.append(xgb_model.predict(boosting_matrix_matrix[:, 0:matrix_dimension]))
+            predictions=np.array(predictions)
+
             return predictions.sum(axis=0)
 
     def predict_progression(self, boosting_matrix_matrix: np.ndarray):

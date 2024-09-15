@@ -5,12 +5,12 @@ class SettingsExtendedPatternBoosting:
     def __init__(self):
         self.plot_analysis = True
         self.n_estimators = 150
-        self.show_tree: bool = False
-        self.xgb_verbose: bool = False
+        self.show_tree: bool = True
+        self.xgb_verbose: bool = True
 
 
         self.main_xgb_parameters = {'n_estimators': 1,
-                                    'max_depth': 3,
+                                    'max_depth': 2,
                                     'learning_rate': 0.1,
                                     "eval_metric": "rmse",
                                     "objective": 'reg:squarederror',

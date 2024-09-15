@@ -259,21 +259,11 @@ class PatternBoosting:
 
             if self.settings.verbose is True:
                 print("predicting test dataset final error")
-            self.test_dataset_final_predictions = self.predict(self.test_dataset,
-                                                               self.boosting_matrix_matrix_for_test_dataset)
-
-            # ----------------------------------------------------------------------------------------------------------
-            # TODO remove memory tracer
-            if Settings.plot_log_info is True:
-                    traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
-                    metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
-                    logger.debug(
-                        f"starting evolution test error {metal_center}: {traced_memory}")
-            # ----------------------------------------------------------------------------------------------------------
 
             if self.settings.verbose is True:
                 print("evaluate progression")
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
+            self.test_dataset_final_predictions = self.test_error[-1]
 
 
             # ----------------------------------------------------------------------------------------------------------

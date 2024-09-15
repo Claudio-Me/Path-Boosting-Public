@@ -42,6 +42,7 @@ class ExtendedPatternBoosting:
         self.train_bm_df: pd.DataFrame | None = None
         self.test_bm_df: pd.DataFrame | None = None
         self.settings: SettingsExtendedPatternBoosting | None = None
+        self.paths_selected_by_epb=[]
 
         self.initialize_expanded_pattern_boosting(selected_paths=selected_paths,
                                                   train_data=train_data,
@@ -109,11 +110,11 @@ class ExtendedPatternBoosting:
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
 
-                self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
+                #self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
 
                 xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist, xgb_model=xgb_model)
                 # TODO delete this if statement
-                if len(xgb_model.get_booster().get_score(importance_type='weight')) < 1:
+            if len(xgb_model.get_booster().get_score(importance_type='weight')) < 1:
                     print("sum of all the entries in the zeroed dataframe")
                     total = zeroed_x_df.sum().sum()
 
@@ -123,10 +124,11 @@ class ExtendedPatternBoosting:
                     print(best_path)
                 # xgb_model.get_booster().get_score(importance_type='weight')
                 # xgb_model.get_booster().get_dump()
-                if self.settings.show_tree is True:
+            if self.settings.show_tree is True:
                     print(xgb_model.get_booster().get_dump()[-1])
                     xgb.plot_tree(xgb_model, num_trees=n_iteration)
                     plt.show()
+            self.paths_selected_by_epb.append(best_path)
         if self.settings.plot_analysis is True:
             ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=x_df_test, y_test=y_test)
 
@@ -168,8 +170,9 @@ class ExtendedPatternBoosting:
         # xgb_local_model.get_booster().get_score(importance_type='gain')
 
         # alternative way to select best column using sklearn
-        # selector=SelectFromModel(xgb_local_model,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
-        # best_path=selector.get_feature_names_out(x_df.columns)[0]
+        #xgb_local_model_tmp = xgb.XGBRegressor(**choose_column_xgb_parameters)
+        #selector=SelectFromModel(xgb_local_model_tmp,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
+        #best_path_tmp=selector.get_feature_names_out(x_df.columns)[0]
 
         selected_columns = selected_columns[-1]
 
@@ -251,8 +254,8 @@ class ExtendedPatternBoosting:
             raise Exception(
                 "impossible to create boosting matrix for test data, provide boosting matrix or list of graph")
 
-    @staticmethod
-    def training_results(bst, X_test, y_test):
+
+    def training_results(self,bst, X_test, y_test):
 
         predictions = bst.predict(X_test)
 
@@ -276,6 +279,7 @@ class ExtendedPatternBoosting:
         print("Mean Absolute Error:", mae)
         print("R-Squared:", r2)
         print("My R-Squared:", my_r2)
+        print(f"{self.paths_selected_by_epb.append=}")
 
         # Plotting the feature importance
         # xgb.plot_importance(bst)
