@@ -35,7 +35,7 @@ if __name__ == '__main__':
     dataset = load_dataset()
 
     # ----------------------------------------------------------------------------------------------------------
-    # TODO remove the following line, we are just duplicating the dataset
+
     # TODO remove memory tracer
 
     if Settings.plot_log_info is True:
@@ -62,14 +62,16 @@ if __name__ == '__main__':
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                       random_split_seed=Settings.random_split_test_dataset_seed)
 
+
+
     # wrapper pattern boosting:
     if Settings.wrapper_boosting is True:
         wrapper_pattern_boosting = WrapperPatternBoosting()
         wrapper_pattern_boosting.train(train_dataset, test_dataset)
 
-        final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
-        print("len final test error", len(final_test_error))
-        final_test_error = final_test_error[-1]
+        #final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
+        #print("len final test error", len(final_test_error))
+        #final_test_error = final_test_error[-1]
 
     else:
         # pattern boosting
@@ -78,7 +80,7 @@ if __name__ == '__main__':
 
         final_test_error = pattern_boosting.test_error[-1]
 
-    print("final test error:\n", final_test_error)
+    #print("final test error:\n", final_test_error)
 
     saving_location = data_reader.get_save_location(file_name="final_test_error", file_extension=".txt",
                                                     folder_relative_path='results', unique_subfolder=True)
@@ -86,6 +88,7 @@ if __name__ == '__main__':
     print("Saving location:")
     print(saving_location)
 
+    ''' 
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:
         sys.stdout = f  # Change the standard output to the file we created.
@@ -93,6 +96,7 @@ if __name__ == '__main__':
         string += str(final_test_error) + '\n'
         print(string)
         sys.stdout = original_stdout  # Reset the standard output to its original value
+    '''
 
     if Settings.wrapper_boosting is True:
         print("Number of tained models: ", len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))

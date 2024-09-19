@@ -11,6 +11,7 @@ from typing import Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
+from typing import Self
 from sklearn import metrics
 
 from classes.boosting_matrix import BoostingMatrix
@@ -32,7 +33,6 @@ def predict_test_dataset_graph(args):
     graph, pattern_boosting_models_list = args
     prediction = 0
     counter = 0
-
 
     for model in pattern_boosting_models_list:
         try:
@@ -80,7 +80,7 @@ class WrapperPatternBoosting:
         # TODO remove memory tracer
         # TODO remove memory tracer
         if Settings.plot_log_info is True:
-            traced_memory=[memory_value/1000000 for memory_value in tracemalloc.get_traced_memory()]
+            traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the beginning of the prediction: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
 
@@ -119,26 +119,27 @@ class WrapperPatternBoosting:
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
         if Settings.plot_log_info is True:
-            traced_memory=[memory_value/1000000 for memory_value in tracemalloc.get_traced_memory()]
+            traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the beginning of the parallelization: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
 
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
-        input_for_parallelization = list[zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
-                                        global_labels_variance)]
+        input_for_parallelization = list(zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
+                                             global_labels_variance))
+        print(f"{len(input_for_parallelization)}")
         pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization[:10])
+            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization[47:68])
+
         # -------------------------------------------------------------------------------------------------------------
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
         if Settings.plot_log_info is True:
-            traced_memory=[memory_value/1000000 for memory_value in tracemalloc.get_traced_memory()]
+            traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the end of parallelization of the prediction: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
-
 
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             if test_dataset is not None:
@@ -601,6 +602,11 @@ class WrapperPatternBoosting:
 
         return output_list
 
-
+    def merge_models(self, wrapper_boosting_models_list: list[Self]):
+        # we assume this is a trained wrapped boosting model but with no real training on the pattern boosting models. so we take the pattern boosting models from others wrapper pattern boosting, the challange is to insert the pattern boosting models in the right order.
+        for wrapper_model in wrapper_boosting_models_list:
+            for i , pattern_boosting_model in enumerate(wrapper_model.get_pattern_boosting_models()):
+                if pattern_boosting_model.trained is True:
+                    self.pattern_boosting_models_list[i] = pattern_boosting_model
 
 
