@@ -9,6 +9,11 @@ from classes.extended_boosting_matrix import ExtendedBoostingMatrix
 from classes.boosting_matrix import BoostingMatrix
 import networkx as nx
 
+from classes.models_for_extendded_path_boosting.xgb_model_for_extended_path_boosting import \
+    XgbModelForExtendedPathBoosting
+
+from classes.models_for_extendded_path_boosting.addititive_xgb_for_externded_path_bosting import \
+    AdditiveXgbForExtendedPathBosting
 from settings import Settings
 from settings_for_extended_pattern_boosting import SettingsExtendedPatternBoosting
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -29,7 +34,8 @@ class ExtendedPatternBoosting:
                  selected_paths: list[tuple[int]] | None = None,
                  settings: SettingsExtendedPatternBoosting | None = None,
                  train_boosting_matrix: np.array = None,
-                 test_boosting_matrix: np.array = None):
+                 test_boosting_matrix: np.array = None,
+                 name_model:str = "xgboost"):
 
         # to be able to call ExtendedPatternBoosting methods inside the __init__ method
         super().__init__()
@@ -42,9 +48,13 @@ class ExtendedPatternBoosting:
         self.train_bm_df: pd.DataFrame | None = None
         self.test_bm_df: pd.DataFrame | None = None
         self.settings: SettingsExtendedPatternBoosting | None = None
-        self.paths_selected_by_epb=[]
+        self.paths_selected_by_epb = []
+        self.model: XgbModelForExtendedPathBoosting | AdditiveXgbForExtendedPathBosting | None = None
+        self.train_error = []
+        self.test_error = []
 
-        self.initialize_expanded_pattern_boosting(selected_paths=selected_paths,
+        self.initialize_expanded_pattern_boosting(name_model= name_model,
+                                                  selected_paths=selected_paths,
                                                   train_data=train_data,
                                                   dict_of_interaction_constraints=dict_of_interaction_constraints,
                                                   test_data=test_data,
@@ -57,7 +67,8 @@ class ExtendedPatternBoosting:
               selected_paths: list[tuple[int]] | None = None,
               settings: SettingsExtendedPatternBoosting | None = None,
               train_boosting_matrix: np.array = None,
-              test_boosting_matrix: np.array = None):
+              test_boosting_matrix: np.array = None,
+              name_model: str = "xgboost"):
 
         assert isinstance(train_data, pd.DataFrame) or train_data is None
         assert isinstance(dict_of_interaction_constraints, dict) or dict_of_interaction_constraints is None
@@ -66,7 +77,9 @@ class ExtendedPatternBoosting:
             raise ValueError("dict_of_interaction_constraints should both be given in input, got ",
                              dict_of_interaction_constraints)
 
-        self.initialize_expanded_pattern_boosting(selected_paths=selected_paths,
+        self.initialize_expanded_pattern_boosting(name_model= name_model,
+                                                  selected_paths=selected_paths,
+
                                                   train_data=train_data,
                                                   dict_of_interaction_constraints=dict_of_interaction_constraints,
                                                   test_data=test_data,
@@ -80,10 +93,11 @@ class ExtendedPatternBoosting:
         self.settings.main_xgb_parameters['n_estimators'] = 1
 
         x_df_train, y_train = self.split_target_from_dataframe(self.train_ebm_dataframe)
-        x_df_test, y_test = self.split_target_from_dataframe(self.test_ebm_dataframe)
-
-        xgb_model = xgb.XGBRegressor(**self.settings.main_xgb_parameters)
-        evallist = [(x_df_train, y_train), (x_df_test, y_test)]
+        if self.test_ebm_dataframe is not None:
+            x_df_test, y_test = self.split_target_from_dataframe(self.test_ebm_dataframe)
+            evallist = [(x_df_train, y_train), (x_df_test, y_test)]
+        else:
+            evallist = [(x_df_train, y_train)]
 
         for n_iteration in range(self.settings.n_estimators):
             print("Iteration ", n_iteration + 1)
@@ -93,15 +107,17 @@ class ExtendedPatternBoosting:
                 zeroed_x_df, zeroed_y = ExtendedBoostingMatrix.zero_all_elements_except_the_ones_referring_to_path(
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
-                xgb_model = xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
-                # xgb_model.get_booster().get_score(importance_type='weight')
-                # xgb_model.get_booster().get_dump()
+                self.model = self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
+
+
+                # self.xgb_model.get_booster().get_score(importance_type='weight')
+                # self.xgb_model.get_booster().get_dump()
 
             else:
-                # evals_results=xgb_model.eval_result()
+                # evals_results=self.xgb_model.eval_result()
                 # last_training_error=evals_results['validation_0'][self.settings.main_xgb_parameters['eval_metric']][-1]
 
-                predictions = xgb_model.predict(x_df_train)
+                predictions = self.model.predict(x_df_train)
                 negative_gradient = self.neg_gradient(y=y_train.to_numpy(), y_hat=np.array(predictions))
 
                 best_path = self.__find_best_path(self.train_bm_df, pd.Series(negative_gradient))
@@ -110,27 +126,27 @@ class ExtendedPatternBoosting:
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
 
-                #self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
+                # self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
+                y_zero_hat = self.model.predict(zeroed_x_df)
+                negative_gradient_for_zeroed_matrix = pd.Series(negative_gradient).loc[zeroed_y.index]
+                new_target = y_zero_hat + negative_gradient_for_zeroed_matrix
+                #self.model.fit(X=zeroed_x_df, y=new_target, eval_set=evallist)
+                self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
+                # save train and test error to a list to have its evolution
 
-                xgb_model.fit(zeroed_x_df, zeroed_y, eval_set=evallist, xgb_model=xgb_model)
-                # TODO delete this if statement
-            if len(xgb_model.get_booster().get_score(importance_type='weight')) < 1:
-                    print("sum of all the entries in the zeroed dataframe")
-                    total = zeroed_x_df.sum().sum()
 
-                    print(total)
 
-                    print("best path, but the matrix does not split on")
-                    print(best_path)
-                # xgb_model.get_booster().get_score(importance_type='weight')
-                # xgb_model.get_booster().get_dump()
+            print("best path")
+            print(best_path)
+            # self.xgb_model.get_booster().get_score(importance_type='weight')
+            # self.xgb_model.get_booster().get_dump()
             if self.settings.show_tree is True:
-                    print(xgb_model.get_booster().get_dump()[-1])
-                    xgb.plot_tree(xgb_model, num_trees=n_iteration)
-                    plt.show()
+                print(self.model.get_booster().get_dump()[-1])
+                xgb.plot_tree(self.model, num_trees=n_iteration)
+                plt.show()
             self.paths_selected_by_epb.append(best_path)
-        if self.settings.plot_analysis is True:
-            ExtendedPatternBoosting.training_results(bst=xgb_model, X_test=x_df_test, y_test=y_test)
+        if self.settings.plot_analysis is True and self.test_ebm_dataframe is not None:
+            self.__training_results(X_test=x_df_test, y_test=y_test)
 
     @staticmethod
     def split_target_from_dataframe(df: pd.DataFrame) -> (pd.DataFrame, pd.Series):
@@ -170,9 +186,9 @@ class ExtendedPatternBoosting:
         # xgb_local_model.get_booster().get_score(importance_type='gain')
 
         # alternative way to select best column using sklearn
-        #xgb_local_model_tmp = xgb.XGBRegressor(**choose_column_xgb_parameters)
-        #selector=SelectFromModel(xgb_local_model_tmp,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
-        #best_path_tmp=selector.get_feature_names_out(x_df.columns)[0]
+        # xgb_local_model_tmp = xgb.XGBRegressor(**choose_column_xgb_parameters)
+        # selector=SelectFromModel(xgb_local_model_tmp,threshold=-np.inf, max_features=1, prefit=False).fit(x_df, y_target)
+        # best_path_tmp=selector.get_feature_names_out(x_df.columns)[0]
 
         selected_columns = selected_columns[-1]
 
@@ -189,14 +205,18 @@ class ExtendedPatternBoosting:
                                                  nx.classes.multigraph.MultiGraph] | None = None,
                                              settings: SettingsExtendedPatternBoosting | None = None,
                                              train_boosting_matrix: np.array = None,
-                                             test_boosting_matrix: np.array = None
+                                             test_boosting_matrix: np.array = None,
+                                             name_model:str = 'xgboost'
                                              ):
 
         if train_data is None:
             return
         if settings is not None:
             self.settings = settings
-
+        if name_model == 'xgboost':
+            self.model = XgbModelForExtendedPathBoosting(**self.settings.main_xgb_parameters)
+        elif name_model == 'additive_xgboost':
+            self.model = AdditiveXgbForExtendedPathBosting(**self.settings.main_xgb_parameters)
         if hasattr(selected_paths, '__iter__'):
             self.selected_paths = selected_paths
 
@@ -254,32 +274,21 @@ class ExtendedPatternBoosting:
             raise Exception(
                 "impossible to create boosting matrix for test data, provide boosting matrix or list of graph")
 
+    def __training_results(self, X_test, y_test):
 
-    def training_results(self,bst, X_test, y_test):
+        predictions = self.model.predict(X_test)
 
-        predictions = bst.predict(X_test)
-
-        def calculate_r2_score(y_true, y_pred):
-            # Calculate the sum of squares of residuals
-            ss_res = np.sum((y_true - y_pred) ** 2)
-
-            # Calculate the total sum of squares
-            ss_tot = np.sum((y_true - np.mean(y_true)) ** 2)
-
-            # Calculate the R^2 score
-            r2_score = 1 - (ss_res / ss_tot)
-            return r2_score
+        analysis.plot_error_evolution(error_list=self.model.test_error, dataset='test', show=True)
+        analysis.plot_error_evolution(error_list=self.model.train_error, dataset='train', show=True)
 
         mse = mean_squared_error(y_test, predictions)
         mae = mean_absolute_error(y_test, predictions)
         r2 = r2_score(y_true=y_test, y_pred=predictions)
-        my_r2 = calculate_r2_score(y_true=y_test, y_pred=predictions)
 
         print("Mean Squared Error:", mse)
         print("Mean Absolute Error:", mae)
         print("R-Squared:", r2)
-        print("My R-Squared:", my_r2)
-        print(f"{self.paths_selected_by_epb.append=}")
+        print(f"{self.paths_selected_by_epb=}")
 
         # Plotting the feature importance
         # xgb.plot_importance(bst)
@@ -296,7 +305,7 @@ class ExtendedPatternBoosting:
 
     @staticmethod
     def neg_gradient(y, y_hat):
-        return (y - y_hat)
+        return 2 * (y - y_hat)
 
     @staticmethod
     def __tuples_to_strings(tuples_list):

@@ -125,11 +125,11 @@ class WrapperPatternBoosting:
 
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
-        input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
-                                        global_labels_variance)
+        input_for_parallelization = list[zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
+                                        global_labels_variance)]
         pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
+            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization[:10])
         # -------------------------------------------------------------------------------------------------------------
 
         # ----------------------------------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ class WrapperPatternBoosting:
                                         global_labels_variance)
         pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(self.__train_pattern_boosting), input_for_parallelization)
+            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             self.test_error = self.get_wrapper_test_error()

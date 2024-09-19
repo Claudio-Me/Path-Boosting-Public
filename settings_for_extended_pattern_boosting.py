@@ -4,14 +4,14 @@ from tabnanny import verbose
 class SettingsExtendedPatternBoosting:
     def __init__(self):
         self.plot_analysis = True
-        self.n_estimators = 150
-        self.show_tree: bool = True
+        self.n_estimators = 100
+        self.show_tree: bool = False
         self.xgb_verbose: bool = True
 
 
         self.main_xgb_parameters = {'n_estimators': 1,
                                     'max_depth': 2,
-                                    'learning_rate': 0.1,
+                                    'learning_rate': 0.3,
                                     "eval_metric": "rmse",
                                     "objective": 'reg:squarederror',
                                     "reg_lambda": 0,
