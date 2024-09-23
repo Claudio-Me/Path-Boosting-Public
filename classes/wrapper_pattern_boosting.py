@@ -130,7 +130,7 @@ class WrapperPatternBoosting:
         print(f"{len(input_for_parallelization)}")
         pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization[47:68])
+            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization[3:5])
 
         # -------------------------------------------------------------------------------------------------------------
 
@@ -140,6 +140,7 @@ class WrapperPatternBoosting:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the end of parallelization of the prediction: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
+
 
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             if test_dataset is not None:

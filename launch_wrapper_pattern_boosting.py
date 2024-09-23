@@ -20,7 +20,7 @@ import functools
 
 # Settings
 if True:
-    Settings.maximum_number_of_steps = 5
+    Settings.maximum_number_of_steps = 193
 
     Settings.save_analysis = True
     Settings.show_analysis = False
@@ -57,7 +57,7 @@ if True:
     # it works only if "algorithm" is Xgb_step
     Settings.update_features_importance_by_comparison = False
 
-    Settings.verbose = False
+    Settings.verbose = True
 
 # load wrapper pattern boosting
 directory = data_reader.get_save_location(file_name="wrapper_pattern_boosting", file_extension=".pkl",

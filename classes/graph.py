@@ -32,7 +32,7 @@ class GraphPB:
 
         self.metal_center = self.find_metal_center_nodes()
 
-        self.selected_paths = SelectedPaths()
+
 
         # adj_list is a dictionary
         if adj_list is None:
@@ -99,10 +99,7 @@ class GraphPB:
                 new_ancestors_list = []
                 for index, node_number in enumerate(last_nodes_numbers_list):
                     sons_of_node = self.neighbours_with_label[(node_number, label)]
-                    # transform the following in list comprehension
-                    # for son in sons_of_node:
-                    #     if son in ancestors_list[index]:
-                    #         sons_of_node.remove(son)
+
 
                     sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
                     new_last_nodes_numbers_list += sons_of_node
@@ -139,118 +136,11 @@ class GraphPB:
             index = new_labels.index(node_label)
             counts[index] += 1
 
+        assert len(last_nodes_numbers_list) == sum(counts)
         new_labels = [path_label + tuple([label]) for label in new_labels]
         return new_labels, counts
 
-    '''              
-    def get_new_paths_labels_and_count(self, path_label: tuple):
 
-        if not (path_label[0] in self.label_to_node):
-            return set([])
-        else:
-            last_nodes_numbers_list = self.label_to_node[path_label[0]]
-            ancestors_list = [{node} for node in last_nodes_numbers_list]
-            for label in path_label[1:]:
-
-                # get the next nodes
-                last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
-                                           node_number in last_nodes_numbers_list]
-
-                # check that none of the new selected nodes is an ancestor of himself
-                new_ancestors_list = []
-                new_last_nodes_numbers_list = []
-                # ciclo tra tutti i genitori (che sono lo stesso numero delle liste degli antenati)
-                for i, ancestor_set in enumerate(ancestors_list):
-
-                    # se la list dei figli del genitore non e vuota:
-                    if len(last_nodes_numbers_list[i]) != 0:
-
-                        # ciclo tra tutti i nuovi figli e controllo che il figlio non sia anche un antenato
-                        nodes_to_remove = set([j for j, node in enumerate(last_nodes_numbers_list[i]) if
-                                               node in ancestor_set])
-
-                        # nodes to remove contiene la lista di figli da rimuovere
-                        # rimuovo solo i figli da rimuovere e aggiungo i n nuovi sets in base a quanti nuovi figli abbiamo
-
-                        # remove all the elements in last_nodes_numbers_list[i] that are at index 'nodes_to_remove'
-
-                        sublist = []
-                        for index, node in enumerate(last_nodes_numbers_list[i]):
-                            if not (index in nodes_to_remove):
-                                sublist.append(node)
-                        new_last_nodes_numbers_list.append(sublist)
-
-
-
-                        # create a new list 'new_sets' where each element is 'set' + 'node
-                        new_sets = [ancestor_set.union({node}) for node in new_last_nodes_numbers_list[i]]
-
-                        new_ancestors_list = new_ancestors_list + new_sets
-
-                    else:
-                        new_last_nodes_numbers_list.append([])
-
-                last_nodes_numbers_list = new_last_nodes_numbers_list
-                # flattern the list
-                last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
-
-                ancestors_list = new_ancestors_list
-
-            # get the next nodes
-            last_nodes_numbers_list = [self.adj_list[node_number] for node_number in last_nodes_numbers_list]
-
-            # check that none of the new selected nodes is an ancestor of himself
-            new_ancestors_list = []
-            new_last_nodes_numbers_list = []
-            # ciclo tra tutti i genitori (che sono lo stesso numero delle liste degli antenati)
-            for i, ancestor_set in enumerate(ancestors_list):
-
-                # se la list dei figli del genitore non e vuota:
-                if len(last_nodes_numbers_list[i]) != 0:
-
-                    # ciclo tra tutti i nuovi figli e controllo che il figlio non sia anche un antenato
-                    nodes_to_remove = [j for j, node in enumerate(last_nodes_numbers_list[i]) if node in ancestor_set]
-
-                    # nodes to remove contiene la lista di figli da rimuovere
-                    # se non devo rimuovere tutti i figli rimuovo solo quelli da rimuovere e aggiungo i n nuovi sets in base a quanti nuivi figli abbiamo
-
-                    # remove all the elements in last_nodes_numbers_list[i] that are at index 'nodes_to_remove'
-                    sublist = []
-                    for index, node in enumerate(last_nodes_numbers_list[i]):
-                        if not (index in nodes_to_remove):
-                            sublist.append(node)
-                    new_last_nodes_numbers_list.append(sublist)
-
-                    # create a new list 'new_sets' where each element is 'set' + 'node
-                    new_sets = [ancestor_set.union({node}) for node in new_last_nodes_numbers_list[i]]
-
-                    new_ancestors_list = new_ancestors_list + new_sets
-                else:
-                    new_last_nodes_numbers_list.append([])
-
-            last_nodes_numbers_list = new_last_nodes_numbers_list
-            # flattern the list
-            last_nodes_numbers_list = [item for sublist in last_nodes_numbers_list for item in sublist]
-
-            # get the labels of the nodes
-            new_labels = [self.node_to_label[node] for node in last_nodes_numbers_list]
-            new_labels = list(set(new_labels))
-
-            counts = [0] * len(new_labels)
-
-            for node in last_nodes_numbers_list:
-                node_label = self.node_to_label[node]
-                index = new_labels.index(node_label)
-                counts[index] += 1
-
-            new_labels = [path_label + tuple([label]) for label in new_labels]
-            return new_labels, counts
-    '''
-
-    def number_of_times_selected_path_is_present(self, path_label):
-        """N.B. this function search only in "selected_paths" if the goal is to search in the whole graph then
-        check the function number_of_time_path_is_present_in_graph implemented below"""
-        return self.selected_paths.get_number_of_times_path_is_present(path_label)
 
     def get_label_of_node(self, node):
         return self.node_to_label[node]
@@ -258,21 +148,7 @@ class GraphPB:
     def get_nodes_with_label(self, label):
         return self.label_to_node[label]
 
-    def get_metal_center_label_and_add_metal_center_to_selected_paths(self):
 
-        metal_center_labels = []
-        warning = True
-        for metal_label in self.metal_labels:
-            if metal_label in self.label_to_node:
-                if warning and (len(self.label_to_node[metal_label]) > 1 or len(metal_center_labels) > 0):
-                    warnings.warn("Warning found multiple candidates for metal center in the same molecule")
-                    warning = False
-                metal_center_labels.append(metal_label)
-                self.selected_paths.add_path(metal_label, self.label_to_node[metal_label])
-
-        if len(metal_center_labels) == 0:
-            raise ValueError("Metal center not found")
-        return metal_center_labels
 
     def get_metal_center_labels(self) -> list[list]:
         metal_center_labels = []

@@ -315,6 +315,11 @@ class ExtendedBoostingMatrix:
         # extended_boosting_matrix_df[missed_columns] = [np.nan]*len(missed_columns)
         extended_boosting_matrix_df = pd.concat([extended_boosting_matrix_df, add_dataset], axis=1)
 
+        # make sure that there are no none values in the n_times_present column
+        n_times_present_columns = [str(path) + '_' + "n_times_present" for path in selected_paths]
+        extended_boosting_matrix_df[n_times_present_columns] = extended_boosting_matrix_df[
+            n_times_present_columns].fillna(0)
+
         # convert into a sparse dataset
         if convert_to_sparse is True:
             extended_boosting_matrix_df = extended_boosting_matrix_df.astype(pd.SparseDtype(float, fill_value=np.nan))
@@ -342,8 +347,6 @@ class ExtendedBoostingMatrix:
         indices_of_longest_tuples = [index for index, tup in enumerate(list_of_paths_involved) if
                                      len(tup) == max_path_length]
 
-        columns_relative_only_to_last_path = [columns_to_keep[index] for index in indices_of_longest_tuples]
-
         nan_df = pd.DataFrame(np.nan, index=x_df.index, columns=x_df.columns)
         nan_df[columns_to_keep] = x_df[columns_to_keep]
         # nan_df = x_df.mask([column not in columns_to_keep for column in x_df.columns] & (x_df.notnull()), np.nan, inplace=False)
@@ -352,7 +355,11 @@ class ExtendedBoostingMatrix:
 
         nan_df = pd.concat([nan_df, y], axis=1)
 
-        nan_df.dropna(subset=columns_relative_only_to_last_path, inplace=True)
+        # remove the column  n_times_present because it does not have na
+        columns_relative_only_to_last_path = [columns_to_keep[index] for index in indices_of_longest_tuples if
+                                              columns_to_keep[index].split('_', 1)[1] != 'n_times_present']
+
+        #nan_df.dropna(subset=columns_relative_only_to_last_path, inplace=True)
 
         zeroed_y = nan_df[y.name]
         zeroed_x_df = nan_df.drop(y.name, axis=1)

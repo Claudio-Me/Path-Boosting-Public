@@ -108,7 +108,13 @@ class ExtendedPatternBoosting:
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
                 self.model = self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
-
+                # -------------------------------------------------------------------
+                # delete me
+                # we compute the error of the predictor
+                predictions = self.model.predict(zeroed_x_df)
+                mse = mean_squared_error(y_true=zeroed_y, y_pred=predictions)
+                print(f"predictor {mse=}")
+                # -------------------------------------------------------------------
 
                 # self.xgb_model.get_booster().get_score(importance_type='weight')
                 # self.xgb_model.get_booster().get_dump()
@@ -161,10 +167,7 @@ class ExtendedPatternBoosting:
 
         # x_df.columns = ExtendedPatternBoosting.__tuples_to_strings(x_df.columns)
 
-        # -------------------------------------------------------------------
-        # delete me
-        # print(f"{y_target.head()=}")
-        # -------------------------------------------------------------------
+
 
         choose_column_xgb_parameters = SettingsExtendedPatternBoosting().choose_column_xgb_parameters
         xgb_local_model = xgb.XGBRegressor(**choose_column_xgb_parameters)
@@ -176,6 +179,14 @@ class ExtendedPatternBoosting:
         xgb_local_model = xgb_local_model.fit(X=x_df, y=y_target)
         # xgb_local_model.get_booster().get_score(importance_type='weight')
         # xgb_local_model.get_booster().get_dump()
+
+        # -------------------------------------------------------------------
+        # delete me
+        # we compute the error of the selector
+        predictions = xgb_local_model.predict(x_df)
+        mse = mean_squared_error(y_true=y_target, y_pred=predictions)
+        print(f"selector {mse=}")
+        # -------------------------------------------------------------------
 
         if SettingsExtendedPatternBoosting().show_tree is True:
             xgb.plot_tree(xgb_local_model)

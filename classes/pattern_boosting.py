@@ -445,44 +445,6 @@ class PatternBoosting:
 
         return new_paths, new_columns
 
-    def __get_new_paths(self, selected_path_label, graphs_that_contain_selected_column_path):
-        """
-        given one path it returns the list of all the possible extension of the input path
-        If the path is not present in the graph an empty list is returned for that extension
-        """
-        if Settings.parallelization is False:
-            new_paths = [list(
-                self.training_dataset.graphs_list[graph_number].get_new_paths_labels(
-                    selected_path_label))
-                for graph_number in graphs_that_contain_selected_column_path]
-        else:
-            pass
-        '''
-            # ------------------------------------------------------------------------------------------------------------
-
-            comm = MPI.COMM_WORLD
-            size = comm.Get_size()
-            rank = comm.Get_rank()
-            print(size)
-            print(rank)
-            if rank == 0:
-                split_graphs_list = self.__split(graphs_that_contain_selected_column_path, size)
-
-            graph_number_list = comm.scatter(split_graphs_list, root=0)
-
-            new_paths_for_specific_graph_list = [list(
-                self.training_dataset.graphs_list[graph_number].get_new_paths_labels(
-                    selected_path_label))
-                for graph_number in graph_number_list]
-
-            new_paths = comm.gather(new_paths_for_specific_graph_list, root=0)
-
-            # -----------------------------------------------------------------------------------------------------------
-            new_paths = [item for sublist in new_paths for item in sublist]
-        '''
-        # flattern the list of list
-        new_paths = list(set([path for paths_list in new_paths for path in paths_list]))
-        return new_paths
 
     @staticmethod
     def __split(list, n):
@@ -525,8 +487,7 @@ class PatternBoosting:
                 graph = self.training_dataset.graphs_list[ith_graph]
                 nodes = graph.label_to_node[label[0]]
                 boosting_matrix[ith_graph][ith_label] = len(nodes)
-                for node in nodes:
-                    graph.selected_paths.add_path(path_label=label, path=[node])
+
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
 
