@@ -1,11 +1,13 @@
 from collections import defaultdict
+from turtledemo.penrose import start
+
 import numpy as np
 import networkx as nx
 import warnings
 import copy
+from collections import Counter
 
 from settings import Settings
-from classes.paths.selected_paths import SelectedPaths
 
 import random
 
@@ -28,11 +30,10 @@ class GraphPB:
 
         self.label = label_value
 
-        self.label_to_node = self.__from_node_feature_dictionary_to_feature_node_dictionary(node_to_labels_dictionary)
+        self.label_to_node: defaultdict[int, list] = self.__from_node_feature_dictionary_to_feature_node_dictionary(
+            node_to_labels_dictionary)
 
         self.metal_center = self.find_metal_center_nodes()
-
-
 
         # adj_list is a dictionary
         if adj_list is None:
@@ -56,89 +57,51 @@ class GraphPB:
 
         return nl_dict
 
-    def get_new_paths_labels(self, path_label: tuple):
+    def get_new_paths_labels_and_count(self, path_label: tuple[int]):  # prints all vertices in DFS manner from a given source.
         """
-        it returns the possible extension of the input path that can be made in the graph
-        note: if the input label is not present in the selected paths, an empty set is returned
+        Count the occurrences of a path with the given labels starting from nodes with label `start_label`
+
+        :param start_label: The label of the path's starting nodes
+        :param path_labels: The labels of the path in the order they are to be traversed
+        :return: The count of how many times the labeled path is present in graph
         """
+
 
         if not (path_label[0] in self.label_to_node):
             return set([])
-        else:
-            last_nodes_numbers_list = self.label_to_node[path_label[0]]
-            if len(path_label) > 1:
-                for label in path_label[1:]:
-                    last_nodes_numbers_list = [self.neighbours_with_label[(node_number, label)] for
-                                               node_number in last_nodes_numbers_list]
 
-                    # flatten the list
-                    last_nodes_numbers_list = set([item for sublist in last_nodes_numbers_list for item in sublist])
+        # Get all nodes with the starting label
+        start_nodes = self.get_nodes_with_label(path_label[0])
 
-            new_nodes_numbers = [self.adj_list[node] for node in last_nodes_numbers_list]
-            # flatten the list
-            new_nodes_numbers = set([item for sublist in new_nodes_numbers for item in sublist])
+        def explore_and_extend_path(node, labels, visited: list):
+            # Recursive function to explore the labeled path
+            if not labels:
+                # labels of neighborhoods that are not visited
+                new_labels = [self.node_to_label[neighbour] for neighbour in self.adj_list[node] if
+                             neighbour not in visited]
+                return new_labels # each entry counts as presence if it is present once, so we can later sum up all the occurrences of the same label
 
-            # get the labels of the nodes
-            new_labels = set([self.node_to_label[node] for node in new_nodes_numbers])
-
-            new_labels = [path_label + tuple([label]) for label in new_labels]
+            new_labels = []
+            next_label = labels[0]
+            for neighbour in self.neighbours_with_label[(node, next_label)]:
+                if neighbour not in visited:  # Prevent revisiting nodes
+                    new_labels += explore_and_extend_path(neighbour, labels[1:], visited=visited + [neighbour])
             return new_labels
 
-    def get_new_paths_labels_and_count(self, path_label: tuple):
-        '''
-        :param path_label: is the label of the path we want to extend
-        :return: returns the possible extensions of path_label and the number of times those are present in the graph
-        '''
-        if not (path_label[0] in self.label_to_node):
-            return set([])
-        else:
-            last_nodes_numbers_list = self.label_to_node[path_label[0]]
-            ancestors_list = [{node} for node in last_nodes_numbers_list]
-            for label in path_label[1:]:
-                new_last_nodes_numbers_list = []
-                new_ancestors_list = []
-                for index, node_number in enumerate(last_nodes_numbers_list):
-                    sons_of_node = self.neighbours_with_label[(node_number, label)]
+        new_labels = []
+        for start_node in start_nodes:
+            # Initialize the path with the starting node
+            new_labels += explore_and_extend_path(start_node, path_label[1:], visited=[start_node])
 
 
-                    sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
-                    new_last_nodes_numbers_list += sons_of_node
-                    new_ancestors_list += [ancestors_list[index].union({node}) for node in sons_of_node]
+        # count how many times each new label has been found
+        labels_counts = Counter(new_labels)
+        new_labels_with_no_repetitions=labels_counts.keys()
+        count = labels_counts.values()
 
-                last_nodes_numbers_list = new_last_nodes_numbers_list
-                ancestors_list = new_ancestors_list
-
-            # now in last nodes we have all the possible nodes at the end of path label
-            # we need to find the possible extensions of those nodes
-
-            new_last_nodes_numbers_list = []
-            for index, node_number in enumerate(last_nodes_numbers_list):
-                sons_of_node = self.adj_list[node_number]
-                # transform the following in list comprehension
-                # for son in sons_of_node:
-                #     if son in ancestors_list[index]:
-                #         sons_of_node.remove(son)
-
-                sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
-                new_last_nodes_numbers_list += sons_of_node
-
-            last_nodes_numbers_list = new_last_nodes_numbers_list
-
-        # we need to generate the new paths and count how many times each node is present in the graph
-        # get the labels of the nodes
-        new_labels = [self.node_to_label[node] for node in last_nodes_numbers_list]
-        new_labels = list(set(new_labels))
-
-        counts = [0] * len(new_labels)
-
-        for node in last_nodes_numbers_list:
-            node_label = self.node_to_label[node]
-            index = new_labels.index(node_label)
-            counts[index] += 1
-
-        assert len(last_nodes_numbers_list) == sum(counts)
-        new_labels = [path_label + tuple([label]) for label in new_labels]
-        return new_labels, counts
+        # add new labels found to the path
+        new_tuple_labels = [path_label + tuple([label]) for label in new_labels_with_no_repetitions]
+        return list(new_tuple_labels), list(count)
 
 
 
@@ -147,8 +110,6 @@ class GraphPB:
 
     def get_nodes_with_label(self, label):
         return self.label_to_node[label]
-
-
 
     def get_metal_center_labels(self) -> list[list]:
         metal_center_labels = []
@@ -234,34 +195,6 @@ class GraphPB:
 
         return path_count
 
-    def old_number_of_time_path_is_present_in_graph(self, path_label: tuple) -> int:
-        """
-        Takes in input a path label (path_label) and returns the number of times this path is present in the graph not to be
-        confused with the function "number_of_times_selected_path_is_present" that count only the already selected paths
-        """
-        if not (path_label[0] in self.label_to_node):
-            return 0
-        else:
-            last_nodes_numbers_list = self.label_to_node[path_label[0]]
-            ancestors_list = [{node} for node in last_nodes_numbers_list]
-            for label in path_label[1:]:
-                new_last_nodes_numbers_list = []
-                new_ancestors_list = []
-                for index, node_number in enumerate(last_nodes_numbers_list):
-                    sons_of_node = self.neighbours_with_label[(node_number, label)]
-                    # transform the following in list comprehension
-                    # for son in sons_of_node:
-                    #     if son in ancestors_list[index]:
-                    #         sons_of_node.remove(son)
-
-                    sons_of_node = [son for son in sons_of_node if son not in ancestors_list[index]]
-                    new_last_nodes_numbers_list += sons_of_node
-                    new_ancestors_list += [ancestors_list[index].union({node}) for node in sons_of_node]
-
-                last_nodes_numbers_list = new_last_nodes_numbers_list
-                ancestors_list = new_ancestors_list
-            return len(last_nodes_numbers_list)
-
     def __find_path(self, old_visited_nodes: list, path_label: tuple, current_node) -> int:
         visited_nodes = copy.deepcopy(old_visited_nodes)
         visited_nodes.append(current_node)
@@ -288,7 +221,7 @@ class GraphPB:
         # need to convert dictionary keys and values from string to integer
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}
-
+        assert max(n_t_l_d.keys()) == len(n_t_l_d.keys()) - 1
         adj_matrix = nx.to_numpy_array(nx_Graph)
 
         adj_list = nx.to_dict_of_lists(nx_Graph)
@@ -336,17 +269,16 @@ class GraphPB:
         else:
             return False
 
-
     def __ne__(self, other):
         """self != other"""
         eq = self.__eq__(self, other)
-        return  not eq
+        return not eq
 
     def __hash__(self):
         return hash(self.adj_matrix)
 
     def find_labelled_path(self, labelled_path, starting_node=None, path=None, visited_nodes=None):
-        paths_found:list = []
+        paths_found: list = []
         if path is None:
             path = []
         if visited_nodes is None:
@@ -372,4 +304,5 @@ class GraphPB:
                     paths_found.extend(new_paths)
         return paths_found
 
-
+    def get_nodes_list(self):
+        return self.node_to_label.keys()
