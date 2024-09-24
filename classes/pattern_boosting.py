@@ -263,7 +263,7 @@ class PatternBoosting:
             if self.settings.verbose is True:
                 print("evaluate progression")
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
-            self.test_dataset_final_predictions = self.test_error[-1]
+            self.test_dataset_final_predictions = self.predict(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
 
 
             # ----------------------------------------------------------------------------------------------------------
@@ -330,8 +330,6 @@ class PatternBoosting:
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
 
-        if isinstance(boosting_matrix_matrix, BoostingMatrix):
-            boosting_matrix_matrix = boosting_matrix_matrix.get_matrix()
         if boosting_matrix_matrix is None:
             boosting_matrix_matrix = self.create_boosting_matrix_for(graphs_list)
         prediction = self.model.predict_my(boosting_matrix_matrix)

@@ -32,14 +32,18 @@ if Settings.plot_log_info is True:
 def predict_test_dataset_graph(args):
     graph, pattern_boosting_models_list = args
     prediction = 0
+    # counter is to normalize the predictions
     counter = 0
 
     for model in pattern_boosting_models_list:
         try:
-            index = model.test_dataset.get_graphs_list().index(graph)
-            prediction += model.test_dataset_final_predictions[index]
-            counter += 1
-        except ValueError:
+            if model.trained is True:
+                index = model.test_dataset.get_graphs_list().index(
+                    graph) if graph in model.test_dataset.get_graphs_list() else -1
+                if index != -1:
+                    prediction += model.test_dataset_final_predictions[index]
+                    counter += 1
+        except:
             pass
     return prediction, counter
 
@@ -130,7 +134,7 @@ class WrapperPatternBoosting:
         print(f"{len(input_for_parallelization)}")
         pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization[3:5])
+            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization)
 
         # -------------------------------------------------------------------------------------------------------------
 
@@ -140,7 +144,6 @@ class WrapperPatternBoosting:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the end of parallelization of the prediction: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
-
 
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             if test_dataset is not None:
@@ -606,8 +609,6 @@ class WrapperPatternBoosting:
     def merge_models(self, wrapper_boosting_models_list: list[Self]):
         # we assume this is a trained wrapped boosting model but with no real training on the pattern boosting models. so we take the pattern boosting models from others wrapper pattern boosting, the challange is to insert the pattern boosting models in the right order.
         for wrapper_model in wrapper_boosting_models_list:
-            for i , pattern_boosting_model in enumerate(wrapper_model.get_pattern_boosting_models()):
+            for i, pattern_boosting_model in enumerate(wrapper_model.get_pattern_boosting_models()):
                 if pattern_boosting_model.trained is True:
                     self.pattern_boosting_models_list[i] = pattern_boosting_model
-
-

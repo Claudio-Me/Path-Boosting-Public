@@ -13,7 +13,7 @@ dataset_original_graphs = data_reader.load_dataset_from_binary(filename="5_k_sel
 # load the trained model that contains the boosting matrix
 
 if True:
-    directory = "/Users/popcorn/PycharmProjects/pattern_boosting/results/Xgb_step_500_max_path_length_101_5_k_selection_graphs_gbtree/wrapped_boosting"
+    directory = "/Users/popcorn/PycharmProjects/pattern_boosting/results/Xgb_step_200_max_path_length_99999_5_k_selection_graphs_gbtree/wrapped_boosting"
 
     wrapper_pattern_boosting: WrapperPatternBoosting = data_reader.load_data(directory=directory,
                                                                              filename="wrapper_pattern_boosting")
