@@ -12,7 +12,7 @@ from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
 from data import data_reader
 import matplotlib.cm as cm
-import periodictable as pt
+
 import matplotlib.colors as mcolors
 
 from xgboost import plot_importance
@@ -49,6 +49,10 @@ from matplotlib.ticker import MaxNLocator
 from typing import List
 from classes.dataset import Dataset
 import random
+from sklearn.model_selection import KFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+import multiprocessing as mp
 
 
 def get_XGB_error_and_variable_importance_t(max_path_length, pattern_boosting, max_number_of_learners, frequency_matrix,
@@ -419,10 +423,17 @@ def plot_tpr_vs_iterations_different_definitions(tpr1: list[float], tpr2: list[f
     plt.show()
 
 
-import numpy as np
-from sklearn.model_selection import KFold
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+def parallelize_cross_validation(input_from_parallelization):
+    train_dataset = input_from_parallelization[0]
+    test_dataset = input_from_parallelization[1]
+    if Settings.wrapper_boosting is False:
+        model = PatternBoosting()
+        model.training(train_dataset, test_dataset)
+    else:
+        model = WrapperPatternBoosting()
+        model.train(train_dataset, test_dataset)
+
+    return model
 
 
 def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5, random_seed=None, patience=3):
@@ -444,13 +455,39 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
 
     graphs_list = train_dataset.get_graphs_list()
     test_errors_cross_validation_list = []
+
+    '''
+    # create the different dataset over which we train the k folds
+    list_train_dataset_crossvalidation = []
+    list_test_dataset_crossvalidation = []
     for train_index, test_index in kf.split(graphs_list):
-        model = PatternBoosting()
+        list_train_dataset_crossvalidation.append(Dataset([graphs_list[i] for i in train_index]))
+        list_test_dataset_crossvalidation.append(Dataset([graphs_list[i] for i in test_index]))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Parallelization
+    input_for_parallelization = list(zip(list_train_dataset_crossvalidation, list_test_dataset_crossvalidation))
+    with mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers))) as pool:
+        array_of_outputs = pool.map(parallelize_cross_validation, input_for_parallelization)
+    for model in array_of_outputs:
+        test_errors_cross_validation_list.append(model.test_errors)
+    # -----------------------------------------------------------------------------------------------------------------
+    '''
+    # old for loop, it works, but it is not parallelized
+    for train_index, test_index in kf.split(graphs_list):
+
         train_dataset_crossvalidation = Dataset([graphs_list[i] for i in train_index])
         test_dataset_crossvalidation = Dataset([graphs_list[i] for i in test_index])
+        
+        if Settings.wrapper_boosting is False:
+            model = PatternBoosting()
+            model.training(train_dataset_crossvalidation, test_dataset_crossvalidation)
+            test_errors_cross_validation_list.append(model.test_error)
+        else:
+            model = WrapperPatternBoosting()
+            model.train(train_dataset_crossvalidation, test_dataset_crossvalidation)
+            test_errors_cross_validation_list.append(model.get_wrapper_test_error())
 
-        model.training(train_dataset_crossvalidation, test_dataset_crossvalidation)
-        test_errors_cross_validation_list.append(model.test_error)
 
     test_errors_cross_validation_list = np.array(test_errors_cross_validation_list)
     test_error_sum = np.sum(test_errors_cross_validation_list, axis=0)
@@ -462,14 +499,22 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
         return None, None, None
 
     # run the algorithm training over th whole train dataset and see the error in the test dataset
-    model = PatternBoosting()
+    if Settings.wrapper_boosting is False:
+        model = PatternBoosting()
+    else:
+        model = WrapperPatternBoosting()
     model.settings.maximum_number_of_steps = overfitting_iteration
 
-    model.training(train_dataset, test_dataset)
-    test_error = model.test_error
-
-    # get the number of selected_paths
-    n_selected_paths = len(model.get_selected_paths_in_boosting_matrix())
+    if Settings.wrapper_boosting is False:
+        model.training(train_dataset, test_dataset)
+        test_error = model.test_error
+        # get the number of selected_paths
+        n_selected_paths = len(model.get_selected_paths_in_boosting_matrix())
+    else:
+        model.train(train_dataset, test_dataset)
+        test_error = model.get_wrapper_test_error()
+        # get the number of selected_paths
+        n_selected_paths = len(model.get_selected_paths())
 
     return overfitting_iteration, test_error, n_selected_paths
 
@@ -494,7 +539,7 @@ def plot_label_distribution(label_counts, save_fig=True):
     sorted_labels = sorted(label_counts.keys())
 
     # Convert tuple labels to atomic names and get counts
-    labels_str = [pt.elements[label[0]].symbol for label in sorted_labels]
+    labels_str = [periodictable.elements[label[0]].symbol for label in sorted_labels]
     counts = [label_counts[label] for label in sorted_labels]
 
     # Normalize counts for colormap
@@ -616,6 +661,8 @@ def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], 
     plt.title('Test Error')
     plt.legend(loc='best')  # Adjust the legend location as needed
     plt.grid(True)
+
+    plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
 
     if save_fig:
         plt.savefig(name_fig)

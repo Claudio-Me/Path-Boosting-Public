@@ -1,5 +1,6 @@
 import sys
-sys.path.insert(0,"../")
+
+sys.path.insert(0, "../")
 from jupiter_notebook_functions import *
 
 from analysis_article.set_default_settings import set_default_settings
@@ -11,8 +12,6 @@ def signal_to_noise(number_of_simulations=200,
                     dataset_name="5k_synthetic_dataset", maximum_number_of_steps=None,
                     save_fig=False, use_wrapper_boosting=None, show_settings=True):
     set_default_settings()
-
-
 
     Settings.scenario = synthetic_dataset_scenario
     Settings.set_scenario(synthetic_dataset_scenario)
@@ -130,9 +129,10 @@ def signal_to_noise(number_of_simulations=200,
                                max_errors=max_errors, save_fig=save_fig, name_fig=fig_name)
 
 
-signal_to_noise(number_of_simulations=200,
-                noise_variance_list=[0.2, 0.5, 0.8, 1.1, 1.4, 1.7],
-                # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
-                synthetic_dataset_scenario=3,
-                dataset_name="5k_synthetic_dataset",  maximum_number_of_steps=None,
-                save_fig=True, use_wrapper_boosting=None, show_settings=True)
+if __name__ == '__main__':
+    signal_to_noise(number_of_simulations=200,
+                    noise_variance_list=[0.2, 0.5, 0.8, 1.1, 1.4, 1.7],
+                    # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
+                    synthetic_dataset_scenario=3,
+                    dataset_name="5k_synthetic_dataset", maximum_number_of_steps=None,
+                    save_fig=True, use_wrapper_boosting=None, show_settings=True)

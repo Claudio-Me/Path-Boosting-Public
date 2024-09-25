@@ -6,7 +6,6 @@ import multiprocessing as mp
 
 import warnings
 from collections import defaultdict
-from multiprocessing.dummy import Pool as ThreadPool
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -61,6 +60,17 @@ def predict_train_dataset_graph(args):
         except:
             pass
     return prediction, counter
+
+
+
+def train_pattern_boosting(input_from_parallelization: tuple):
+        pattern_boosting_model: PatternBoosting = input_from_parallelization[0]
+        train_dataset = input_from_parallelization[1]
+        test_dataset = input_from_parallelization[2]
+        global_labels_variance = input_from_parallelization[3]
+        pattern_boosting_model.training(train_dataset, test_dataset,
+                                        global_train_labels_variance=global_labels_variance)
+        return pattern_boosting_model
 
 
 class WrapperPatternBoosting:
@@ -132,11 +142,13 @@ class WrapperPatternBoosting:
         input_for_parallelization = list(zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
                                              global_labels_variance))
         print(f"{len(input_for_parallelization)}")
-        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
-        array_of_outputs = pool.map(
-            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization)
+        with mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers))) as pool:
+            #pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+            array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization)
 
         # -------------------------------------------------------------------------------------------------------------
+
+        self.pattern_boosting_models_list= array_of_outputs
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
@@ -162,9 +174,9 @@ class WrapperPatternBoosting:
 
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
                                         global_labels_variance)
-        pool = ThreadPool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+        pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
         array_of_outputs = pool.map(
-            functools.partial(WrapperPatternBoosting.__train_pattern_boosting), input_for_parallelization)
+            functools.partial(train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
         if self.settings.show_analysis is True or self.settings.save_analysis is True:
             self.test_error = self.get_wrapper_test_error()
@@ -306,15 +318,7 @@ class WrapperPatternBoosting:
         prediction = concatenated_array.tolist()
         return prediction
 
-    @staticmethod
-    def __train_pattern_boosting(input_from_parallelization: tuple):
-        pattern_boosting_model: PatternBoosting = input_from_parallelization[0]
-        train_dataset = input_from_parallelization[1]
-        test_dataset = input_from_parallelization[2]
-        global_labels_variance = input_from_parallelization[3]
-        pattern_boosting_model.training(train_dataset, test_dataset,
-                                        global_train_labels_variance=global_labels_variance)
-        return pattern_boosting_model
+
 
     def get_wrapper_test_error(self) -> np.array:
 
@@ -397,7 +401,7 @@ class WrapperPatternBoosting:
         :return: a nested list where each row is the vector of errors coming from the model
         '''
 
-        train_model_errors = [model.train_error for model in self.pattern_boosting_models_list]
+        train_model_errors = [model.train_error for model in self.get_trained_pattern_boosting_models()]
         return train_model_errors
 
     def get_test_models_errors(self) -> Iterable[Sequence[float]]:
@@ -405,7 +409,7 @@ class WrapperPatternBoosting:
 
         :return: a nested list where each row is the vector of errors coming from the model
         '''
-        test_model_errors = [model.test_error for model in self.pattern_boosting_models_list]
+        test_model_errors = [model.test_error for model in self.get_trained_pattern_boosting_models()]
         return test_model_errors
 
     def get_number_of_observations_per_model(self, dataset_name: str) -> list[int]:
