@@ -101,7 +101,7 @@ class GraphPB:
         # add new labels found to the path
         new_tuple_labels = [path_label + tuple([label]) for label in new_labels_with_no_repetitions]
         if len(list(count))>0:
-            if False:
+            if max(list(count)) > 300:
                 self.plot_labeled_graph()
                 print("delete me")
         return list(new_tuple_labels), list(count)

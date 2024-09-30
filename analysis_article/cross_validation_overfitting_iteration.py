@@ -110,5 +110,5 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 # uncomment to use the file as a script
 if __name__ == '__main__':
     cross_validation(number_of_simulations=1, k_folds=5, scenario=3, patience=10,
-                     dataset_name="60k_dataset", noise_variance=0.2, maximum_number_of_steps=500, save_fig=True,
+                     dataset_name="60k_dataset", noise_variance=0.2, maximum_number_of_steps=200, save_fig=True,
                      use_wrapper_boosting=True, show_settings=True)
