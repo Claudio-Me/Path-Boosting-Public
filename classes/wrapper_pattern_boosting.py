@@ -144,7 +144,7 @@ class WrapperPatternBoosting:
         print(f"{len(input_for_parallelization)}")
         with mp.get_context("spawn").Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers))) as pool:
             #pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
-            array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization[17:18])
+            array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization)
 
         # -------------------------------------------------------------------------------------------------------------
 

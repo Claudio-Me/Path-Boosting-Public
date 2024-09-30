@@ -8,7 +8,7 @@ import copy
 from collections import Counter
 
 from settings import Settings
-
+import matplotlib.pyplot as plt
 import random
 
 
@@ -100,6 +100,10 @@ class GraphPB:
 
         # add new labels found to the path
         new_tuple_labels = [path_label + tuple([label]) for label in new_labels_with_no_repetitions]
+        if len(list(count))>0:
+            if False:
+                self.plot_labeled_graph()
+                print("delete me")
         return list(new_tuple_labels), list(count)
 
     def get_label_of_node(self, node):
@@ -305,3 +309,37 @@ class GraphPB:
 
     def get_nodes_list(self):
         return self.node_to_label.keys()
+
+    def plot_labeled_graph(self):
+        # Create a graph object
+        G = nx.Graph()
+
+        # Add edges from adjacency list
+        for node, neighbors in self.adj_list.items():
+            G.add_node(node)  # This ensures isolated nodes are also added to the graph
+            for neighbor in neighbors:
+                G.add_edge(node, neighbor)
+
+        # Create a mapping for labels to be displayed on the nodes
+        labels = {node: str(self.node_to_label[node]) for node in G.nodes()}
+
+        # Generate node colors based on labels
+        unique_labels = list(set(self.node_to_label.values()))
+        color_map = plt.get_cmap('viridis', len(unique_labels))
+        node_colors = [color_map(unique_labels.index(self.node_to_label[node])) for node in G.nodes()]
+
+        # Draw the graph with a specified layout that spreads out the nodes more
+        pos = nx.kamada_kawai_layout(G)  # Another layout option
+        # pos = nx.spring_layout(G, k=1, iterations=50)  # You can experiment with k for distance between nodes and iterations for a better layout
+
+        # Draw nodes with the node color mapping
+        nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=200)
+        # Draw labels
+        nx.draw_networkx_labels(G, pos, labels, font_size=8)
+        # Draw edges
+        nx.draw_networkx_edges(G, pos, width=1)
+
+        # Show the plot with an aspect ratio to have equal axis
+        plt.axis('equal')
+        plt.axis('off')
+        plt.show()

@@ -354,10 +354,12 @@ class PatternBoosting:
         if isinstance(graphs_list, Dataset):
             graphs_list = graphs_list.get_graphs_list()
         boosting_matrix_matrix_rows = []
-        for graph in graphs_list:
+        for i, graph in enumerate(graphs_list):
             boosting_matrix_matrix_rows.append(
                 self.__create_boosting_vector_for_graph(graph, selected_paths=selected_paths))
-
+            if i % 10==0:
+                metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
+                print(f"computing boosting matrix for graph {i} out of {len(graphs_list)}, {metal_center}")
         # old way
         # boosting_matrix_matrix = np.array([self.__create_boosting_vector_for_graph(graph) for graph in graphs_list])
         boosting_matrix_matrix = np.array(boosting_matrix_matrix_rows)
