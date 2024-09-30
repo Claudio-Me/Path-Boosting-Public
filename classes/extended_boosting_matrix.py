@@ -297,7 +297,7 @@ class ExtendedBoostingMatrix:
                                 ExtendedBoostingMatrix.__get_column_name(labelled_path, attr)].append(
                                 node_attributes[attr])
 
-                # --------------------------------
+            # -------------------------------------------------------------------------
             # Calculate the average of all the accumulated values
             complete_attributes = {attr: np.mean(values) if values else None for attr, values in
                                    accumulated_attributes.items()}

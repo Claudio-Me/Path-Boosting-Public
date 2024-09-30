@@ -1,13 +1,12 @@
-from tabnanny import verbose
 
 
 class SettingsExtendedPatternBoosting:
     def __init__(self):
         self.plot_analysis = True
-        self.n_estimators = 100
+        self.n_estimators = 300
         self.show_tree: bool = False
         self.xgb_verbose: bool = True
-
+        self.name_model = 'additive_xgboost' # 'additive_xgboost' 'xgboost'
 
         self.main_xgb_parameters = {'n_estimators': 1,
                                     'max_depth': 2,
@@ -31,7 +30,6 @@ class SettingsExtendedPatternBoosting:
                                              'random_state': 0,
                                              }
 
-
         # if self.main_xgb_parameters['booster'] == 'gblinear':
         # self.main_xgb_parameters['updater'] = 'coord_descent'  # shotgun
         # self.main_xgb_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
@@ -41,6 +39,6 @@ class SettingsExtendedPatternBoosting:
         # self.main_xgb_parameters['max_depth'] = 1
         # self.main_xgb_parameters['gamma'] = 0
 
-        def __repr__(self):
-            attrs = vars(self)
-            return ', '.join(f"{key}={value!r}" for key, value in attrs.items())
+    def __repr__(self):
+        attrs = vars(self)
+        return ', '.join(f"{key}={value!r}" for key, value in attrs.items())

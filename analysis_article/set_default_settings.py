@@ -91,7 +91,7 @@ def set_default_settings():
     # Base Learner used by mboost
     Settings.r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
-    Settings.verbose = False
+    Settings.verbose = True
 
     # Possible family names for loss function in R mode
     Settings.family = "Gaussian"

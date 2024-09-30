@@ -19,13 +19,13 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 20
+    maximum_number_of_steps = 200
 
     save_analysis: bool = True
     show_analysis: bool = False
 
-    dataset_name = "5_k_selection_graphs"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = False
+    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    generate_new_dataset = True
     generate_from_binary_file = True
 
     # in the error graph Print only the last N learners
@@ -36,7 +36,7 @@ class Settings:
     noise_variance = 0.2
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 10000
+    max_path_length = 10
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
@@ -50,7 +50,7 @@ class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
     # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = True
+    update_features_importance_by_comparison = False
     verbose = True
 
     max_number_of_cores = mp.cpu_count()

@@ -24,8 +24,7 @@ if True:
 
     extended_pattern_boosting = ExtendedPatternBoosting(train_data=train_list_graph_nx, test_data=test_list_graph_nx,
                                                         selected_paths=selected_paths,
-                                                        settings=SettingsExtendedPatternBoosting(),
-                                                        name_model='xgboost')
+                                                        settings=SettingsExtendedPatternBoosting())
 
     save_directory = data_reader.save_data(data=extended_pattern_boosting, filename='extended_path_boosting',                                           directory='extended_path_boosting', create_unique_subfolder=False)
 

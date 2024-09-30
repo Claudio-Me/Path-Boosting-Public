@@ -103,6 +103,8 @@ class PatternBoosting:
 
             # -------------------------------------------------------------------------------------------------------
             # TODO the following is just for debugging
+            metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
+            print(f"iteration number: {iteration_number + 1}, {metal_center}")
             # ----------------------------------------------------------------------------------------------------------
 
                 # ----------------------------------------------------------------------------------------------------------
@@ -186,6 +188,12 @@ class PatternBoosting:
                 self.boosting_matrix.update_column_importance(selected_column_number, improvment)
 
             self.number_of_learners.append(iteration_number + 1)
+
+            # -------------------------------------------------------------------------------------------------------
+            # TODO the following is just for debugging
+            metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
+            print(f"starting expanding boosting matrix: {iteration_number + 1}, {metal_center}")
+            # ----------------------------------------------------------------------------------------------------------
 
             # expand boosting matrix
             self.__expand_boosting_matrix(selected_column_number)
@@ -504,7 +512,7 @@ class PatternBoosting:
     def __expand_boosting_matrix(self, selected_column_number):
         # Following two lines are jut to have mor readable code, everything can be grouped in one line
         length_selected_path = len(self.boosting_matrix.header[selected_column_number])
-        path_length_condition = length_selected_path < self.settings.max_path_length
+        path_length_condition = length_selected_path <= self.settings.max_path_length
 
         if not (selected_column_number in self.boosting_matrix.already_selected_columns):
             # if the selected column has never been selected before

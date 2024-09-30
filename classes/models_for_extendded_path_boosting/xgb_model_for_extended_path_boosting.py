@@ -43,7 +43,8 @@ class XgbModelForExtendedPathBoosting:
     def get_model(self):
         return self.model
 
-    def plot_tree(self):
-        xgb.plot_tree(self.model.get_booster())
+    def plot_tree(self, num_trees: int=-1):
+        xgb.plot_tree(self.model.get_booster(), num_trees=-1)
         plt.show()
+
 

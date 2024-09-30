@@ -57,15 +57,15 @@ class GraphPB:
 
         return nl_dict
 
-    def get_new_paths_labels_and_count(self, path_label: tuple[int]):  # prints all vertices in DFS manner from a given source.
+    def get_new_paths_labels_and_count(self, path_label: tuple[
+        int]):  # prints all vertices in DFS manner from a given source.
         """
-        Count the occurrences of a path with the given labels starting from nodes with label `start_label`
+        Get all the possible extension of a labelled path and count the number occurrence of this extensions
 
         :param start_label: The label of the path's starting nodes
         :param path_labels: The labels of the path in the order they are to be traversed
         :return: The count of how many times the labeled path is present in graph
         """
-
 
         if not (path_label[0] in self.label_to_node):
             return set([])
@@ -75,11 +75,11 @@ class GraphPB:
 
         def explore_and_extend_path(node, labels, visited: list):
             # Recursive function to explore the labeled path
-            if not labels:
+            if len(labels) == 0:
                 # labels of neighborhoods that are not visited
                 new_labels = [self.node_to_label[neighbour] for neighbour in self.adj_list[node] if
-                             neighbour not in visited]
-                return new_labels # each entry counts as presence if it is present once, so we can later sum up all the occurrences of the same label
+                              neighbour not in visited]
+                return new_labels  # each entry counts as presence if it is present once, so we can later sum up all the occurrences of the same label
 
             new_labels = []
             next_label = labels[0]
@@ -93,17 +93,14 @@ class GraphPB:
             # Initialize the path with the starting node
             new_labels += explore_and_extend_path(start_node, path_label[1:], visited=[start_node])
 
-
         # count how many times each new label has been found
         labels_counts = Counter(new_labels)
-        new_labels_with_no_repetitions=labels_counts.keys()
+        new_labels_with_no_repetitions = labels_counts.keys()
         count = labels_counts.values()
 
         # add new labels found to the path
         new_tuple_labels = [path_label + tuple([label]) for label in new_labels_with_no_repetitions]
         return list(new_tuple_labels), list(count)
-
-
 
     def get_label_of_node(self, node):
         return self.node_to_label[node]
@@ -218,6 +215,8 @@ class GraphPB:
 
     @staticmethod
     def from_GraphNX_to_GraphPB(nx_Graph, label=None):
+        # convert to undirected graphs
+        nx_Graph= nx.to_undirected(nx_Graph)
         # need to convert dictionary keys and values from string to integer
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}

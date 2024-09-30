@@ -1,3 +1,5 @@
+import copy
+
 from data.data_reader import load_dataset_from_binary, read_data_from_directory, save_dataset_in_binary_file, save_data
 from settings import Settings
 from classes.dataset import Dataset
