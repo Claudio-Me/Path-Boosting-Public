@@ -3,16 +3,16 @@
 class SettingsExtendedPatternBoosting:
     def __init__(self):
         self.plot_analysis = True
-        self.n_estimators = 300
+        self.n_estimators = 5
         self.show_tree: bool = False
         self.xgb_verbose: bool = True
-        self.name_model = 'additive_xgboost' # 'additive_xgboost' 'xgboost'
+        self.name_model = 'xgboost' # 'additive_xgboost' 'xgboost'
 
         self.main_xgb_parameters = {'n_estimators': 1,
                                     'max_depth': 2,
                                     'learning_rate': 0.3,
                                     "eval_metric": "rmse",
-                                    "objective": 'reg:squarederror',
+                                    "objective": None, # reg:squarederror
                                     "reg_lambda": 0,
                                     "alpha": 0,
                                     "random_state": 0,

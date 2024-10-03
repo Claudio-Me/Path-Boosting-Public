@@ -62,15 +62,14 @@ def predict_train_dataset_graph(args):
     return prediction, counter
 
 
-
 def train_pattern_boosting(input_from_parallelization: tuple):
-        pattern_boosting_model: PatternBoosting = input_from_parallelization[0]
-        train_dataset = input_from_parallelization[1]
-        test_dataset = input_from_parallelization[2]
-        global_labels_variance = input_from_parallelization[3]
-        pattern_boosting_model.training(train_dataset, test_dataset,
-                                        global_train_labels_variance=global_labels_variance)
-        return pattern_boosting_model
+    pattern_boosting_model: PatternBoosting = input_from_parallelization[0]
+    train_dataset = input_from_parallelization[1]
+    test_dataset = input_from_parallelization[2]
+    global_labels_variance = input_from_parallelization[3]
+    pattern_boosting_model.training(train_dataset, test_dataset,
+                                    global_train_labels_variance=global_labels_variance)
+    return pattern_boosting_model
 
 
 class WrapperPatternBoosting:
@@ -88,6 +87,7 @@ class WrapperPatternBoosting:
         self.settings = copy.deepcopy(settings)
         self.total_boosting_matrix = None
         self.trained = False
+
 
     def train(self, train_dataset, test_dataset=None):
         # ----------------------------------------------------------------------------------------------------------
@@ -139,16 +139,18 @@ class WrapperPatternBoosting:
 
         # Parallelization
         # ------------------------------------------------------------------------------------------------------------
+
         input_for_parallelization = list(zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
                                              global_labels_variance))
         print(f"{len(input_for_parallelization)}")
-        with mp.get_context("spawn").Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers))) as pool:
-            #pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+        with mp.get_context("spawn").Pool(
+                min(Settings.max_number_of_cores - 1, len(Settings.considered_metal_centers))) as pool:
+            # pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
             array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization)
 
         # -------------------------------------------------------------------------------------------------------------
 
-        self.pattern_boosting_models_list= array_of_outputs
+        self.pattern_boosting_models_list = array_of_outputs
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
@@ -317,8 +319,6 @@ class WrapperPatternBoosting:
         # Convert the resulting array to a Python list
         prediction = concatenated_array.tolist()
         return prediction
-
-
 
     def get_wrapper_test_error(self) -> np.array:
 

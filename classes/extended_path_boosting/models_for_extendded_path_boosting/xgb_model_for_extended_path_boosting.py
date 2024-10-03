@@ -1,9 +1,10 @@
 import xgboost as xgb
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class XgbModelForExtendedPathBoosting:
-    def __init__(self, **kwargs):
+    def __init__(self, **xgb_parameters):
         # we expect each model that is passed to have the following methods:
         # .fit
         # .predict
@@ -14,7 +15,11 @@ class XgbModelForExtendedPathBoosting:
 
         self.train_error = []
         self.test_error = []
-        self.model: xgb.XGBRegressor = xgb.XGBRegressor(**kwargs)
+
+        if xgb_parameters["objective"] is None:
+            xgb_parameters["objective"]=self.custom_objective_function
+
+        self.model: xgb.XGBRegressor = xgb.XGBRegressor(**xgb_parameters)
         self.__fitted=False
 
     def fit(self, X, y, eval_set=None):
@@ -46,5 +51,12 @@ class XgbModelForExtendedPathBoosting:
     def plot_tree(self, num_trees: int=-1):
         xgb.plot_tree(self.model.get_booster(), num_trees=-1)
         plt.show()
+
+    @staticmethod
+    def custom_objective_function(y_true, y_pred):
+
+        gradient = y_true  # Difference between predicted and true values
+        hessian = np.ones_like(gradient)  # Array of ones, same shape as gradient
+        return gradient, hessian
 
 

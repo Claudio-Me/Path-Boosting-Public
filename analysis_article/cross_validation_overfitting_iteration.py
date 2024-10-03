@@ -48,6 +48,8 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     list_of_test_errors: list[list[float]] = []
     list_n_selected_paths = []
     list_oracle_test_error = []
+    list_test_errors_cross_validation_list = []
+
 
     # launch cross validation
     for i in range(number_of_simulations):
@@ -65,7 +67,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 
             list_oracle_test_error.append(oracle_test_error)
 
-        overfitting_iteration, test_error, n_selected_paths = perform_cross_validation(train_dataset, test_dataset,
+        overfitting_iteration, test_error, n_selected_paths, test_errors_cross_validation_list = perform_cross_validation(train_dataset, test_dataset,
                                                                                        k=k_folds,
                                                                                        random_seed=Settings.cross_validation_k_fold_seed,
                                                                                        patience=patience)
@@ -73,13 +75,20 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         list_overfitting_iterations.append(overfitting_iteration)
         list_of_test_errors.append(test_error)
         list_n_selected_paths.append(n_selected_paths)
+        list_test_errors_cross_validation_list.append(test_errors_cross_validation_list)
 
     if show_settings is True:
         Settings.print_principal_values()
+    data_reader.save_data(data=list_test_errors_cross_validation_list, filename='test_errors_cross_validation_list',
+              directory='results/cross_validation', create_unique_subfolder=True)
+
     saving_location = data_reader.get_save_location(file_name="overfitting_iteration", file_extension=".txt",
-                                                    folder_relative_path='results', unique_subfolder=True)
+                                                    folder_relative_path='results/cross_validation', unique_subfolder=True)
     print(saving_location)
     with open(saving_location, "a") as f:
+        print("max number of steps")
+        print(Settings.maximum_number_of_steps)
+
         print("average overfitting iteration:", file=f)
         print(np.average(list_overfitting_iterations), file=f)
 
@@ -109,6 +118,6 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 
 # uncomment to use the file as a script
 if __name__ == '__main__':
-    cross_validation(number_of_simulations=1, k_folds=5, scenario=3, patience=10,
-                     dataset_name="60k_dataset", noise_variance=0.2, maximum_number_of_steps=200, save_fig=True,
+    cross_validation(number_of_simulations=1, k_folds=5, scenario=3, patience=100,
+                     dataset_name="60k_dataset", noise_variance=0.2, maximum_number_of_steps=1800, save_fig=True,
                      use_wrapper_boosting=True, show_settings=True)

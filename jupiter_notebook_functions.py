@@ -484,6 +484,7 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
             model.training(train_dataset_crossvalidation, test_dataset_crossvalidation)
             test_errors_cross_validation_list.append(model.test_error)
         else:
+
             model = WrapperPatternBoosting()
             model.train(train_dataset_crossvalidation, test_dataset_crossvalidation)
             test_errors_cross_validation_list.append(model.get_wrapper_test_error())
@@ -496,7 +497,7 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
     overfitting_iteration = early_stopping(test_errors=test_error_sum, patience=patience)
 
     if overfitting_iteration <= 2:
-        return None, None, None
+        return None, None, None, None
 
     # run the algorithm training over th whole train dataset and see the error in the test dataset
     if Settings.wrapper_boosting is False:
@@ -516,7 +517,7 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
         # get the number of selected_paths
         n_selected_paths = len(model.get_selected_paths())
 
-    return overfitting_iteration, test_error, n_selected_paths
+    return overfitting_iteration, test_error, n_selected_paths, test_errors_cross_validation_list
 
 
 def print_dict_sorted_by_values(d: dict):
@@ -711,7 +712,7 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
                                                                           random_split_seed=Settings.random_split_test_dataset_seed)
 
-        overfitting_iteration, test_error, n_selected_paths = perform_cross_validation(train_dataset, test_dataset,
+        overfitting_iteration, test_error, n_selected_paths, _ = perform_cross_validation(train_dataset, test_dataset,
                                                                                        k=k_folds,
                                                                                        random_seed=random_generator.randint(
                                                                                            n_min,

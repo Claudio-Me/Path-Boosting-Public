@@ -1,31 +1,19 @@
-import copy
-
 import xgboost as xgb
-from numpy.ma.core import negative
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
 import numpy as np
 import pandas as pd
-from classes.dataset import Dataset
 from classes.extended_boosting_matrix import ExtendedBoostingMatrix
-from classes.boosting_matrix import BoostingMatrix
 import networkx as nx
 
-from classes.models_for_extendded_path_boosting.xgb_model_for_extended_path_boosting import \
+from classes.extended_path_boosting.models_for_extendded_path_boosting.xgb_model_for_extended_path_boosting import \
     XgbModelForExtendedPathBoosting
 
-from classes.models_for_extendded_path_boosting.addititive_xgb_for_externded_path_bosting import \
+from classes.extended_path_boosting.models_for_extendded_path_boosting.addititive_xgb_for_externded_path_bosting import \
     AdditiveXgbForExtendedPathBosting
-from settings import Settings
 from settings_for_extended_pattern_boosting import SettingsExtendedPatternBoosting
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import seaborn as sns
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from classes import analysis
-from sklearn.feature_selection import SelectFromModel
 import ast
-import random
 
 
 class ExtendedPatternBoosting:
@@ -55,12 +43,13 @@ class ExtendedPatternBoosting:
         self.test_error = []
 
         self.initialize_expanded_pattern_boosting(
-                                                  selected_paths=selected_paths,
-                                                  train_data=train_data,
-                                                  dict_of_interaction_constraints=dict_of_interaction_constraints,
-                                                  test_data=test_data,
-                                                  settings=settings, train_boosting_matrix=train_boosting_matrix,
-                                                  test_boosting_matrix=test_boosting_matrix)
+            selected_paths=selected_paths,
+            train_data=train_data,
+            dict_of_interaction_constraints=dict_of_interaction_constraints,
+            test_data=test_data,
+            settings=settings,train_boosting_matrix=train_boosting_matrix,
+            test_boosting_matrix=test_boosting_matrix
+        )
 
     def train(self, train_data: pd.DataFrame | list[nx.classes.multigraph.MultiGraph] | None = None,
               dict_of_interaction_constraints: dict | None = None,
@@ -68,7 +57,8 @@ class ExtendedPatternBoosting:
               selected_paths: list[tuple[int]] | None = None,
               settings: SettingsExtendedPatternBoosting | None = None,
               train_boosting_matrix: np.array = None,
-              test_boosting_matrix: np.array = None):
+              test_boosting_matrix: np.array = None
+              ):
 
         assert isinstance(train_data, pd.DataFrame) or train_data is None
         assert isinstance(dict_of_interaction_constraints, dict) or dict_of_interaction_constraints is None
@@ -83,7 +73,8 @@ class ExtendedPatternBoosting:
                                                   test_data=test_data,
                                                   settings=settings,
                                                   train_boosting_matrix=train_boosting_matrix,
-                                                  test_boosting_matrix=test_boosting_matrix)
+                                                  test_boosting_matrix=test_boosting_matrix
+                                                  )
 
         # train, test = train_test_split(self.extended_boosting_matrix_dataframe, test_size=0.2, random_state=0)
 
@@ -96,8 +87,6 @@ class ExtendedPatternBoosting:
             evallist = [(x_df_train, y_train), (x_df_test, y_test)]
         else:
             evallist = [(x_df_train, y_train)]
-
-
 
         for n_iteration in range(self.settings.n_estimators):
             print("Iteration ", n_iteration + 1)
@@ -137,8 +126,8 @@ class ExtendedPatternBoosting:
                 y_zero_hat = self.model.predict(zeroed_x_df)
                 negative_gradient_for_zeroed_matrix = pd.Series(negative_gradient).loc[zeroed_y.index]
                 new_target = y_zero_hat + negative_gradient_for_zeroed_matrix
-                #self.model.fit(X=zeroed_x_df, y=new_target, eval_set=evallist)
-                self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
+                self.model.fit(X=zeroed_x_df, y=new_target, eval_set=evallist)
+                # self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
                 # save train and test error to a list to have its evolution
 
                 # -------------------------------------------------------------------
@@ -150,13 +139,11 @@ class ExtendedPatternBoosting:
                 print(f"predictor {mse=}")
                 # -------------------------------------------------------------------
 
-
-
             print("best path")
             print(best_path)
             # self.xgb_model.get_booster().get_score(importance_type='weight')
             # self.xgb_model.get_booster().get_dump()
-            if self.settings.show_tree is True  :
+            if self.settings.show_tree is True:
                 self.model.plot_tree()
 
             self.paths_selected_by_epb.append(best_path)
@@ -175,8 +162,6 @@ class ExtendedPatternBoosting:
         # it returns the best column to be selected, chosen by running xgb on boosting matrix with zeroes and ones
 
         # x_df.columns = ExtendedPatternBoosting.__tuples_to_strings(x_df.columns)
-
-
 
         choose_column_xgb_parameters = SettingsExtendedPatternBoosting().choose_column_xgb_parameters
         xgb_local_model = xgb.XGBRegressor(**choose_column_xgb_parameters)
@@ -254,8 +239,11 @@ class ExtendedPatternBoosting:
             self.dict_of_interaction_constraints = dict_of_interaction_constraints
 
         if train_boosting_matrix is not None:
-            self.train_bm_df = pd.DataFrame(train_boosting_matrix, dtype='int')
-            self.train_bm_df.columns = self.selected_paths
+            if isinstance(train_boosting_matrix, pd.DataFrame):
+                self.train_bm_df = train_boosting_matrix
+            else:
+                self.train_bm_df = pd.DataFrame(train_boosting_matrix, dtype='int')
+                self.train_bm_df.columns = self.selected_paths
         elif isinstance(train_data, list):
             self.train_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
                                                                              list_graphs_nx=train_data,
@@ -283,8 +271,11 @@ class ExtendedPatternBoosting:
             raise TypeError("test_data type unrecognized", test_data)
 
         if test_boosting_matrix is not None:
-            self.test_bm_df = pd.DataFrame(test_boosting_matrix, dtype='int')
-            self.test_bm_df.columns = self.selected_paths
+            if isinstance(test_boosting_matrix,pd.DataFrame):
+                self.test_bm_df = test_boosting_matrix
+            else:
+                self.test_bm_df = pd.DataFrame(test_boosting_matrix, dtype='int')
+                self.test_bm_df.columns = self.selected_paths
         elif isinstance(test_data, list):
             self.test_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
                                                                             list_graphs_nx=test_data,

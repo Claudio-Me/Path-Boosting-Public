@@ -19,7 +19,7 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 200
+    maximum_number_of_steps = 1800
 
     save_analysis: bool = True
     show_analysis: bool = False
@@ -29,7 +29,7 @@ class Settings:
     generate_from_binary_file = True
 
     # in the error graph Print only the last N learners
-    tail = 1000
+    tail = maximum_number_of_steps + 1
 
     wrapper_boosting: bool = True
 
@@ -43,7 +43,7 @@ class Settings:
 
     scenario = 3
 
-    unique_id_name = "0008"
+    unique_id_name = "0009"
 
     target_train_error = 0.0000001
 

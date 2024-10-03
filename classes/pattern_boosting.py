@@ -514,7 +514,7 @@ class PatternBoosting:
     def __expand_boosting_matrix(self, selected_column_number):
         # Following two lines are jut to have mor readable code, everything can be grouped in one line
         length_selected_path = len(self.boosting_matrix.header[selected_column_number])
-        path_length_condition = length_selected_path <= self.settings.max_path_length
+        path_length_condition = length_selected_path < self.settings.max_path_length
 
         if not (selected_column_number in self.boosting_matrix.already_selected_columns):
             # if the selected column has never been selected before

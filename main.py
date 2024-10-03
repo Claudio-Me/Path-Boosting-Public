@@ -99,8 +99,8 @@ if __name__ == '__main__':
     '''
 
     if Settings.wrapper_boosting is True:
-        print("Number of tained models: ", len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
+        print("Number of tained models: ", len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
