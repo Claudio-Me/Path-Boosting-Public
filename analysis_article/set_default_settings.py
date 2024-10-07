@@ -33,7 +33,7 @@ def set_default_settings():
     # do not expand if the paths are longer than this amount
     Settings.max_path_length = 5
 
-    Settings.unique_id_name = "999999"
+
 
     # portion of the whole dataset that needs to be used as test dataset
     Settings.test_size = 0.2

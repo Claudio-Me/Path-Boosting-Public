@@ -1,4 +1,10 @@
 import sys
+import os
+from collections import Counter
+
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
 
 sys.path.insert(0, "../")
 from jupiter_notebook_functions import *
@@ -50,7 +56,6 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     list_oracle_test_error = []
     list_test_errors_cross_validation_list = []
 
-
     # launch cross validation
     for i in range(number_of_simulations):
         print("iteration number ", i)
@@ -62,15 +67,16 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         if Settings.dataset_name == "5k_synthetic_dataset":
             synthetic_dataset = SyntheticDataset()
             oracle_test_error = synthetic_dataset.oracle_model_evaluate(
-            graphs_list=test_dataset.get_graphs_list(),
-            labels=test_dataset.get_labels())
+                graphs_list=test_dataset.get_graphs_list(),
+                labels=test_dataset.get_labels())
 
             list_oracle_test_error.append(oracle_test_error)
 
-        overfitting_iteration, test_error, n_selected_paths, test_errors_cross_validation_list = perform_cross_validation(train_dataset, test_dataset,
-                                                                                       k=k_folds,
-                                                                                       random_seed=Settings.cross_validation_k_fold_seed,
-                                                                                       patience=patience)
+        overfitting_iteration, test_error, n_selected_paths, test_errors_cross_validation_list = perform_cross_validation(
+            train_dataset, test_dataset,
+            k=k_folds,
+            random_seed=Settings.cross_validation_k_fold_seed,
+            patience=patience)
 
         list_overfitting_iterations.append(overfitting_iteration)
         list_of_test_errors.append(test_error)
@@ -80,10 +86,11 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     if show_settings is True:
         Settings.print_principal_values()
     data_reader.save_data(data=list_test_errors_cross_validation_list, filename='test_errors_cross_validation_list',
-              directory='results/cross_validation', create_unique_subfolder=True)
+                          directory='results/cross_validation', create_unique_subfolder=True)
 
     saving_location = data_reader.get_save_location(file_name="overfitting_iteration", file_extension=".txt",
-                                                    folder_relative_path='results/cross_validation', unique_subfolder=True)
+                                                    folder_relative_path='results/cross_validation',
+                                                    unique_subfolder=True)
     print(saving_location)
     with open(saving_location, "a") as f:
         print("max number of steps")
@@ -112,12 +119,51 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         print(np.average(list_n_selected_paths), np.std(list_n_selected_paths))
 
     fig_name = data_reader.get_save_location(file_name=fig_name, file_extension=".pdf",
-                                             folder_relative_path='results', unique_subfolder=True)
+                                             folder_relative_path='results/cross_validation', unique_subfolder=True)
     plot_test_error_vs_iterations(list_of_test_errors, save_fig=save_fig, name_fig=fig_name)
+
+
+def patience_cross_validation(file_path=None, patience_range=range(5, 100, 5)):
+    if file_path is None:
+        raise ValueError("file_path cannot be None")
+    # list of np array, in which every row of the np array contains the test error for the i-th fold of the cross validation. each element of the list corespond to a different iteration of the cross validation (usually it is just 1 iteration, we use multiple iterations only in the case of synthetic dataset)
+    list_test_errors_cross_validation_list: list = data_reader.load_data(directory=file_path)
+
+    list_test_error_sum = [np.sum(list_test_errors_cross_validation_list[i], axis=0) for i in
+                           range(len(list_test_errors_cross_validation_list))]
+
+    overfitting_evolution = [[]] * len(list_test_error_sum)
+    for i, test_error_sum in enumerate(list_test_error_sum):
+        for patience in patience_range:
+            overfitting_iteration = early_stopping(test_errors=test_error_sum, patience=int(patience))
+            overfitting_evolution[i].append(overfitting_iteration)
+
+    # get average value of each column
+    overfitting_evolution = np.mean(np.array(overfitting_evolution), axis=0)
+    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution*30, patience_range=patience_range,
+                                        saving_location=os.path.dirname(file_path))
+
+    return overfitting_evolution
 
 
 # uncomment to use the file as a script
 if __name__ == '__main__':
-    cross_validation(number_of_simulations=1, k_folds=5, scenario=3, patience=100,
-                     dataset_name="60k_dataset", noise_variance=0.2, maximum_number_of_steps=1800, save_fig=True,
-                     use_wrapper_boosting=True, show_settings=True)
+    number_of_simulations = 1
+    k_folds = 5
+    scenario = 3
+    patience = 100
+    dataset_name = "60k_dataset"
+    noise_variance = 0.2
+    maximum_number_of_steps = 1800
+    save_fig = True
+    use_wrapper_boosting = True
+    show_settings = True
+
+    patience_cross_validation(
+        file_path="/Users/popcorn/PycharmProjects/pattern_boosting/results/cross_validation/Xgb_step_1800_max_path_length_5_60k_dataset_gbtree_999999/wrapped_boosting/test_errors_cross_validation_list.pkl",
+        patience_range=range(5, 300, 5))
+
+    cross_validation(number_of_simulations=number_of_simulations, k_folds=k_folds, scenario=scenario, patience=patience,
+                     dataset_name=dataset_name, noise_variance=noise_variance,
+                     maximum_number_of_steps=maximum_number_of_steps, save_fig=save_fig,
+                     use_wrapper_boosting=use_wrapper_boosting, show_settings=show_settings)

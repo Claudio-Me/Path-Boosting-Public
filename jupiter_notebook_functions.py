@@ -738,3 +738,23 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
                      'list_n_selected_paths_' + name_addition], directory=directory)
 
     return list_overfitting_iterations, list_of_test_errors, list_n_selected_paths
+
+
+def plot_patience_overfitting_evolution(overfitting_evolution, patience_range, saving_location):
+
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(patience_range, overfitting_evolution, marker='o')
+
+    ax.set_title('Overfitting Iteration vs Patience')
+    ax.set_xlabel('Patience')
+    ax.set_ylabel('Overfitting Iteration')
+    ax.grid(True)
+
+    # Specify the filename and path to save the plot
+    plot_filename = "overfitting_vs_patience.png"
+    plot_path = os.path.join(saving_location, plot_filename)
+
+    plt.savefig(plot_path)
+
+    plt.show()

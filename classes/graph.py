@@ -221,7 +221,9 @@ class GraphPB:
     @staticmethod
     def from_GraphNX_to_GraphPB(nx_Graph, label=None):
         # convert to undirected graphs
-        nx_Graph= nx.to_undirected(nx_Graph)
+        if Settings.convert_to_undirected is True:
+            nx_Graph= nx.to_undirected(nx_Graph)
+
         # need to convert dictionary keys and values from string to integer
         n_t_l_d = nx.get_node_attributes(nx_Graph, 'feature_atomic_number')
         n_t_l_d = {int(k): v for k, v in n_t_l_d.items()}

@@ -19,7 +19,7 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 1800
+    maximum_number_of_steps = 758
 
     save_analysis: bool = True
     show_analysis: bool = False
@@ -27,6 +27,9 @@ class Settings:
     dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
     generate_new_dataset = False
     generate_from_binary_file = True
+
+    # convert the nx graphs to undirected graphs, used only when generating new dataset
+    convert_to_undirected = False
 
     # in the error graph Print only the last N learners
     tail = maximum_number_of_steps + 1
@@ -43,7 +46,7 @@ class Settings:
 
     scenario = 3
 
-    unique_id_name = "0009"
+    unique_id_name = "001"
 
     target_train_error = 0.0000001
 
@@ -52,7 +55,7 @@ class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
     # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = False
+    update_features_importance_by_comparison = True
     verbose = True
 
     max_number_of_cores = mp.cpu_count()
