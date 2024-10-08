@@ -186,6 +186,8 @@ class WrapperPatternBoosting:
 
         return array_of_outputs
 
+
+
     def predict_test_dataset_parallel(self) -> List[float] | None:
         if self.test_dataset is None:
             warnings.warn("Test dataset not found")
@@ -200,7 +202,7 @@ class WrapperPatternBoosting:
             args_list = [(graph, self.get_trained_pattern_boosting_models()) for graph in graphs_list]
 
             # Use multiprocessing Pool to parallelize the task
-            with mp.Pool(num_processes) as pool:
+            with mp.get_context("spawn").Pool(2) as pool:
                 results = pool.map(predict_test_dataset_graph, args_list)
 
             # Aggregation of results and normalization
@@ -252,9 +254,7 @@ class WrapperPatternBoosting:
             for i, graph in enumerate(self.test_dataset.get_graphs_list()):
 
                 for model in self.pattern_boosting_models_list:
-
                     try:
-
                         index = model.test_dataset.get_graphs_list().index(graph)
                         predictions[i] += model.test_dataset_final_predictions[index]
                         counters[i] += 1

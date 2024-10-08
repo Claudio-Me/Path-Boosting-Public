@@ -31,9 +31,12 @@ class AnalysisWrapperPatternBoosting:
         # old method, it works, but it is slow
         # self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
         if self.test_predictions is None:
-            self.test_predictions = list(self.wrapper_pattern_boosting.predict_test_dataset_parallel())
+            # self.test_predictions = list(self.wrapper_pattern_boosting.predict_test_dataset_parallel())
+            self.test_predictions = list(self.wrapper_pattern_boosting.predict_test_dataset())
+
         if self.train_predictions is None:
-            self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset_parallel()
+            # self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset_parallel()
+            self.train_predictions = self.wrapper_pattern_boosting.predict_train_dataset()
 
     def plot_all_analysis(self, n: int | None = None, synthetic_dataset: SyntheticDataset | None = None):
         self.plot_top_n_paths_heatmap(n)

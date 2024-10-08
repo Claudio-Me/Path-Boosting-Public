@@ -101,6 +101,7 @@ class GraphPB:
 
         # add new labels found to the path
         new_tuple_labels = [path_label + tuple([label]) for label in new_labels_with_no_repetitions]
+        # just to plot the graphs
         if False:
             if max(list(count)) > 300:
                 self.plot_labeled_graph()

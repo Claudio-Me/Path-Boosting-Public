@@ -31,7 +31,7 @@ def set_default_settings():
         Settings.considered_metal_centers = None
 
     # do not expand if the paths are longer than this amount
-    Settings.max_path_length = 5
+    Settings.max_path_length = 6
 
 
 

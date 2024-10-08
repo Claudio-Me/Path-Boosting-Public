@@ -159,11 +159,13 @@ if __name__ == '__main__':
     use_wrapper_boosting = True
     show_settings = True
 
-    patience_cross_validation(
-        file_path="/Users/popcorn/PycharmProjects/pattern_boosting/results/cross_validation/Xgb_step_1800_max_path_length_5_60k_dataset_gbtree_999999/wrapped_boosting/test_errors_cross_validation_list.pkl",
-        patience_range=range(5, 300, 5))
+
 
     cross_validation(number_of_simulations=number_of_simulations, k_folds=k_folds, scenario=scenario, patience=patience,
                      dataset_name=dataset_name, noise_variance=noise_variance,
                      maximum_number_of_steps=maximum_number_of_steps, save_fig=save_fig,
                      use_wrapper_boosting=use_wrapper_boosting, show_settings=show_settings)
+
+    patience_cross_validation(
+        file_path="/Users/user/pattern_boosting/results/cross_validation/Xgb_step_1800_max_path_length_6_60k_dataset_gbtree_906/wrapped_boosting/test_errors_cross_validation_list.pkl",
+        patience_range=range(5, 300, 5))

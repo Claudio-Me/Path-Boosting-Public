@@ -19,7 +19,7 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 758
+    maximum_number_of_steps = 1800
 
     save_analysis: bool = True
     show_analysis: bool = False
@@ -39,14 +39,14 @@ class Settings:
     noise_variance = 0.2
 
     # do not expand if the paths are longer than this amount
-    max_path_length = 5
+    max_path_length = 6
 
     # portion of the whole dataset that needs to be used as test dataset
     test_size = 0.2
 
     scenario = 3
 
-    unique_id_name = "001"
+    unique_id_name = "906"
 
     target_train_error = 0.0000001
 
@@ -55,7 +55,7 @@ class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
     # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = True
+    update_features_importance_by_comparison = False
     verbose = True
 
     max_number_of_cores = mp.cpu_count()
