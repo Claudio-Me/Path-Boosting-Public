@@ -9,6 +9,9 @@ from classes.extended_path_boosting.models_for_extendded_path_boosting.xgb_model
 
 from classes.extended_path_boosting.models_for_extendded_path_boosting.addititive_xgb_for_externded_path_bosting import \
     AdditiveXgbForExtendedPathBosting
+
+from classes.extended_path_boosting.models_for_extendded_path_boosting.additive_tree_model_for_extended_path_boosting import AdditiveTreeModelForExtendedPathBosting
+
 from settings_for_extended_pattern_boosting import SettingsExtendedPatternBoosting
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
@@ -47,7 +50,7 @@ class ExtendedPatternBoosting:
             train_data=train_data,
             dict_of_interaction_constraints=dict_of_interaction_constraints,
             test_data=test_data,
-            settings=settings,train_boosting_matrix=train_boosting_matrix,
+            settings=settings, train_boosting_matrix=train_boosting_matrix,
             test_boosting_matrix=test_boosting_matrix
         )
 
@@ -96,7 +99,10 @@ class ExtendedPatternBoosting:
                 zeroed_x_df, zeroed_y = ExtendedBoostingMatrix.zero_all_elements_except_the_ones_referring_to_path(
                     x_df=x_df_train, y=y_train, path=best_path,
                     dict_of_interaction_constraints=self.dict_of_interaction_constraints)
-                self.model = self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
+
+                self.model.fit(x_df_train, y_train, best_path=best_path,
+                                            dict_of_interaction_constraints=self.dict_of_interaction_constraints,
+                                            eval_set=evallist)
                 # -------------------------------------------------------------------
                 # TODO delete this
                 # delete me
@@ -113,20 +119,22 @@ class ExtendedPatternBoosting:
                 # evals_results=self.xgb_model.eval_result()
                 # last_training_error=evals_results['validation_0'][self.settings.main_xgb_parameters['eval_metric']][-1]
 
+                # compute old negative gradient before fitting, needed for the fitting
                 predictions = self.model.predict(x_df_train)
                 negative_gradient = self.neg_gradient(y=y_train.to_numpy(), y_hat=np.array(predictions))
 
                 best_path = self.__find_best_path(self.train_bm_df, pd.Series(negative_gradient))
 
-                zeroed_x_df, zeroed_y = ExtendedBoostingMatrix.zero_all_elements_except_the_ones_referring_to_path(
-                    x_df=x_df_train, y=y_train, path=best_path,
-                    dict_of_interaction_constraints=self.dict_of_interaction_constraints)
+
+
+                # start fitting the model
+                print("start fitting the model")
 
                 # self.settings.main_xgb_parameters['n_estimators'] = n_iteration + 1
-                y_zero_hat = self.model.predict(zeroed_x_df)
-                negative_gradient_for_zeroed_matrix = pd.Series(negative_gradient).loc[zeroed_y.index]
-                new_target = y_zero_hat + negative_gradient_for_zeroed_matrix
-                self.model.fit(X=zeroed_x_df, y=new_target, eval_set=evallist)
+
+                self.model.fit(X=x_df_train, y=y_train, best_path=best_path,
+                               dict_of_interaction_constraints=self.dict_of_interaction_constraints, eval_set=evallist,
+                               negative_gradient=negative_gradient)
                 # self.model.fit(zeroed_x_df, zeroed_y, eval_set=evallist)
                 # save train and test error to a list to have its evolution
 
@@ -221,6 +229,8 @@ class ExtendedPatternBoosting:
             self.model = XgbModelForExtendedPathBoosting(**self.settings.main_xgb_parameters)
         elif self.settings.name_model == 'additive_xgboost':
             self.model = AdditiveXgbForExtendedPathBosting(**self.settings.main_xgb_parameters)
+        elif self.settings.name_model == 'additive_tree':
+            self.model = AdditiveTreeModelForExtendedPathBosting(**self.settings.base_tree_parameters)
         if hasattr(selected_paths, '__iter__'):
             self.selected_paths = selected_paths
 
@@ -271,7 +281,7 @@ class ExtendedPatternBoosting:
             raise TypeError("test_data type unrecognized", test_data)
 
         if test_boosting_matrix is not None:
-            if isinstance(test_boosting_matrix,pd.DataFrame):
+            if isinstance(test_boosting_matrix, pd.DataFrame):
                 self.test_bm_df = test_boosting_matrix
             else:
                 self.test_bm_df = pd.DataFrame(test_boosting_matrix, dtype='int')
@@ -315,7 +325,7 @@ class ExtendedPatternBoosting:
 
     @staticmethod
     def neg_gradient(y, y_hat):
-        return 2 * (y - y_hat)
+        return y - y_hat
 
     @staticmethod
     def __tuples_to_strings(tuples_list):

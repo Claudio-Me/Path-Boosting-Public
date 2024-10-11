@@ -1,6 +1,8 @@
 import xgboost as xgb
 import matplotlib.pyplot as plt
 import pandas as pd
+from classes.extended_boosting_matrix import ExtendedBoostingMatrix
+
 
 class AdditiveXgbForExtendedPathBosting:
     def __init__(self, **kwargs):
@@ -18,57 +20,53 @@ class AdditiveXgbForExtendedPathBosting:
         self.test_error = []
         self.base_learners_list: list[xgb.XGBRegressor] = []
 
-
-    def fit(self, X, y, eval_set):
+    def fit(self, X, y,best_path,dict_of_interaction_constraints, eval_set = None, negative_gradient=None):
         # we assume y is the real target and we compute the negative gradient
         # note: in case eval_set is passed, we assume the first parameter is the training dataset.
         # create new base learner model
-        new_base_learner = xgb.XGBRegressor(**self.__kwargs)
 
+        zeroed_x_df, zeroed_y = ExtendedBoostingMatrix.zero_all_elements_except_the_ones_referring_to_path(
+            x_df=X, y=y, path=best_path, dict_of_interaction_constraints=dict_of_interaction_constraints)
+
+        new_base_learner = xgb.XGBRegressor(**self.__kwargs)
 
         if len(self.base_learners_list) == 0:
             # it is the first time we fit it so we do not need to compute the neg gradient
-            new_base_learner.fit(X, y, eval_set=eval_set)
-            original_dataset = eval_set[0][0]
-            self.__last_prediction = pd.Series(new_base_learner.predict(original_dataset))
+            new_base_learner.fit(zeroed_x_df, zeroed_y, eval_set=eval_set)
+            self.__last_prediction = pd.Series(new_base_learner.predict(X))
             self.base_learners_list.append(new_base_learner)
 
 
         else:
 
-            # compute neg gradient
-            # we assume kwargs eval_set[0][1] are the original labels
-            neg_gradient = self.__neg_gradient(y= eval_set[0][1], y_hat=self.__last_prediction)
-            neg_gradient = pd.Series(neg_gradient).loc[X.index]
+            # compute the new target (we have to use zeroed_y - true_neg_gradient instead of just zeroed_y, more explained in paper)
+            if negative_gradient is None:
+                negative_gradient = self.__neg_gradient(y=y, y_hat=self.__last_prediction)
+            new_y = pd.Series(negative_gradient).loc[zeroed_y.index]
+
             new_base_learner = xgb.XGBRegressor(**self.__kwargs)
-            new_base_learner.fit(X, neg_gradient, eval_set=eval_set)
-            # we assume this is the original training dataset
-            original_dataset=eval_set[0][0]
-            self.__last_prediction += new_base_learner.predict(original_dataset)
+            new_base_learner.fit(zeroed_x_df, new_y, eval_set=eval_set)
+            self.__last_prediction += new_base_learner.predict(X)
             self.base_learners_list.append(new_base_learner)
 
         # add the errors
-        self.train_error += new_base_learner.evals_result()['validation_0']['rmse']
+        self.train_error.append(pow(new_base_learner.evals_result()['validation_0']['rmse'][-1],2))
         try:
-            self.test_error += new_base_learner.evals_result()['validation_1']['rmse']
+            self.test_error.append(pow(new_base_learner.evals_result()['validation_1']['rmse'][-1],2))
         except:
             pass
         return self
 
-
-
     def predict(self, X, **kwargs):
-        prediction =[]
+        prediction = []
         for base_learner in self.base_learners_list:
             prediction.append(base_learner.predict(X, **kwargs))
 
         return sum(prediction)
 
-
-
     def get_dump(self):
 
-        return [base_learner.get_booster().get_dump()for base_learner in self.base_learners_list]
+        return [base_learner.get_booster().get_dump() for base_learner in self.base_learners_list]
 
     def get_model(self):
         return self.base_learners_list

@@ -64,7 +64,7 @@ class Settings:
         'n_estimators': 1,
         'booster': 'gbtree',  # gbtree # gblinear
         'learning_rate': 0.3,
-        "eval_metric": "rmse",
+        # "eval_metric": "rmse",
         "objective": 'reg:squarederror',
         "reg_lambda": 0,
         "alpha": 0

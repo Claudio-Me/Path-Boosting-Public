@@ -4,6 +4,7 @@ from data import data_reader
 import numpy as np
 import matplotlib as mpl
 import pandas as pd
+from matplotlib.ticker import MaxNLocator
 
 
 def compare_performances_on_synthetic_dataset(test_model_preds, oracle_model_preds, true_values, dataset: str,
@@ -69,6 +70,9 @@ def plot_error_evolution(error_list: list, dataset: str, save: bool = False, sho
 
     # Inverse log scale for the y-axis
     # ax.set_yscale("log")
+
+    #set integers
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     # Add title and labels
     ax.set_title(dataset + ' Error')

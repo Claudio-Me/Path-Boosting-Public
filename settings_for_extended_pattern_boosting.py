@@ -3,16 +3,16 @@
 class SettingsExtendedPatternBoosting:
     def __init__(self):
         self.plot_analysis = True
-        self.n_estimators = 5
-        self.show_tree: bool = False
-        self.xgb_verbose: bool = True
-        self.name_model = 'xgboost' # 'additive_xgboost' 'xgboost'
+        self.n_estimators = 20
+        self.show_tree: bool = True
+        self.xgb_verbose: bool = False
+        self.name_model = 'additive_tree' # 'additive_xgboost' 'xgboost' 'additive_tree'
 
         self.main_xgb_parameters = {'n_estimators': 1,
                                     'max_depth': 2,
                                     'learning_rate': 0.3,
                                     "eval_metric": "rmse",
-                                    "objective": None, # reg:squarederror
+                                    "objective": 'reg:squarederror', # None 'reg:squarederror'
                                     "reg_lambda": 0,
                                     "alpha": 0,
                                     "random_state": 0,
@@ -23,12 +23,18 @@ class SettingsExtendedPatternBoosting:
                                              'booster': 'gbtree',  # gbtree # gblinear
                                              'max_depth': 1,
                                              'learning_rate': 0.3,
-                                             "eval_metric": "rmse",
+                                             #"eval_metric": "rmse",
                                              "objective": 'reg:squarederror',
                                              "reg_lambda": 0,
                                              "alpha": 0,
                                              'random_state': 0,
                                              }
+
+        self.base_tree_parameters = {'max_depth': 2,
+                                     'random_state': 0,
+                                     'splitter': 'best',
+                                     'criterion':"squared_error",}
+
 
         # if self.main_xgb_parameters['booster'] == 'gblinear':
         # self.main_xgb_parameters['updater'] = 'coord_descent'  # shotgun
