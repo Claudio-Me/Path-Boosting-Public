@@ -19,7 +19,7 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
 
-    maximum_number_of_steps = 2000
+    maximum_number_of_steps = 1800
 
     save_analysis: bool = True
     show_analysis: bool = False
@@ -29,7 +29,7 @@ class Settings:
     generate_from_binary_file = True
 
     # convert the nx graphs to undirected graphs, used only when generating new dataset
-    convert_to_undirected = False
+    convert_to_undirected = True
 
     # in the error graph Print only the last N learners
     tail = maximum_number_of_steps + 1
@@ -46,7 +46,7 @@ class Settings:
 
     scenario = 3
 
-    unique_id_name = "2000"
+    unique_id_name = "1002"
 
     target_train_error = 0.0000001
 
@@ -64,7 +64,7 @@ class Settings:
         'n_estimators': 1,
         'booster': 'gbtree',  # gbtree # gblinear
         'learning_rate': 0.3,
-        # "eval_metric": "rmse",
+        "eval_metric": "rmse",
         "objective": 'reg:squarederror',
         "reg_lambda": 0,
         "alpha": 0
