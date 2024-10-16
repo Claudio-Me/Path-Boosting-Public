@@ -1,4 +1,5 @@
 import sys
+
 sys.path.insert(0, "../")
 from classes.testing.testing import Testing
 from classes.pattern_boosting import PatternBoosting
@@ -31,21 +32,22 @@ import sys
 from multiprocessing.dummy import Pool as ThreadPool
 import functools
 
-
 if __name__ == '__main__':
-    #Testing()
+    # Testing()
+    settings = Settings()
 
-    print("Number of CPU's: ", Settings.max_number_of_cores)
-    print("Dataset name: ", Settings.dataset_name)
+    print("Number of CPU's: ", settings.max_number_of_cores)
+    print("Dataset name: ", settings.dataset_name)
 
     dataset = load_dataset()
 
-    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                      random_split_seed=Settings.random_split_test_dataset_seed)
+    train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
+                                                                      random_split_seed=settings.random_split_test_dataset_seed)
 
     # wrapper pattern boosting:
-    if Settings.wrapper_boosting is True:
-        wrapper_pattern_boosting = WrapperPatternBoosting()
+    if settings.wrapper_boosting is True:
+        wrapper_pattern_boosting = WrapperPatternBoosting(metal_center_list=settings.considered_metal_centers,
+                                                          settings=settings)
         wrapper_pattern_boosting.train(train_dataset, test_dataset)
 
         final_test_error = wrapper_pattern_boosting.get_wrapper_test_error()
@@ -56,7 +58,6 @@ if __name__ == '__main__':
         # pattern boosting
         pattern_boosting = PatternBoosting()
         pattern_boosting.training(train_dataset, test_dataset)
-
 
         final_test_error = pattern_boosting.test_error[-1]
 
@@ -71,35 +72,36 @@ if __name__ == '__main__':
     original_stdout = sys.stdout
     with open(saving_location, 'a') as f:
         sys.stdout = f  # Change the standard output to the file we created.
-        string = str(Settings.considered_metal_centers) + '-'
+        string = str(settings.considered_metal_centers) + '-'
         string += str(final_test_error) + '\n'
         print(string)
         sys.stdout = original_stdout  # Reset the standard output to its original value
 
-    if Settings.wrapper_boosting is True:
-        print("Number of tained models: ",len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
+    if settings.wrapper_boosting is True:
+        print("Number of tained models: ", len(wrapper_pattern_boosting.get_trained_pattern_boosting_models()))
         data_reader.save_data(wrapper_pattern_boosting, filename="wrapper_pattern_boosting", directory="results")
     else:
         data_reader.save_data(pattern_boosting, filename="pattern_boosting", directory="results")
 
-    if Settings.wrapper_boosting is True:
-        if Settings.dataset_name == "5k_synthetic_dataset":
+    if settings.wrapper_boosting is True:
+        if settings.dataset_name == "5k_synthetic_dataset":
             synthetic_dataset = SyntheticDataset()
         else:
             synthetic_dataset = None
-        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting,save=Settings.save_analysis, show=Settings.show_analysis)
-        analysis.plot_all_analysis(n=Settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
+        analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting=wrapper_pattern_boosting, settings=settings,
+                                                  save=settings.save_analysis, show=settings.show_analysis)
+        analysis.plot_all_analysis(n=settings.n_of_paths_importance_plotted, synthetic_dataset=synthetic_dataset)
 
 
     else:
         analysis = AnalysisPatternBoosting()
         analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
                                                                           unique_subfolder=True),
-                                  show=Settings.show_analysis,
-                                  save=Settings.save_analysis)
+                                  show=settings.show_analysis,
+                                  save=settings.save_analysis)
 
         '''
-        if Settings.dataset_name == "5k_synthetic_dataset":
+        if settings.dataset_name == "5k_synthetic_dataset":
             analysis.all_analysis(pattern_boosting=pattern_boosting, synthetic_dataset=synthetic_dataset, show=False,
                                   save=True)
         '''

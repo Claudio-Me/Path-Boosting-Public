@@ -14,41 +14,41 @@ from analysis_article.set_default_settings import set_default_settings
 def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=3, dataset_name="5k_synthetic_dataset",
                      noise_variance=0.2, maximum_number_of_steps=None,
                      save_fig=False, use_wrapper_boosting=None, show_settings=True):
-    set_default_settings()
+    settings = set_default_settings()
 
-    Settings.noise_variance = noise_variance
+    settings.noise_variance = noise_variance
 
-    Settings.scenario = scenario
-    Settings.set_scenario(scenario)
+    settings.scenario = scenario
+    settings.set_scenario(scenario)
 
-    Settings.save_analysis = False
-    Settings.show_analysis = False
-    Settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    if Settings.dataset_name == "5k_synthetic_dataset":
-        Settings.generate_new_dataset = True
-        fig_name = "test_error_cross_validation_scenario_" + str(Settings.scenario)
-    elif Settings.dataset_name == "5_k_selection_graphs" or Settings.dataset_name == "60k_dataset":
-        Settings.generate_new_dataset = False
+    settings.save_analysis = False
+    settings.show_analysis = False
+    settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    if settings.dataset_name == "5k_synthetic_dataset":
+        settings.generate_new_dataset = True
+        fig_name = "test_error_cross_validation_scenario_" + str(settings.scenario)
+    elif settings.dataset_name == "5_k_selection_graphs" or settings.dataset_name == "60k_dataset":
+        settings.generate_new_dataset = False
         fig_name = "test_error_cross_validation"
-        Settings.wrapper_boosting = True
+        settings.wrapper_boosting = True
 
-    Settings.wrapper_boosting = use_wrapper_boosting
+    settings.wrapper_boosting = use_wrapper_boosting
 
     if (
-            scenario == 1 or scenario == 2) and Settings.dataset_name == "5k_synthetic_dataset":
-        Settings.wrapper_boosting = False
-    elif scenario == 3 and Settings.dataset_name == "5k_synthetic_dataset":
-        Settings.wrapper_boosting = True
+            scenario == 1 or scenario == 2) and settings.dataset_name == "5k_synthetic_dataset":
+        settings.wrapper_boosting = False
+    elif scenario == 3 and settings.dataset_name == "5k_synthetic_dataset":
+        settings.wrapper_boosting = True
 
     if maximum_number_of_steps is None:
         if scenario == 1:
-            Settings.maximum_number_of_steps = 80
+            settings.maximum_number_of_steps = 80
         elif scenario == 2:
-            Settings.maximum_number_of_steps = 150
+            settings.maximum_number_of_steps = 150
         elif scenario == 3:
-            Settings.maximum_number_of_steps = 350
+            settings.maximum_number_of_steps = 350
     else:
-        Settings.maximum_number_of_steps = maximum_number_of_steps
+        settings.maximum_number_of_steps = maximum_number_of_steps
 
     list_overfitting_iterations = []
     list_of_test_errors: list[list[float]] = []
@@ -59,12 +59,12 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     # launch cross validation
     for i in range(number_of_simulations):
         print("iteration number ", i)
-        print(Settings.maximum_number_of_steps)
+        print(settings.maximum_number_of_steps)
 
         dataset = load_dataset()
-        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                          random_split_seed=Settings.random_split_test_dataset_seed)
-        if Settings.dataset_name == "5k_synthetic_dataset":
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
+                                                                          random_split_seed=settings.random_split_test_dataset_seed)
+        if settings.dataset_name == "5k_synthetic_dataset":
             synthetic_dataset = SyntheticDataset()
             oracle_test_error = synthetic_dataset.oracle_model_evaluate(
                 graphs_list=test_dataset.get_graphs_list(),
@@ -74,8 +74,9 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
 
         overfitting_iteration, test_error, n_selected_paths, test_errors_cross_validation_list = perform_cross_validation(
             train_dataset, test_dataset,
+            settings=settings,
             k=k_folds,
-            random_seed=Settings.cross_validation_k_fold_seed,
+            random_seed=settings.cross_validation_k_fold_seed,
             patience=patience)
 
         list_overfitting_iterations.append(overfitting_iteration)
@@ -84,7 +85,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         list_test_errors_cross_validation_list.append(test_errors_cross_validation_list)
 
     if show_settings is True:
-        Settings.print_principal_values()
+        settings.print_principal_values()
     data_reader.save_data(data=list_test_errors_cross_validation_list, filename='test_errors_cross_validation_list',
                           directory='results/cross_validation', create_unique_subfolder=True)
 
@@ -94,7 +95,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
     print(saving_location)
     with open(saving_location, "a") as f:
         print("max number of steps")
-        print(Settings.maximum_number_of_steps)
+        print(settings.maximum_number_of_steps)
 
         print("average overfitting iteration:", file=f)
         print(np.average(list_overfitting_iterations), file=f)
@@ -111,7 +112,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
             final_test_error_list.append(array_test_error[-1])
 
         print(np.average(final_test_error_list), np.std(final_test_error_list), file=f)
-    if Settings.dataset_name == "5k_synthetic_dataset":
+    if settings.dataset_name == "5k_synthetic_dataset":
         print('oracle test error')
         print(np.average(list_oracle_test_error), np.std(list_oracle_test_error))
 
@@ -140,7 +141,7 @@ def patience_cross_validation(file_path=None, patience_range=range(5, 100, 5)):
 
     # get average value of each column
     overfitting_evolution = np.mean(np.array(overfitting_evolution), axis=0)
-    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution*30, patience_range=patience_range,
+    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution * 30, patience_range=patience_range,
                                         saving_location=os.path.dirname(file_path))
 
     return overfitting_evolution
@@ -158,8 +159,6 @@ if __name__ == '__main__':
     save_fig = True
     use_wrapper_boosting = True
     show_settings = True
-
-
 
     cross_validation(number_of_simulations=number_of_simulations, k_folds=k_folds, scenario=scenario, patience=patience,
                      dataset_name=dataset_name, noise_variance=noise_variance,

@@ -73,8 +73,10 @@ def train_pattern_boosting(input_from_parallelization: tuple):
 
 
 class WrapperPatternBoosting:
-    def __init__(self, pattern_boosting_list: list = None, metal_center_list: list = Settings.considered_metal_centers,
+    def __init__(self, pattern_boosting_list: list = None, metal_center_list: list = None,
                  settings: Settings = Settings()):
+        if metal_center_list is None:
+            raise ValueError('metal_center_list cannot be None')
         if pattern_boosting_list is None:
             pattern_boosting_list = [PatternBoosting(settings) for _ in range(len(metal_center_list))]
 
@@ -93,7 +95,7 @@ class WrapperPatternBoosting:
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
         # TODO remove memory tracer
-        if Settings.plot_log_info is True:
+        if self.settings.plot_log_info is True:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the beginning of the prediction: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
@@ -132,7 +134,7 @@ class WrapperPatternBoosting:
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
-        if Settings.plot_log_info is True:
+        if self.settings.plot_log_info is True:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the beginning of the parallelization: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
@@ -144,8 +146,8 @@ class WrapperPatternBoosting:
                                              global_labels_variance))
         print(f"{len(input_for_parallelization)=}")
         with mp.get_context("spawn").Pool(17) as pool:
-            # mp.get_context("spawn").Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
-            # pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+            # mp.get_context("spawn").Pool(min(self.settings.max_number_of_cores, len(self.settings.considered_metal_centers)))
+            # pool = mp.Pool(min(self.settings.max_number_of_cores, len(self.settings.considered_metal_centers)))
             array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization)
 
         # -------------------------------------------------------------------------------------------------------------
@@ -154,7 +156,7 @@ class WrapperPatternBoosting:
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
-        if Settings.plot_log_info is True:
+        if self.settings.plot_log_info is True:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the end of parallelization of the prediction: {traced_memory}")
         # ----------------------------------------------------------------------------------------------------------
@@ -176,7 +178,7 @@ class WrapperPatternBoosting:
 
         input_for_parallelization = zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
                                         global_labels_variance)
-        pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
+        pool = mp.Pool(min(self.settings.max_number_of_cores, len(self.settings.considered_metal_centers)))
         array_of_outputs = pool.map(
             functools.partial(train_pattern_boosting), input_for_parallelization)
         # -------------------------------------------------------------------------------------------------------------
@@ -430,9 +432,9 @@ class WrapperPatternBoosting:
         y_pred = self.predict(dataset.get_graphs_list(), boosting_matrix_matrix)
         labels = dataset.get_labels()
 
-        if Settings.final_evaluation_error == "MSE":
+        if self.settings.final_evaluation_error == "MSE":
             model_error = metrics.mean_squared_error(labels, y_pred)
-        elif Settings.final_evaluation_error == "absolute_mean_error":
+        elif self.settings.final_evaluation_error == "absolute_mean_error":
             model_error = metrics.mean_absolute_error(labels, y_pred)
         else:
             raise ValueError("measure error not found")

@@ -9,30 +9,30 @@ from analysis_article.set_default_settings import set_default_settings
 
 def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
                         maximum_number_of_steps=None, save_fig=False, show_settings=True):
-    set_default_settings()
+    settings = set_default_settings()
 
 
-    Settings.noise_variance = noise_variance
+    settings.noise_variance = noise_variance
 
-    Settings.scenario = synthetic_dataset_scenario
-    Settings.set_scenario(synthetic_dataset_scenario)
+    settings.scenario = synthetic_dataset_scenario
+    settings.set_scenario(synthetic_dataset_scenario)
 
 
-    Settings.save_analysis = False
-    Settings.show_analysis = False
-    Settings.dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    Settings.generate_new_dataset = True
+    settings.save_analysis = False
+    settings.show_analysis = False
+    settings.dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    settings.generate_new_dataset = True
 
     if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-        Settings.wrapper_boosting = False
+        settings.wrapper_boosting = False
     elif synthetic_dataset_scenario == 3:
-        Settings.wrapper_boosting = True
+        settings.wrapper_boosting = True
 
     if maximum_number_of_steps is None:
         if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-            Settings.maximum_number_of_steps = 100
+            settings.maximum_number_of_steps = 100
         elif synthetic_dataset_scenario == 3:
-            Settings.maximum_number_of_steps = 350
+            settings.maximum_number_of_steps = 350
 
     final_test_error_vector = []
     final_train_error_vector = []
@@ -53,8 +53,8 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
         print(i)
         dataset = load_dataset()
 
-        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                          random_split_seed=Settings.random_split_test_dataset_seed)
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
+                                                                          random_split_seed=settings.random_split_test_dataset_seed)
 
         # pattern boosting
         pattern_boosting = PatternBoosting()
@@ -138,7 +138,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
         plt.show()
 
     if show_settings is True:
-        Settings.print_principal_values()
+        settings.print_principal_values()
 
     plot_tpr_vs_iterations_max_min(true_positive_ratio_1, save_fig=save_fig)
 

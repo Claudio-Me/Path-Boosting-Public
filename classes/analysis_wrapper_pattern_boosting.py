@@ -21,13 +21,14 @@ from classes.analysis import *
 
 
 class AnalysisWrapperPatternBoosting:
-    def __init__(self, wrapper_pattern_boosting: WrapperPatternBoosting, test_predictions: list[float] | None = None,
+    def __init__(self, wrapper_pattern_boosting: WrapperPatternBoosting, settings: Settings, test_predictions: list[float] | None = None,
                  train_predictions: list[float] | None = None, save: bool = False, show: bool = False):
         self.show: bool = show
         self.save: bool = save
         self.wrapper_pattern_boosting = wrapper_pattern_boosting
         self.test_predictions = test_predictions
         self.train_predictions = train_predictions
+        self.settings= settings
         # old method, it works, but it is slow
         # self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
         if self.test_predictions is None:
@@ -52,7 +53,7 @@ class AnalysisWrapperPatternBoosting:
                             predictions=self.train_predictions, save_fig=self.save, show_fig=self.show,
                             tittle="Performance of the Algorithm on train dataset",
                             fig_name="train_density_scatterplot")
-        if Settings.show_analysis is True or Settings.save_analysis is True:
+        if self.settings.show_analysis is True or self.settings.save_analysis is True:
             plot_error_evolution(self.wrapper_pattern_boosting.get_train_error_per_number_of_base_learners(),
                                  dataset='Train', show=self.show, save=self.save)
             plot_error_evolution(self.wrapper_pattern_boosting.get_test_error_per_number_of_base_learners(),

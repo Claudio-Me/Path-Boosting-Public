@@ -2,6 +2,7 @@ from sklearn import metrics
 import numpy as np
 from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
+from my_script import settings
 from settings import Settings
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -423,20 +424,9 @@ def plot_tpr_vs_iterations_different_definitions(tpr1: list[float], tpr2: list[f
     plt.show()
 
 
-def parallelize_cross_validation(input_from_parallelization):
-    train_dataset = input_from_parallelization[0]
-    test_dataset = input_from_parallelization[1]
-    if Settings.wrapper_boosting is False:
-        model = PatternBoosting()
-        model.training(train_dataset, test_dataset)
-    else:
-        model = WrapperPatternBoosting()
-        model.train(train_dataset, test_dataset)
-
-    return model
 
 
-def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5, random_seed=None, patience=3):
+def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, settings: Settings, k=5, random_seed=None, patience=3):
     """
     Perform K-Fold cross-validation on the dataset.
 
@@ -478,17 +468,16 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, k=5,
 
         train_dataset_crossvalidation = Dataset([graphs_list[i] for i in train_index])
         test_dataset_crossvalidation = Dataset([graphs_list[i] for i in test_index])
-        
+
         if Settings.wrapper_boosting is False:
-            model = PatternBoosting()
+            model = PatternBoosting(settings = settings)
             model.training(train_dataset_crossvalidation, test_dataset_crossvalidation)
             test_errors_cross_validation_list.append(model.test_error)
         else:
 
-            model = WrapperPatternBoosting()
+            model = WrapperPatternBoosting(settings = settings)
             model.train(train_dataset_crossvalidation, test_dataset_crossvalidation)
             test_errors_cross_validation_list.append(model.get_wrapper_test_error())
-
 
     test_errors_cross_validation_list = np.array(test_errors_cross_validation_list)
     test_error_sum = np.sum(test_errors_cross_validation_list, axis=0)
@@ -670,12 +659,12 @@ def plot_test_error_vs_iterations(test_errors_per_iteration: list[list[float]], 
     plt.show()
 
 
-def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_folds):
+def cross_validation_synthetic_dataset(folder_relative_path, n_iterations, k_folds, settings: Settings):
     directory = data_reader.get_save_location(folder_relative_path=folder_relative_path, unique_subfolder=False)
 
     # check if other simulations have been done if so, load them
 
-    name_addition = str(Settings.noise_variance) + '_scenario_' + str(Settings.synthetic_dataset_scenario)
+    name_addition = str(settings.noise_variance) + '_scenario_' + str(settings.synthetic_dataset_scenario)
 
     try:
         list_overfitting_iterations = data_reader.load_data(directory=directory,
@@ -700,7 +689,7 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
     # Seed and retrieve the values
 
     random_generator = random.Random()
-    random_generator.seed(Settings.random_split_test_dataset_seed + 2)
+    random_generator.seed(settings.random_split_test_dataset_seed + 2)
     n_min = 0
     n_max = 20000000
 
@@ -709,14 +698,15 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
         print("iteration number ", i)
 
         dataset = load_dataset()
-        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                          random_split_seed=Settings.random_split_test_dataset_seed)
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
+                                                                          random_split_seed=settings.random_split_test_dataset_seed)
 
         overfitting_iteration, test_error, n_selected_paths, _ = perform_cross_validation(train_dataset, test_dataset,
-                                                                                       k=k_folds,
-                                                                                       random_seed=random_generator.randint(
-                                                                                           n_min,
-                                                                                           n_max))
+                                                                                          settings=settings,
+                                                                                          k=k_folds,
+                                                                                          random_seed=random_generator.randint(
+                                                                                              n_min,
+                                                                                              n_max))
         if overfitting_iteration is None:
             continue
         i += 1
@@ -726,13 +716,13 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
 
         # just to save every 10 iteration in order to have a backup
         if i % 10 == 0:
-            name_addition = str(Settings.noise_variance) + '_scenario_' + str(Settings.synthetic_dataset_scenario)
+            name_addition = str(settings.noise_variance) + '_scenario_' + str(settings.synthetic_dataset_scenario)
             save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
                       names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
                              'list_n_selected_paths_' + name_addition], directory=directory)
 
     directory = data_reader.get_save_location(folder_relative_path=folder_relative_path, unique_subfolder=False)
-    name_addition = str(Settings.noise_variance) + '_scenario_' + str(Settings.synthetic_dataset_scenario)
+    name_addition = str(settings.noise_variance) + '_scenario_' + str(settings.synthetic_dataset_scenario)
     save_data(data=[list_overfitting_iterations, list_of_test_errors, list_n_selected_paths],
               names=['list_overfitting_iterations_' + name_addition, 'list_of_test_errors_' + name_addition,
                      'list_n_selected_paths_' + name_addition], directory=directory)
@@ -741,8 +731,6 @@ def cros_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fold
 
 
 def plot_patience_overfitting_evolution(overfitting_evolution, patience_range, saving_location):
-
-
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(patience_range, overfitting_evolution, marker='o')
 

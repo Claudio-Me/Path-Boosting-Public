@@ -19,10 +19,11 @@ import sys
 
 
 class AnalysisPatternBoosting:
-    def __init__(self, pattern_boosting: PatternBoosting = None, train_predictions=None, test_predictions=None,
+    def __init__(self, pattern_boosting: PatternBoosting, settings: Settings, train_predictions=None,
+                 test_predictions=None,
                  train_error=None, test_error=None):
         self.pattern_boosting = pattern_boosting
-
+        self.settings = settings
         self.train_predictions = train_predictions
         self.test_predictions = test_predictions
 
@@ -40,7 +41,7 @@ class AnalysisPatternBoosting:
 
     def all_analysis(self, pattern_boosting: PatternBoosting, synthetic_dataset=None, show=True, save=True):
         self.pattern_boosting = pattern_boosting
-        self.plot_top_n_paths_heatmap(n=Settings.n_of_paths_importance_plotted)
+        self.plot_top_n_paths_heatmap(n=self.settings.n_of_paths_importance_plotted)
         self.errors_plots(pattern_boosting, show=show, save=save)
         self.average_path_length_plot(pattern_boosting, show=show, save=save)
         self.print_performance_information(pattern_boosting, pattern_boosting.train_error,
@@ -83,13 +84,13 @@ class AnalysisPatternBoosting:
         # cut first n points
         cut_point = 0
 
-        if Settings.final_evaluation_error == "MSE":
+        if self.settings.final_evaluation_error == "MSE":
             y_label = "MSE"
-        elif Settings.final_evaluation_error == "absolute_mean_error":
+        elif self.settings.final_evaluation_error == "absolute_mean_error":
             y_label = "abs mean err"
         else:
             raise ValueError("measure error not found")
-        if Settings.estimation_type == EstimationType.regression:
+        if self.settings.estimation_type == EstimationType.regression:
             self.plot_graphs(pattern_boosting.number_of_learners[cut_point:],
                              pattern_boosting.train_error[cut_point:],
                              tittle="train error",
@@ -104,7 +105,7 @@ class AnalysisPatternBoosting:
                                  x_label="number of learners",
                                  y_label=y_label,
                                  show=show, save=save)
-        elif Settings.estimation_type == EstimationType.classification:
+        elif self.settings.estimation_type == EstimationType.classification:
             self.plot_graphs(pattern_boosting.number_of_learners, pattern_boosting.train_error,
                              tittle="train classification",
                              x_label="number of learners", y_label="jaccard score",
@@ -125,8 +126,8 @@ class AnalysisPatternBoosting:
         fig, ax = plt.subplots()
 
         # Using set_dashes() to modify dashing of an existing line
-        if len(x) > Settings.tail:
-            ax.plot(x[-Settings.tail:], y[-Settings.tail:], label='')
+        if len(x) > self.settings.tail:
+            ax.plot(x[-self.settings.tail:], y[-self.settings.tail:], label='')
         else:
             ax.plot(x, y, label='')
 
@@ -193,7 +194,7 @@ class AnalysisPatternBoosting:
         saving_location = data_reader.get_save_location(tittle, '.pdf', unique_subfolder=True)
 
         if save is True:
-            plt.savefig(saving_location,format="pdf")
+            plt.savefig(saving_location, format="pdf")
         if show is True:
             plt.show()
 
@@ -216,7 +217,7 @@ class AnalysisPatternBoosting:
         if save is True:
             saving_location = data_reader.get_save_location(file_name="prediction_vs_true_value", file_extension='.pdf',
                                                             unique_subfolder=True)
-            plt.savefig(saving_location,format="pdf")
+            plt.savefig(saving_location, format="pdf")
         if show is True:
             plt.show()
 
@@ -255,7 +256,7 @@ class AnalysisPatternBoosting:
         saving_location = data_reader.get_save_location(tittle, '.pdf', unique_subfolder=True)
 
         if save is True:
-            plt.savefig(saving_location,format="pdf")
+            plt.savefig(saving_location, format="pdf")
         if show is True:
             plt.show()
 
@@ -301,7 +302,7 @@ class AnalysisPatternBoosting:
         if show is True:
             plt.show()
         if save is True:
-            plt.savefig(saving_location,format="pdf")
+            plt.savefig(saving_location, format="pdf")
 
     def plot_top_n_paths_heatmap(self, n: int | None = None):
         paths, importances = self.pattern_boosting.get_patterns_normalized_importance()

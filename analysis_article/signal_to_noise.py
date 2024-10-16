@@ -11,36 +11,36 @@ def signal_to_noise(number_of_simulations=200,
                     synthetic_dataset_scenario=1,
                     dataset_name="5k_synthetic_dataset", maximum_number_of_steps=None,
                     save_fig=False, use_wrapper_boosting=None, show_settings=True):
-    set_default_settings()
+    settings = set_default_settings()
 
-    Settings.scenario = synthetic_dataset_scenario
-    Settings.set_scenario(synthetic_dataset_scenario)
+    settings.scenario = synthetic_dataset_scenario
+    settings.set_scenario(synthetic_dataset_scenario)
 
-    Settings.save_analysis = False
-    Settings.show_analysis = False
-    Settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    if Settings.dataset_name == "5k_synthetic_dataset":
-        Settings.generate_new_dataset = True
-        fig_name = "signal_to_noise_ratio" + str(Settings.scenario) + ".pdf"
+    settings.save_analysis = False
+    settings.show_analysis = False
+    settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    if settings.dataset_name == "5k_synthetic_dataset":
+        settings.generate_new_dataset = True
+        fig_name = "signal_to_noise_ratio" + str(settings.scenario) + ".pdf"
     else:
-        Settings.generate_new_dataset = False
+        settings.generate_new_dataset = False
         fig_name = "signal_to_noise_ratio.pdf"
 
-    Settings.wrapper_boosting = use_wrapper_boosting
+    settings.wrapper_boosting = use_wrapper_boosting
 
     if (
-            synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2) and Settings.dataset_name == "5k_synthetic_dataset":
-        Settings.wrapper_boosting = False
-    elif synthetic_dataset_scenario == 3 and Settings.dataset_name == "5k_synthetic_dataset":
-        Settings.wrapper_boosting = True
+            synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2) and settings.dataset_name == "5k_synthetic_dataset":
+        settings.wrapper_boosting = False
+    elif synthetic_dataset_scenario == 3 and settings.dataset_name == "5k_synthetic_dataset":
+        settings.wrapper_boosting = True
 
     if maximum_number_of_steps is None:
         if synthetic_dataset_scenario == 1:
-            Settings.maximum_number_of_steps = 28
+            settings.maximum_number_of_steps = 28
         elif synthetic_dataset_scenario == 2:
-            Settings.maximum_number_of_steps = 82
+            settings.maximum_number_of_steps = 82
         elif synthetic_dataset_scenario == 3:
-            Settings.maximum_number_of_steps = 290
+            settings.maximum_number_of_steps = 290
 
     different_variances_final_test_error_vector = []
     different_variances_final_train_error_vector = []
@@ -50,7 +50,7 @@ def signal_to_noise(number_of_simulations=200,
     for noise_variance in noise_variance_list:
         print("Noise Variance")
         print(noise_variance)
-        Settings.noise_variance = noise_variance
+        settings.noise_variance = noise_variance
 
         final_test_error_vector = []
         final_train_error_vector = []
@@ -61,8 +61,8 @@ def signal_to_noise(number_of_simulations=200,
             print(i)
             dataset = load_dataset()
 
-            train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                              random_split_seed=Settings.random_split_test_dataset_seed)
+            train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
+                                                                              random_split_seed=settings.random_split_test_dataset_seed)
             average_y_value.append(np.average(test_dataset.get_labels()))
 
             # pattern boosting
@@ -87,7 +87,7 @@ def signal_to_noise(number_of_simulations=200,
         different_variances_average_y_value.append(np.average(average_y_value))
 
     if show_settings is True:
-        Settings.print_principal_values()
+        settings.print_principal_values()
 
     for i, variance in enumerate(noise_variance_list):
         print(variance)

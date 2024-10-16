@@ -6,46 +6,47 @@ import multiprocessing as mp
 from settings import Settings
 
 def set_default_settings():
-    Settings.maximum_number_of_steps = 300
+    settings = Settings()
+    settings.maximum_number_of_steps = 300
 
-    Settings.save_analysis = True
-    Settings.show_analysis = True
+    settings.save_analysis = True
+    settings.show_analysis = True
 
-    Settings.dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    Settings.generate_new_dataset = True
+    settings.dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    settings.generate_new_dataset = True
 
     # in the error graph Print only the last N learners
-    Settings.tail = Settings.maximum_number_of_steps + 1
+    settings.tail = settings.maximum_number_of_steps + 1
 
-    Settings.wrapper_boosting = True
+    settings.wrapper_boosting = True
 
     # used in wrapped boosting to specify the centers over which split the dataset
-    if Settings.wrapper_boosting is True:
-        Settings.considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
+    if settings.wrapper_boosting is True:
+        settings.considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
                                     39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
                                     57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
                                     72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
                                     89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
                                     104, 105, 106, 107, 108, 109, 110, 111, 112]
     else:
-        Settings.considered_metal_centers = None
+        settings.considered_metal_centers = None
 
     # do not expand if the paths are longer than this amount
-    Settings.max_path_length = 6
+    settings.max_path_length = 6
 
 
 
     # portion of the whole dataset that needs to be used as test dataset
-    Settings.test_size = 0.2
+    settings.test_size = 0.2
 
-    Settings.target_train_error = 0.0000001
+    settings.target_train_error = 0.0000001
 
     # it works only if "algorithm" is Xgb_step
-    Settings.update_features_importance_by_comparison = False
+    settings.update_features_importance_by_comparison = False
 
-    Settings.max_number_of_cores = mp.cpu_count()
+    settings.max_number_of_cores = mp.cpu_count()
 
-    Settings.xgb_model_parameters = {
+    settings.xgb_model_parameters = {
         'n_estimators': 1,
         'booster': 'gbtree',  # gbtree # gblinear
         'learning_rate': 0.3,
@@ -58,45 +59,45 @@ def set_default_settings():
 
     # note in gradient_boosting_model "eval_metric" is assumed to be rmse, be careful when changing it
 
-    if Settings.xgb_model_parameters['booster'] == 'gblinear':
-        Settings.xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
-        Settings.xgb_model_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
+    if settings.xgb_model_parameters['booster'] == 'gblinear':
+        settings.xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
+        settings.xgb_model_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
         # xgb_model_parameters['top_k'] = 1
 
     else:
-        Settings.xgb_model_parameters['max_depth'] = 1
-        Settings.xgb_model_parameters['gamma'] = 0
+        settings.xgb_model_parameters['max_depth'] = 1
+        settings.xgb_model_parameters['gamma'] = 0
 
-    Settings.plot_tree = False
+    settings.plot_tree = False
 
-    Settings.n_of_paths_importance_plotted = 30
+    settings.n_of_paths_importance_plotted = 30
 
-    Settings.noise_variance = 0.2
+    settings.noise_variance = 0.2
 
-    Settings.random_split_test_dataset_seed = 1
-    Settings.random_coefficients_synthetic_dataset_seed = 1
-    Settings.parallelization = False
+    settings.random_split_test_dataset_seed = 1
+    settings.random_coefficients_synthetic_dataset_seed = 1
+    settings.parallelization = False
 
-    Settings.algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step"
+    settings.algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step"
 
-    Settings.graph_label_variable = "target_tzvp_homo_lumo_gap"
+    settings.graph_label_variable = "target_tzvp_homo_lumo_gap"
 
-    Settings.estimation_type = EstimationType.regression
+    settings.estimation_type = EstimationType.regression
     # estimation_type = EstimationType.classification
 
     # measure used for checkin the final error of the model (to plot error graphs)
-    Settings.final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
+    settings.final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
 
     # the direcroty is relative to the python file location
-    Settings.r_code_relative_location = 'R_code/m_boost.R'
+    settings.r_code_relative_location = 'R_code/m_boost.R'
 
     # Base Learner used by mboost
-    Settings.r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
+    settings.r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
-    Settings.verbose = True
+    settings.verbose = True
 
     # Possible family names for loss function in R mode
-    Settings.family = "Gaussian"
+    settings.family = "Gaussian"
     # Gaussian: Gaussian
     # AdaExp: AdaExp
     # AUC: AUC()
@@ -127,7 +128,8 @@ def set_default_settings():
 
 
 
-    Settings.scenario = 1
-    Settings.set_scenario(1)
+    settings.scenario = 1
+    settings.set_scenario(1)
 
-    Settings.cross_validation_k_fold_seed = 5
+    settings.cross_validation_k_fold_seed = 5
+    return settings

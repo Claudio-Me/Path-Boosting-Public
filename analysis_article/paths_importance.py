@@ -7,37 +7,37 @@ from analysis_article.set_default_settings import set_default_settings
 
 def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
                               maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True):
-    set_default_settings()
+    settings = set_default_settings()
 
-    Settings.noise_variance = noise_variance
+    settings.noise_variance = noise_variance
 
-    Settings.scenario = synthetic_dataset_scenario
-    Settings.set_scenario(synthetic_dataset_scenario)
+    settings.scenario = synthetic_dataset_scenario
+    settings.set_scenario(synthetic_dataset_scenario)
 
-    Settings.update_features_importance_by_comparison = update_features_importance_by_comparison
+    settings.update_features_importance_by_comparison = update_features_importance_by_comparison
 
-    Settings.save_analysis = False
-    Settings.show_analysis = False
-    Settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    Settings.generate_new_dataset = True
+    settings.save_analysis = False
+    settings.show_analysis = False
+    settings.dataset_name = dataset_name  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+    settings.generate_new_dataset = True
 
     if dataset_name == '5k_synthetic_dataset':
         if synthetic_dataset_scenario == 1 or synthetic_dataset_scenario == 2:
-            Settings.wrapper_boosting = False
+            settings.wrapper_boosting = False
         elif synthetic_dataset_scenario == 3:
-            Settings.wrapper_boosting = True
+            settings.wrapper_boosting = True
 
         if maximum_number_of_steps is None:
             if synthetic_dataset_scenario == 1:
-                Settings.maximum_number_of_steps = 28
+                settings.maximum_number_of_steps = 28
             if synthetic_dataset_scenario == 2:
-                Settings.maximum_number_of_steps = 83
+                settings.maximum_number_of_steps = 83
             elif synthetic_dataset_scenario == 3:
-                Settings.maximum_number_of_steps = 300
+                settings.maximum_number_of_steps = 300
 
 
     else:
-        Settings.wrapper_boosting = True
+        settings.wrapper_boosting = True
 
     final_test_error_vector = []
     final_train_error_vector = []
@@ -58,8 +58,8 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
         print(i)
         dataset = load_dataset()
 
-        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size,
-                                                                          random_split_seed=Settings.random_split_test_dataset_seed)
+        train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
+                                                                          random_split_seed=settings.random_split_test_dataset_seed)
 
         # pattern boosting
         pattern_boosting = PatternBoosting()
@@ -121,7 +121,7 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
         cumulative_times_selected}
 
     if show_settings is True:
-        Settings.print_principal_values()
+        settings.print_principal_values()
 
     # Print averages values of results over synthetic dataset
     print("Averages importances")
