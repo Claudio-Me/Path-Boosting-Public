@@ -143,7 +143,7 @@ class WrapperPatternBoosting:
         input_for_parallelization = list(zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
                                              global_labels_variance))
         print(f"{len(input_for_parallelization)=}")
-        with mp.get_context("spawn").Pool(14) as pool:
+        with mp.get_context("spawn").Pool(17) as pool:
             # mp.get_context("spawn").Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
             # pool = mp.Pool(min(Settings.max_number_of_cores, len(Settings.considered_metal_centers)))
             array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization)
