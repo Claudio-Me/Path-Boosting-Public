@@ -46,7 +46,7 @@ class Settings:
 
     scenario = 3
 
-    unique_id_name = "7002"
+    unique_id_name = "71002"
 
     target_train_error = 0.0000001
 
