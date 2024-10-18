@@ -175,8 +175,7 @@ class GradientBoostingModel:
             boosting_matrix_without_column = boosting_matrix.new_matrix_without_column(first_column_number)
             boosting_matrix_without_column_matrix = boosting_matrix_without_column.get_matrix()
 
-            xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
-                                                estimation_type=EstimationType.regression)
+            xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient))
 
             eval_set = [(boosting_matrix_without_column_matrix, neg_gradient)]
             xgb_model.fit(X=boosting_matrix_without_column_matrix, y=neg_gradient, eval_set=eval_set)

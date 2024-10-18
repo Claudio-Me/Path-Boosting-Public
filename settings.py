@@ -46,7 +46,7 @@ class Settings:
 
         self.scenario = 3
 
-        self.unique_id_name = "79001"
+        self.unique_id_name = "71001"
 
         self.target_train_error = 0.0000001
 
@@ -55,7 +55,7 @@ class Settings:
         # -----------------------------------------------------------------------------------------------------------------
 
         # it works only if "algorithm" is Xgb_step
-        self.update_features_importance_by_comparison = True
+        self.update_features_importance_by_comparison = False
         self.verbose = True
 
         self.max_number_of_cores = mp.cpu_count()

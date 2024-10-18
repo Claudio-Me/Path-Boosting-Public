@@ -128,16 +128,23 @@ def patience_cross_validation(file_path=None, patience_range=range(5, 100, 5)):
     if file_path is None:
         raise ValueError("file_path cannot be None")
     # list of np array, in which every row of the np array contains the test error for the i-th fold of the cross validation. each element of the list corespond to a different iteration of the cross validation (usually it is just 1 iteration, we use multiple iterations only in the case of synthetic dataset)
-    list_test_errors_cross_validation_list: list = data_reader.load_data(directory=file_path)
+    try:
+        list_test_errors_cross_validation_list: list = data_reader.load_data(directory=file_path)
+    except FileNotFoundError:
+        raise ValueError(f"file_path {file_path} does not exist")
 
     list_test_error_sum = [np.sum(list_test_errors_cross_validation_list[i], axis=0) for i in
                            range(len(list_test_errors_cross_validation_list))]
 
     overfitting_evolution = [[]] * len(list_test_error_sum)
+    last_overfitting_iteration = 0
     for i, test_error_sum in enumerate(list_test_error_sum):
         for patience in patience_range:
             overfitting_iteration = early_stopping(test_errors=test_error_sum, patience=int(patience))
             overfitting_evolution[i].append(overfitting_iteration)
+            if last_overfitting_iteration < overfitting_iteration:
+                print(overfitting_iteration)
+                last_overfitting_iteration = overfitting_iteration
 
     # get average value of each column
     overfitting_evolution = np.mean(np.array(overfitting_evolution), axis=0)
