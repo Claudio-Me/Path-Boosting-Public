@@ -18,7 +18,7 @@ class SplittedTraining:
 
         settings.maximum_number_of_steps = settings.training_batch_size
 
-        pattern_boosting = PatternBoosting(settings)
+        pattern_boosting = PatternBoosting(settings=settings)
         for i in range(number_of_iterations):
             pattern_boosting.training(self.train_dataset, self.test_dataset)
 

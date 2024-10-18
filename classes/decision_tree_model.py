@@ -17,17 +17,12 @@ from sklearn.metrics import mean_squared_error, root_mean_squared_error
 
 
 class DecisionTreeModel:
-    def __init__(self):
+    def __init__(self, settings: Settings):
         self.base_learners_list: list[tree.DecisionTreeRegressor] = []
         self.train_predictions_list: list[float] = []
         self.training_labels = None
-
-        # TODO: move parameters in settings
-        self.parameters = {'max_depth': 1,
-                           'splitter': "best",
-                           'random_state': 2,
-                           'criterion': "squared_error"
-                           }
+        self.settings = settings
+        self.parameters = settings.base_learner_tree_parameters
 
     def fit_one_step(self, boosting_matrix, labels):
         self.training_labels = labels
@@ -42,14 +37,14 @@ class DecisionTreeModel:
 
         else:
             y_hat = self.train_predictions_list[-1]
-            neg_gradient = self.__neg_gradient(y=labels, y_hat=y_hat)
+            neg_gradient = self.__neg_gradient(y=labels, y_hat=y_hat, settings=self.settings)
             base_tree = self.create_tree_base_learner()
             base_tree = base_tree.fit(boosting_matrix, neg_gradient)
             new_y_hat = base_tree.predict(boosting_matrix)
             self.train_predictions_list.append(y_hat + new_y_hat)
 
         self.base_learners_list.append(base_tree)
-        if Settings.plot_tree is True:
+        if self.settings.plot_tree is True:
             tree.plot_tree(self.base_learners_list[-1])
             plt.show()
 
@@ -100,9 +95,9 @@ class DecisionTreeModel:
         error_list = []
 
         for prediction_with_i_base_learners in y_pred:
-            if Settings.final_evaluation_error == "MSE":
+            if self.settings.final_evaluation_error == "MSE":
                 error_list.append(metrics.mean_squared_error(labels, prediction_with_i_base_learners))
-            elif Settings.final_evaluation_error == "absolute_mean_error":
+            elif self.settings.final_evaluation_error == "absolute_mean_error":
                 error_list.append(metrics.mean_absolute_error(labels, prediction_with_i_base_learners))
             else:
                 raise ValueError("measure error not found")
@@ -114,9 +109,9 @@ class DecisionTreeModel:
 
         y_pred = self.predict_my(boosting_matrix_matrix)
         y_pred = list(y_pred)
-        if Settings.final_evaluation_error == "MSE":
+        if self.settings.final_evaluation_error == "MSE":
             model_error = metrics.mean_squared_error(labels, y_pred)
-        elif Settings.final_evaluation_error == "absolute_mean_error":
+        elif self.settings.final_evaluation_error == "absolute_mean_error":
             model_error = metrics.mean_absolute_error(labels, y_pred)
         else:
             raise ValueError("measure error not found")
@@ -164,7 +159,7 @@ class DecisionTreeModel:
 
         y_hat = predictions.sum(axis=0)
 
-        neg_gradient = self.__neg_gradient(y=labels, y_hat=y_hat)
+        neg_gradient = self.__neg_gradient(y=labels, y_hat=y_hat, settings=self.settings)
 
         if len(boosting_matrix.get_header()) <= 1:
             if global_labels_variance is None:
@@ -195,8 +190,8 @@ class DecisionTreeModel:
         return selected_column, final_train_error
 
     @staticmethod
-    def __neg_gradient(y, y_hat):
-        return Settings.neg_gradient(y=y, y_hat=y_hat)
+    def __neg_gradient(y, y_hat, settings):
+        return settings.neg_gradient(y=y, y_hat=y_hat)
 
     def get_last_training_error(self) -> float:
         # expected to return rmse

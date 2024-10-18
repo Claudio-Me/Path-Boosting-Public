@@ -48,19 +48,20 @@ def read_data_from_directory(directory):
 
 
 def split_training_and_test(dataset, test_size, labels: list = None, random_split_seed=None) -> Tuple[Dataset, Dataset]:
+    settings = Settings()
     if not isinstance(dataset, Dataset):
         dataset = Dataset(dataset, labels)
-    if Settings.dataset_name == "5k_synthetic_dataset":
+    if settings.dataset_name == "5k_synthetic_dataset":
         # we have to verify that in the splitting all the target paths are in the training dataset at least once
         train_dataset, test_dataset = dataset.split_dataset(test_size, random_split_seed)
 
         found_target_paths = target_paths_contained_in_dataset(train_dataset)
 
-        if len(found_target_paths) == len(Settings.target_paths):
+        if len(found_target_paths) == len(settings.target_paths):
             return train_dataset, test_dataset
         else:
             # not all target paths are in the train dataset
-            target_paths_not_found_in_train_dataset = set(Settings.target_paths) - found_target_paths
+            target_paths_not_found_in_train_dataset = set(settings.target_paths) - found_target_paths
             for path in target_paths_not_found_in_train_dataset:
                 graphs_containing_path = []
                 for graph in test_dataset.get_graphs_list():
@@ -83,7 +84,8 @@ def split_training_and_test(dataset, test_size, labels: list = None, random_spli
 def target_paths_contained_in_dataset(dataset) -> set:
     # takes as input a dataset and it returns all the target paths that have been found in the graphs of the dataset
     found_target_paths = set()
-    for path in Settings.target_paths:
+    settings = Settings()
+    for path in settings.target_paths:
         for graph in dataset.get_graphs_list():
             if graph.number_of_time_path_is_present_in_graph(path) > 0:
                 found_target_paths.add(path)
@@ -91,7 +93,7 @@ def target_paths_contained_in_dataset(dataset) -> set:
     return found_target_paths
 
 
-def read_dataset_and_labels_from_csv(directory, file_name):
+def read_dataset_and_labels_from_csv(directory, file_name, settings: Settings):
     directory = str(directory)
     warnings.warn("Weak implementation")
     if directory[-1] != "/":
@@ -114,7 +116,7 @@ def read_dataset_and_labels_from_csv(directory, file_name):
             labels.append(1)
         else:
             raise TypeError("Value not recognized")
-    dataset = Dataset(dataset, labels)
+    dataset = Dataset(graphs_list=dataset, labels=labels, settings=settings)
     print("dataset loaded")
 
     return dataset
@@ -174,6 +176,7 @@ def save_data(data, filename, directory="results", create_unique_subfolder=True)
 
 def get_save_location(file_name: str = '', file_extension: str = '', folder_relative_path="results",
                       unique_subfolder=False) -> str:
+    settings = Settings()
     # make sure that we are in the folder "pattern_boosting"
     last_folder = os.path.basename(os.path.normpath(os.getcwd()))
     if last_folder == "pattern_boosting":
@@ -194,22 +197,22 @@ def get_save_location(file_name: str = '', file_extension: str = '', folder_rela
     if location[-1] != '/':
         location = location + '/'
 
-    if Settings.algorithm == "R":
+    if settings.algorithm == "R":
         folder_name = "R_" + str(
-            Settings.maximum_number_of_steps) + '_' + Settings.r_base_learner_name + '_' + Settings.family
-    elif Settings.algorithm == "Full_xgb":
-        folder_name = "Xgb_" + str(Settings.maximum_number_of_steps)
-    elif Settings.algorithm == "Xgb_step":
-        folder_name = "Xgb_step_" + str(Settings.maximum_number_of_steps)
-    elif Settings.algorithm == "decision_tree":
-        folder_name = "decision_tree_step_" + str(Settings.maximum_number_of_steps)
+            settings.maximum_number_of_steps) + '_' + settings.r_base_learner_name + '_' + settings.family
+    elif settings.algorithm == "Full_xgb":
+        folder_name = "Xgb_" + str(settings.maximum_number_of_steps)
+    elif settings.algorithm == "Xgb_step":
+        folder_name = "Xgb_step_" + str(settings.maximum_number_of_steps)
+    elif settings.algorithm == "decision_tree":
+        folder_name = "decision_tree_step_" + str(settings.maximum_number_of_steps)
     else:
         raise TypeError("Selected algorithm not recognized")
 
     folder_name = folder_name + "_max_path_length_" + str(
-        Settings.max_path_length) + "_" + Settings.dataset_name + "_" + Settings.xgb_model_parameters['booster']+ "_" + Settings.unique_id_name
+        settings.max_path_length) + "_" + settings.dataset_name + "_" + settings.xgb_model_parameters['booster']+ "_" + settings.unique_id_name
 
-    if Settings.wrapper_boosting is True:
+    if settings.wrapper_boosting is True:
         folder_name = folder_name + "/wrapped_boosting"
 
     if (not os.path.exists(location + folder_name)) and (unique_subfolder is True):

@@ -66,7 +66,7 @@ def signal_to_noise(number_of_simulations=200,
             average_y_value.append(np.average(test_dataset.get_labels()))
 
             # pattern boosting
-            pattern_boosting = PatternBoosting()
+            pattern_boosting = PatternBoosting(settings=settings)
             pattern_boosting.training(train_dataset, test_dataset)
             final_test_error = pattern_boosting.test_error[-1]
             final_train_error = pattern_boosting.train_error[-1]
@@ -74,7 +74,7 @@ def signal_to_noise(number_of_simulations=200,
             final_train_error_vector.append(final_train_error)
 
             selected_paths = pattern_boosting.get_selected_paths_in_boosting_matrix()
-            synthetic_dataset = SyntheticDataset()
+            synthetic_dataset = SyntheticDataset(settings=settings)
             missed_paths = []
             for target_path in synthetic_dataset.target_paths:
                 if target_path not in selected_paths:

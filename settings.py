@@ -18,49 +18,49 @@ import pickle
 
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
+    def __init__(self):
+        self.maximum_number_of_steps = 1664
 
-    maximum_number_of_steps = 1800
+        self.save_analysis: bool = True
+        self.show_analysis: bool = False
 
-    save_analysis: bool = True
-    show_analysis: bool = False
+        self.dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
+        self.generate_new_dataset = False
+        self.generate_from_binary_file = True
 
-    dataset_name = "60k_dataset"  # "5k_synthetic_dataset" "5_k_selection_graphs"  "60k_dataset"
-    generate_new_dataset = False
-    generate_from_binary_file = True
+        # convert the nx graphs to undirected graphs, used only when generating new dataset
+        self.convert_to_undirected = True
 
-    # convert the nx graphs to undirected graphs, used only when generating new dataset
-    convert_to_undirected = True
+        # in the error graph Print only the last N learners
+        self.tail = self.maximum_number_of_steps + 1
 
-    # in the error graph Print only the last N learners
-    tail = maximum_number_of_steps + 1
+        self.wrapper_boosting: bool = True
 
-    wrapper_boosting: bool = True
+        self.noise_variance = 0.2
 
-    noise_variance = 0.2
+        # do not expand if the paths are longer than this amount
+        self.max_path_length = 6
 
-    # do not expand if the paths are longer than this amount
-    max_path_length = 6
+        # portion of the whole dataset that needs to be used as test dataset
+        self.test_size = 0.2
 
-    # portion of the whole dataset that needs to be used as test dataset
-    test_size = 0.2
+        self.scenario = 3
 
-    scenario = 3
+        self.unique_id_name = "79001"
 
-    unique_id_name = "71002"
+        self.target_train_error = 0.0000001
 
-    target_train_error = 0.0000001
+        self.plot_log_info: bool = True
 
-    plot_log_info: bool = True
+        # -----------------------------------------------------------------------------------------------------------------
 
-    # -----------------------------------------------------------------------------------------------------------------
+        # it works only if "algorithm" is Xgb_step
+        self.update_features_importance_by_comparison = True
+        self.verbose = True
 
-    # it works only if "algorithm" is Xgb_step
-    update_features_importance_by_comparison = False
-    verbose = True
+        self.max_number_of_cores = mp.cpu_count()
 
-    max_number_of_cores = mp.cpu_count()
-
-    xgb_model_parameters = {
+        self.xgb_model_parameters = {
         'n_estimators': 1,
         'booster': 'gbtree',  # gbtree # gblinear
         'learning_rate': 0.3,
@@ -69,107 +69,113 @@ class Settings:
         "reg_lambda": 0,
         "alpha": 0
 
-    }
+        }
 
     # note in gradient_boosting_model "eval_metric" is assumed to be rmse, be careful when changing it
 
-    if xgb_model_parameters['booster'] == 'gblinear':
-        xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
-        xgb_model_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
-        # xgb_model_parameters['top_k'] = 1
+        if self.xgb_model_parameters['booster'] == 'gblinear':
+            self.xgb_model_parameters['updater'] = 'coord_descent'  # shotgun
+            self.xgb_model_parameters['feature_selector'] = 'greedy'  # cyclic # greedy # thrifty
+            # self.xgb_model_parameters['top_k'] = 1
 
-    else:
-        xgb_model_parameters['max_depth'] = 1
-        xgb_model_parameters['gamma'] = 0
+        else:
+            self.xgb_model_parameters['max_depth'] = 1
+            self.xgb_model_parameters['gamma'] = 0
 
-    plot_tree = False
+        self.base_learner_tree_parameters = {'max_depth': 1,
+                  'splitter': "best",
+                  'random_state': 2,
+                  'criterion': "squared_error"
+                  }
 
-    n_of_paths_importance_plotted: int = 30
 
-    random_split_test_dataset_seed = 1
-    random_coefficients_synthetic_dataset_seed = 1
 
-    random_generator_for_noise_in_synthetic_dataset = random.Random()
-    random_generator_for_noise_in_synthetic_dataset.seed(random_coefficients_synthetic_dataset_seed + 1)
+        self.plot_tree = False
 
-    parallelization = False
+        self.n_of_paths_importance_plotted: int = 30
 
-    algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step" "decision_tree"
+        self.random_split_test_dataset_seed = 1
+        self.random_coefficients_synthetic_dataset_seed = 1
 
-    graph_label_variable = "target_tzvp_homo_lumo_gap"
+        self.random_generator_for_noise_in_synthetic_dataset = random.Random()
+        self.random_generator_for_noise_in_synthetic_dataset.seed(self.random_coefficients_synthetic_dataset_seed + 1)
 
-    estimation_type = EstimationType.regression
-    # estimation_type = EstimationType.classification
+        self.parallelization = False
 
-    # measure used for checkin the final error of the model (to plot error graphs)
-    final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
+        self.algorithm = "Xgb_step"  # "Full_xgb" "R" "Xgb_step" "decision_tree"
 
-    # the direcroty is relative to the python file location
-    r_code_relative_location = 'R_code/m_boost.R'
+        self.graph_label_variable = "target_tzvp_homo_lumo_gap"
 
-    # Base Learner used by mboost
-    r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
+        self.estimation_type = EstimationType.regression
+        # self.estimation_type = EstimationType.classification
 
-    # Possible family names for loss function in R mode
-    family = "Gaussian"
-    # Gaussian: Gaussian
-    # AdaExp: AdaExp
-    # AUC: AUC()
-    # Binomial: Binomial(type=c("adaboost", "glm"), link=c("logit", "probit", "cloglog", "cauchit", "log"), ...)
-    # GaussClass: GaussClass()
-    # GaussReg: GaussReg()
-    # Huber: Huber(d=NULL)
-    # Laplace: Laplace()
-    # Poisson: Poisson()
-    # GammaReg: GammaReg(nuirange=c(0, 100))
-    # CoxPH: CoxPH()
-    # QuantReg: QuantReg(tau=0.5, qoffset=0.5)
-    # ExpectReg: ExpectReg(tau=0.5)
-    # NBinomial: NBinomial(nuirange=c(0, 100))
-    # PropOdds: PropOdds(nuirange=c(-0.5, -1), offrange=c(-5, 5))
-    # Weibull: Weibull(nuirange=c(0, 100))
-    # Loglog: Loglog(nuirange=c(0, 100))
-    # Lognormal: Lognormal(nuirange=c(0, 100))
-    # Gehan: Gehan()
-    # Hurdle: Hurdle(nuirange=c(0, 100))
-    # Multinomial: Multinomial()
-    # Cindex: Cindex(sigma=0.1, ipcw=1)
-    # RCG: RCG(nuirange=c(0, 1), offrange=c(-5, 5))
+        # measure used for checkin the final error of the model (to plot error graphs)
+        self.final_evaluation_error = "MSE"  # "absolute_mean_error" "MSE"
 
-    # name of the file .RData where the model is saved
-    r_model_name = "my_r_model"
-    if True:
-        r_model_name = r_base_learner_name + family + str(maximum_number_of_steps) + str(tail)
+        # the direcroty is relative to the python file location
+        self.r_code_relative_location = 'R_code/m_boost.R'
 
-    # quantity not used yet
+        # Base Learner used by mboost
+        self.r_base_learner_name = "bols"  # "Gaussian", “bbs”, “bols”, “btree”, “bss”, “bns”
 
-    multiple_training = True
-    training_batch_size = 10
+        # Possible family names for loss function in R mode
+        self.family = "Gaussian"
+        # Gaussian: Gaussian
+        # AdaExp: AdaExp
+        # AUC: AUC()
+        # Binomial: Binomial(type=c("adaboost", "glm"), link=c("logit", "probit", "cloglog", "cauchit", "log"), ...)
+        # GaussClass: GaussClass()
+        # GaussReg: GaussReg()
+        # Huber: Huber(d=NULL)
+        # Laplace: Laplace()
+        # Poisson: Poisson()
+        # GammaReg: GammaReg(nuirange=c(0, 100))
+        # CoxPH: CoxPH()
+        # QuantReg: QuantReg(tau=0.5, qoffset=0.5)
+        # ExpectReg: ExpectReg(tau=0.5)
+        # NBinomial: NBinomial(nuirange=c(0, 100))
+        # PropOdds: PropOdds(nuirange=c(-0.5, -1), offrange=c(-5, 5))
+        # Weibull: Weibull(nuirange=c(0, 100))
+        # Loglog: Loglog(nuirange=c(0, 100))
+        # Lognormal: Lognormal(nuirange=c(0, 100))
+        # Gehan: Gehan()
+        # Hurdle: Hurdle(nuirange=c(0, 100))
+        # Multinomial: Multinomial()
+        # Cindex: Cindex(sigma=0.1, ipcw=1)
+        # RCG: RCG(nuirange=c(0, 1), offrange=c(-5, 5))
 
-    testing = False
-    evaluate_test_dataset_during_training = True
-    n_estimators = 20
+        # name of the file .RData where the model is saved
+        self.r_model_name = "my_r_model"
+        if True:
+            self.r_model_name = self.r_base_learner_name + self.family + str(self.maximum_number_of_steps) + str(self.tail)
 
-    # r_mboost_model_location = 'R_code/m_boost_model'
+        # quantity not used yet
 
-    @staticmethod
-    def neg_gradient(y, y_hat):
-        return y - y_hat
+        self.multiple_training = True
+        self.training_batch_size = 10
 
-    pd.set_option('display.max_columns', None)
+        self.testing = False
+        self.evaluate_test_dataset_during_training = True
+        self.n_estimators = 20
 
-    # used in wrapped boosting to specify the centers over which split the dataset
-    considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
+        # self.r_mboost_model_location = 'R_code/m_boost_model'
+
+
+
+        pd.set_option('display.max_columns', None)
+
+        # used in wrapped boosting to specify the centers over which split the dataset
+        self.considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block
                                 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,  # second block
                                 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,  # lanthanides
                                 72, 73, 74, 75, 76, 77, 78, 79, 80,  # third block
                                 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103,  # actinides
                                 104, 105, 106, 107, 108, 109, 110, 111, 112]
 
-    scenario_1 = list({(28,), (28, 7), (28, 7, 6)})
-    scenario_2 = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
+        self.scenario_1 = list({(28,), (28, 7), (28, 7, 6)})
+        self.scenario_2 = list({(28, 7, 6, 6, 6, 35), (28, 7, 6, 6, 6), (28, 7, 6, 6), (28, 7, 6)})
 
-    scenario_3 = [(57, 7, 7), (57, 7), (57,),
+        self.scenario_3 = [(57, 7, 7), (57, 7), (57,),
                   (72, 7, 14), (72, 7), (72,),
                   (78, 6, 7), (78, 6), (78,),
                   (47, 7, 7), (47, 7), (47,),
@@ -189,38 +195,38 @@ class Settings:
                   (45, 7, 7), (45, 7), (45,),
                   (48, 8, 7), (48, 8), (48,)]
 
-    if scenario == 1:
-        target_paths = scenario_1
-    elif scenario == 2:
-        target_paths = scenario_2
-    elif scenario == 3:
-        target_paths = scenario_3
+        if self.scenario == 1:
+            self.target_paths = self.scenario_1
+        elif self.scenario == 2:
+            self.target_paths = self.scenario_2
+        elif self.scenario == 3:
+            self.target_paths = self.scenario_3
 
-    @staticmethod
-    def set_scenario(scenario):
-        Settings.scenario = scenario
+
+    def set_scenario(self, scenario):
+        self.scenario = scenario
         if scenario == 1:
-            Settings.target_paths = Settings.scenario_1
+            self.target_paths = self.scenario_1
         elif scenario == 2:
-            Settings.target_paths = Settings.scenario_2
+            self.target_paths = self.scenario_2
         elif scenario == 3:
-            Settings.target_paths = Settings.scenario_3
+            self.target_paths = self.scenario_3
 
     cross_validation_k_fold_seed = 5
 
-    @staticmethod
-    def print_principal_values():
+
+    def print_principal_values(self):
         print("Settings Principal Values:")
-        for attr, value in vars(Settings).items():
+        for attr, value in vars(self).items():
             if not attr.startswith('__') and not callable(value):
                 if not isinstance(value, list):
                     print(f"{attr}: {value}")
 
 
     @staticmethod
-    def log_principal_settings_values(logger):
+    def log_principal_settings_values(logger, settings):
         logger.info("Settings Principal Values:")
-        for attr, value in vars(Settings).items():
+        for attr, value in vars(settings).items():
             if not attr.startswith('__') and not callable(value):
                 if not isinstance(value, list):
                     logger.info(f"{attr}: {value}")
@@ -258,5 +264,7 @@ class Settings:
         # convert into mb
         return size_in_bytes / 1000000
 
-
+    @staticmethod
+    def neg_gradient(y, y_hat):
+        return y - y_hat
 

@@ -2,7 +2,6 @@ from sklearn import metrics
 import numpy as np
 from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
-from settings import Settings
 from matplotlib.ticker import MaxNLocator
 from collections import Counter
 from classes.pattern_boosting import PatternBoosting

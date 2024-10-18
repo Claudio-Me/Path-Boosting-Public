@@ -21,7 +21,7 @@ from data.load_dataset import split_dataset_by_metal_centers
 from settings import Settings
 
 # TODO remove logging info
-if Settings.plot_log_info is True:
+if Settings().plot_log_info is True:
     import logging
     import tracemalloc
 
@@ -78,7 +78,7 @@ class WrapperPatternBoosting:
         if metal_center_list is None:
             raise ValueError('metal_center_list cannot be None')
         if pattern_boosting_list is None:
-            pattern_boosting_list = [PatternBoosting(settings) for _ in range(len(metal_center_list))]
+            pattern_boosting_list = [PatternBoosting(settings=settings) for _ in range(len(metal_center_list))]
 
         if len(pattern_boosting_list) != len(metal_center_list):
             raise ValueError("not enough models for each metal center")
@@ -105,12 +105,12 @@ class WrapperPatternBoosting:
             # some checks for the input format, whether the input dataset it is already divided by metal centers or not
             if not isinstance(train_dataset, list):
                 if not isinstance(train_dataset, Dataset):
-                    train_dataset = Dataset(train_dataset)
+                    train_dataset = Dataset(train_dataset, settings=self.settings)
                 train_datasets_list = split_dataset_by_metal_centers(dataset=train_dataset,
                                                                      considered_metal_centers=self.metal_center_list)
                 if test_dataset is not None:
                     if not isinstance(test_dataset, Dataset):
-                        test_dataset = Dataset(test_dataset)
+                        test_dataset = Dataset(test_dataset, settings=self.settings)
                     test_datasets_list = split_dataset_by_metal_centers(dataset=test_dataset,
                                                                         considered_metal_centers=self.metal_center_list)
             else:

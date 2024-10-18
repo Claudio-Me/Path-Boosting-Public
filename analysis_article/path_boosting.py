@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     else:
         # pattern boosting
-        pattern_boosting = PatternBoosting()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
 
         final_test_error = pattern_boosting.test_error[-1]
@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
     if settings.wrapper_boosting is True:
         if settings.dataset_name == "5k_synthetic_dataset":
-            synthetic_dataset = SyntheticDataset()
+            synthetic_dataset = SyntheticDataset(settings=settings)
         else:
             synthetic_dataset = None
         analysis = AnalysisWrapperPatternBoosting(wrapper_pattern_boosting=wrapper_pattern_boosting, settings=settings,
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 
 
     else:
-        analysis = AnalysisPatternBoosting()
+        analysis = AnalysisPatternBoosting(pattern_boosting=pattern_boosting, settings=settings)
         analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
                                                                           unique_subfolder=True),
                                   show=settings.show_analysis,

@@ -220,9 +220,11 @@ class GraphPB:
             return 0
 
     @staticmethod
-    def from_GraphNX_to_GraphPB(nx_Graph, label=None):
+    def from_GraphNX_to_GraphPB(nx_Graph, label=None, settings = None):
+        if settings is None:
+            settings = Settings()
         # convert to undirected graphs
-        if Settings.convert_to_undirected is True:
+        if settings.convert_to_undirected is True:
             nx_Graph= nx.to_undirected(nx_Graph)
 
         # need to convert dictionary keys and values from string to integer
@@ -235,7 +237,7 @@ class GraphPB:
         adj_list = {int(k): [int(i) for i in v] for k, v in adj_list.items()}
         if label is None:
             try:
-                label = nx_Graph.graph[Settings.graph_label_variable]
+                label = nx_Graph.graph[settings.graph_label_variable]
             except:
                 label = None
 

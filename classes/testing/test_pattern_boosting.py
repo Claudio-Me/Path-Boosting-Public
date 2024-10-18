@@ -29,7 +29,7 @@ class TestPatternBoosting:
         test_dataset = [self.__create_test_fully_connected_graph(graph_dimension, metal_labels),
                         self.__create_test_fully_connected_graph(graph_dimension, metal_labels)]
 
-        pattern_boosting = PatternBoosting(settings)
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(test_dataset)
         assert len(pattern_boosting.boosting_matrix.matrix) == 2
         assert len(pattern_boosting.boosting_matrix.matrix[0]) == 3
@@ -39,11 +39,12 @@ class TestPatternBoosting:
             assert label in pattern_boosting.boosting_matrix.header
 
     def test_2(self):
+        settings = Settings()
         print("Testing patterbosting on 2-elelements dataset")
         LALMER_graph = dt.read_data_from_name("LALMER.gml")
         OREDIA_graph = dt.read_data_from_name("OREDIA.gml")
         dataset = [LALMER_graph, OREDIA_graph]
-        pattern_boosting = PatternBoosting()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(dataset)
 
     def test_on_n_dataset(self, n):
@@ -54,16 +55,19 @@ class TestPatternBoosting:
         # data_reader.save_dataset_in_binary_file(dataset)
         # -------------------------------------
         dataset = data_reader.load_dataset_from_binary()
-        dataset = dataset.get_first_n_entries(n)
+        settings = Settings()
+        dataset = dataset.get_first_n_entries(n, settings = settings)
+
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
-        pattern_boosting = PatternBoosting()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
 
     def test_on_5k_dataset(self):
         print("Testing patternboosting on 5k test data")
         # dataset = data_reader.read_data_from_directory("data/5k-selection-graphs")
         dataset = data_reader.load_dataset_from_binary()
-        pattern_boosting = PatternBoosting()
+        settings = Settings()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(dataset)
 
     def test_on_5k_dataset_with_test_data(self):
@@ -73,7 +77,8 @@ class TestPatternBoosting:
         # data_reader.save_dataset_in_binary_file(dataset, filename="60k_dataset")
         dataset = data_reader.load_dataset_from_binary(filename="5_k_selection_graphs")
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
-        pattern_boosting = PatternBoosting()
+        settings = Settings()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
 
     def test_on_60k_dataset_with_test_data(self):
@@ -83,12 +88,9 @@ class TestPatternBoosting:
         # data_reader.save_dataset_in_binary_file(dataset, filename="60k_dataset")
         dataset = data_reader.load_dataset_from_binary(filename="60k_dataset")
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, Settings.test_size)
-        pattern_boosting = PatternBoosting()
+        settings = Settings()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
-
-
-
-
 
     def __create_test_fully_connected_graph(self, graph_dimension, metal_labels):
         adjacency_matrix = np.ones((graph_dimension, graph_dimension)) - np.eye(graph_dimension)

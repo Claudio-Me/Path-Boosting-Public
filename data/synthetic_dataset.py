@@ -20,7 +20,7 @@ class SyntheticDataset:
     Where p0...pn are the number of times target_path[0]...target_path[n] are present in the selected graph
     '''
 
-    def __init__(self):
+    def __init__(self, settings: Settings):
 
 
 
@@ -302,9 +302,9 @@ class SyntheticDataset:
         return matrix
 
     @staticmethod
-    def generate_random_graph(dimension):
+    def generate_random_graph(dimension, settings):
         graph = nx.gaussian_random_partition_graph(n=dimension, s=dimension, v=dimension, p_in=0.4, p_out=1)
-        graph = GraphPB.from_GraphNX_to_GraphPB(graph)
+        graph = GraphPB.from_GraphNX_to_GraphPB(nx_Graph=graph, settings=settings)
 
         return graph
 

@@ -10,7 +10,7 @@ import warnings
 
 class Dataset:
 
-    def __init__(self, graphs_list: list | None, labels: list = None):
+    def __init__(self, graphs_list: list | None, labels: list = None, settings=None):
         # in case graph list is None the object is used only by a specific method in wrapper_pattern_boosting
         if graphs_list is None:
             self.graphs_list = []
@@ -19,9 +19,11 @@ class Dataset:
                 self.graphs_list = graphs_list
             elif isinstance(graphs_list[0], nx.classes.multigraph.MultiGraph):
                 if labels is None:
-                    self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in graphs_list]
+                    self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(nx_Graph=graph, settings=settings) for graph in
+                                        graphs_list]
                 else:
-                    self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(graph, label) for graph, label in
+                    self.graphs_list = [GraphPB.from_GraphNX_to_GraphPB(nx_Graph=graph, label=label, settings=settings)
+                                        for graph, label in
                                         zip(graphs_list, labels)]
             else:
                 raise TypeError("Graph format not recognized ", type(graphs_list[0]))
@@ -33,7 +35,7 @@ class Dataset:
             if not (isinstance(self.labels[0], numbers.Number)):
                 warnings.warn("Warning, labels of the graphs are not numbers")
 
-    def remove(self, graph: GraphPB)->bool:
+    def remove(self, graph: GraphPB) -> bool:
         try:
             index = self.graphs_list.index(graph)
         except:
@@ -42,21 +44,20 @@ class Dataset:
         del self.labels[index]
         return True
 
-
     def add(self, graph: GraphPB):
         self.graphs_list.append(graph)
         self.labels.append(graph.label)
 
-    def get_first_n_entries(self, n):
-        return Dataset(self.graphs_list[:n], self.labels[:n])
+    def get_first_n_entries(self, n, settings: Settings = None):
+        return Dataset(self.graphs_list[:n], self.labels[:n], settings=settings)
 
     def split_dataset(self, test_size, random_split_seed=None):
         if test_size == 0:
             return self, None
         x_train, x_test, y_train, y_test = train_test_split(self.graphs_list, self.labels, test_size=test_size,
                                                             random_state=random_split_seed)
-        train_dataset = Dataset(x_train, y_train)
-        test_dataset = Dataset(x_test, y_test)
+        train_dataset = Dataset(graphs_list=x_train, labels=y_train)
+        test_dataset = Dataset(graphs_list=x_test, labels=y_test)
 
         return train_dataset, test_dataset
 
@@ -64,10 +65,8 @@ class Dataset:
         self.graphs_list = self.graphs_list + new_dataset.graphs_list
         self.labels = self.labels + new_dataset.labels
 
-    def get_graphs_list(self)->list[GraphPB]:
+    def get_graphs_list(self) -> list[GraphPB]:
         return self.graphs_list
-
-
 
     def get_labels(self):
         return self.labels
@@ -84,6 +83,3 @@ class Dataset:
 
     def get_graph_number(self, number):
         return self.get_graphs_list()[number]
-
-
-

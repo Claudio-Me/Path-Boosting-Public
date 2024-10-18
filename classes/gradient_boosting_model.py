@@ -6,6 +6,8 @@ import xgboost
 from xgboost import XGBRegressor
 from xgboost import XGBClassifier
 from sklearn import metrics
+
+
 from settings import Settings
 from classes.enumeration.estimation_type import EstimationType
 from classes.boosting_matrix import BoostingMatrix
@@ -17,7 +19,7 @@ import matplotlib.pyplot as plt
 
 
 class GradientBoostingModel:
-    def __init__(self, model):
+    def __init__(self, model, settings : Settings = None):
 
         # note: this two 'if' are useless since they are doing the same operation, I leave them there just in case I want to modify the code later
         if isinstance(model, XGBClassifier) or isinstance(model, XGBRegressor):
@@ -32,6 +34,10 @@ class GradientBoostingModel:
             self.base_learners_list = []
             self.base_learners_dimension = []
             self.model = model
+        if settings is None:
+            self. settings = Settings()
+        else:
+            self.settings = settings
 
     def predict_my(self, boosting_matrix_matrix: np.ndarray | BoostingMatrix):
         if isinstance(boosting_matrix_matrix, BoostingMatrix):
@@ -40,8 +46,8 @@ class GradientBoostingModel:
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             return self.model.predict(boosting_matrix_matrix[:, :self.n_features])
         elif self.model is ModelType.r_model:
-            r_predict_model = LaunchRCode(Settings.r_code_relative_location, "main_predict")
-            predictions_vector = r_predict_model.r_function(np.array(boosting_matrix_matrix), Settings.r_model_name,
+            r_predict_model = LaunchRCode(self.settings.r_code_relative_location, "main_predict")
+            predictions_vector = r_predict_model.r_function(np.array(boosting_matrix_matrix), self.settings.r_model_name,
                                                             os.path.join(os.getcwd(), "R_code"))
             del r_predict_model
             return predictions_vector
@@ -89,9 +95,9 @@ class GradientBoostingModel:
             error_list = []
 
             for prediction_with_i_base_learners in y_pred:
-                if Settings.final_evaluation_error == "MSE":
+                if self.settings.final_evaluation_error == "MSE":
                     error_list.append(metrics.mean_squared_error(labels, prediction_with_i_base_learners))
-                elif Settings.final_evaluation_error == "absolute_mean_error":
+                elif self.settings.final_evaluation_error == "absolute_mean_error":
                     error_list.append(metrics.mean_absolute_error(labels, prediction_with_i_base_learners))
                 else:
                     raise ValueError("measure error not found")
@@ -101,7 +107,7 @@ class GradientBoostingModel:
         if isinstance(self.model, XGBClassifier) or isinstance(self.model, XGBRegressor):
             y_pred = self.predict_my(boosting_matrix_matrix)
 
-            if Settings.estimation_type is EstimationType.classification:
+            if self.settings.estimation_type is EstimationType.classification:
                 y_pred = [round(value) for value in y_pred]
 
         elif self.model is ModelType.r_model:
@@ -110,9 +116,9 @@ class GradientBoostingModel:
         elif self.model is ModelType.xgb_one_step:
             y_pred = self.predict_my(boosting_matrix_matrix)
             y_pred = list(y_pred)
-        if Settings.final_evaluation_error == "MSE":
+        if self.settings.final_evaluation_error == "MSE":
             model_error = metrics.mean_squared_error(labels, y_pred)
-        elif Settings.final_evaluation_error == "absolute_mean_error":
+        elif self.settings.final_evaluation_error == "absolute_mean_error":
             model_error = metrics.mean_absolute_error(labels, y_pred)
         else:
             raise ValueError("measure error not found")
@@ -181,7 +187,7 @@ class GradientBoostingModel:
                 selected_column += 1
 
             results = xgb_model.evals_result()
-            final_train_error = results['validation_0'][Settings.xgb_model_parameters["eval_metric"]][-1]
+            final_train_error = results['validation_0'][self.settings.xgb_model_parameters["eval_metric"]][-1]
 
             # we assume the eval method is rmse
             final_train_error = final_train_error * final_train_error
@@ -204,17 +210,17 @@ class GradientBoostingModel:
 
         elif self.model is ModelType.r_model:
             # if self.r_select_column_and_train_model is None:
-            #   self.r_select_column_and_train_model = LaunchRCode(Settings.r_code_relative_location, "select_column")
+            #   self.r_select_column_and_train_model = LaunchRCode(self.settings.r_code_relative_location, "select_column")
 
-            self.r_select_column_and_train_model = LaunchRCode(Settings.r_code_relative_location, "select_column")
+            self.r_select_column_and_train_model = LaunchRCode(self.settings.r_code_relative_location, "select_column")
 
             selected_column_number = self.r_select_column_and_train_model.r_function(np.array(boosting_matrix),
                                                                                      np.array(labels),
-                                                                                     Settings.r_model_name,
+                                                                                     self.settings.r_model_name,
                                                                                      os.path.join(os.getcwd(),
                                                                                                   "R_code"),
-                                                                                     Settings.family,
-                                                                                     Settings.r_base_learner_name)
+                                                                                     self.settings.family,
+                                                                                     self.settings.r_base_learner_name)
             del self.r_select_column_and_train_model
             return selected_column_number
 
@@ -228,7 +234,7 @@ class GradientBoostingModel:
                 xgb_model.fit(boosting_matrix, labels, eval_set=eval_set)
 
                 # plot single tree
-                if Settings.plot_tree is True:
+                if self.settings.plot_tree is True:
                     plot_tree(xgb_model)
                     plt.show()
 
@@ -247,13 +253,12 @@ class GradientBoostingModel:
 
                 neg_gradient = self.__neg_gradient(labels, y_hat)
 
-                xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient),
-                                                    estimation_type=EstimationType.regression)
+                xgb_model = self.__create_xgb_model(base_score=np.mean(neg_gradient))
                 eval_set = [(boosting_matrix, neg_gradient)]
-                xgb_model.fit(X=boosting_matrix, y=neg_gradient, eval_set=eval_set, verbose=Settings.verbose)
+                xgb_model.fit(X=boosting_matrix, y=neg_gradient, eval_set=eval_set, verbose=self.settings.verbose)
 
                 # plot single tree
-                if Settings.plot_tree is True:
+                if self.settings.plot_tree is True:
                     plot_tree(xgb_model)
                     plt.show()
 
@@ -295,27 +300,27 @@ class GradientBoostingModel:
 
                 return selected_column[-1]
 
-    def __create_xgb_model(self, base_score=0.0, estimation_type=Settings.estimation_type):
+    def __create_xgb_model(self, base_score=0.0):
 
         # create a Xgb model
-        param = Settings.xgb_model_parameters
-        if estimation_type is EstimationType.regression:
+        param = self.settings.xgb_model_parameters
+        if self.settings.estimation_type is EstimationType.regression:
 
-            return XGBRegressor(**Settings.xgb_model_parameters,
+            return XGBRegressor(**self.settings.xgb_model_parameters,
                                 base_score=base_score)
-        elif estimation_type is EstimationType.classification:
+        elif self.settings.estimation_type is EstimationType.classification:
             return XGBClassifier(param, num_boosted_rounds=2)
         else:
             TypeError("Estimation task not recognized")
 
     def __neg_gradient(self, y, y_hat):
-        return Settings.neg_gradient(y, y_hat)
+        return self.settings.neg_gradient(y, y_hat)
 
     def get_last_training_error(self):
         if self.model is ModelType.xgb_one_step:
             last_base_learner = self.base_learners_list[-1]
 
             results = last_base_learner.evals_result()
-            return results['validation_0'][Settings.xgb_model_parameters['eval_metric']][-1]
+            return results['validation_0'][self.settings.xgb_model_parameters['eval_metric']][-1]
         else:
             raise TypeError("Can't get last training error for this model")

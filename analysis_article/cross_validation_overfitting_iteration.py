@@ -65,7 +65,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
                                                                           random_split_seed=settings.random_split_test_dataset_seed)
         if settings.dataset_name == "5k_synthetic_dataset":
-            synthetic_dataset = SyntheticDataset()
+            synthetic_dataset = SyntheticDataset(settings=settings)
             oracle_test_error = synthetic_dataset.oracle_model_evaluate(
                 graphs_list=test_dataset.get_graphs_list(),
                 labels=test_dataset.get_labels())
@@ -141,7 +141,7 @@ def patience_cross_validation(file_path=None, patience_range=range(5, 100, 5)):
 
     # get average value of each column
     overfitting_evolution = np.mean(np.array(overfitting_evolution), axis=0)
-    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution * 30, patience_range=patience_range,
+    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution, patience_range=patience_range,
                                         saving_location=os.path.dirname(file_path))
 
     return overfitting_evolution
@@ -160,11 +160,12 @@ if __name__ == '__main__':
     use_wrapper_boosting = True
     show_settings = True
 
+    '''
     cross_validation(number_of_simulations=number_of_simulations, k_folds=k_folds, scenario=scenario, patience=patience,
                      dataset_name=dataset_name, noise_variance=noise_variance,
                      maximum_number_of_steps=maximum_number_of_steps, save_fig=save_fig,
                      use_wrapper_boosting=use_wrapper_boosting, show_settings=show_settings)
-
+    '''
     patience_cross_validation(
-        file_path="/Users/user/pattern_boosting/results/cross_validation/Xgb_step_1800_max_path_length_6_60k_dataset_gbtree_906/wrapped_boosting/test_errors_cross_validation_list.pkl",
-        patience_range=range(5, 300, 5))
+        file_path="/Users/popcorn/PycharmProjects/pattern_boosting/results/cross_validation/Xgb_step_1800_max_path_length_6_60k_dataset_gbtree_71002/wrapped_boosting/test_errors_cross_validation_list.pkl",
+        patience_range=range(5, 105, 5))

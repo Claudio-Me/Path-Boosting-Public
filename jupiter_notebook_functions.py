@@ -2,7 +2,6 @@ from sklearn import metrics
 import numpy as np
 from classes.boosting_matrix import BoostingMatrix
 from classes.dataset import Dataset
-from my_script import settings
 from settings import Settings
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -490,9 +489,9 @@ def perform_cross_validation(train_dataset: Dataset, test_dataset: Dataset, sett
 
     # run the algorithm training over th whole train dataset and see the error in the test dataset
     if Settings.wrapper_boosting is False:
-        model = PatternBoosting()
+        model = PatternBoosting(settings = settings)
     else:
-        model = WrapperPatternBoosting()
+        model = WrapperPatternBoosting(settings=settings)
     model.settings.maximum_number_of_steps = overfitting_iteration
 
     if Settings.wrapper_boosting is False:

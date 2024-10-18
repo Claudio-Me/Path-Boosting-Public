@@ -17,16 +17,14 @@ from typing import List, Tuple
 import numpy.typing as npt
 
 # TODO remove logging info
-if Settings.plot_log_info is True:
+if Settings().plot_log_info is True:
     import logging
     import tracemalloc
 
     logger = logging.getLogger(__name__)
 
-# from pympler import asizeof
 
-if Settings.parallelization is True:
-    from mpi4py import MPI
+# from pympler import asizeof
 
 
 class PatternBoosting:
@@ -39,7 +37,7 @@ class PatternBoosting:
         self.train_error: list[float] = []
         self.average_path_length = []
         self.number_of_learners = []
-        self.gradient_boosting_step = GradientBoostingStep()
+        self.gradient_boosting_step = GradientBoostingStep(settings=self.settings)
         self.n_iterations = None
         self.boosting_matrix_matrix_for_test_dataset = None
         self.global_train_labels_variance = None
@@ -53,7 +51,7 @@ class PatternBoosting:
             self.training_dataset = training_dataset
 
         elif isinstance(training_dataset, list):
-            self.training_dataset = Dataset(training_dataset)
+            self.training_dataset = Dataset(training_dataset, settings=self.settings)
 
         elif training_dataset is None:
             if self.trained is False:
@@ -66,7 +64,7 @@ class PatternBoosting:
                 self.test_dataset = test_dataset
 
             elif isinstance(test_dataset, list):
-                self.test_dataset = Dataset(test_dataset)
+                self.test_dataset = Dataset(test_dataset, settings=self.settings)
             else:
                 raise TypeError("Input test dataset not recognized")
         else:
@@ -107,9 +105,9 @@ class PatternBoosting:
             print(f"iteration number: {iteration_number + 1}, {metal_center}")
             # ----------------------------------------------------------------------------------------------------------
 
-                # ----------------------------------------------------------------------------------------------------------
-                # TODO remove memory tracer
-            if Settings.plot_log_info is True:
+            # ----------------------------------------------------------------------------------------------------------
+            # TODO remove memory tracer
+            if self.settings.plot_log_info is True:
 
                 if iteration_number % 10 == 0 or iteration_number == self.settings.maximum_number_of_steps - 1:
                     traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
@@ -119,28 +117,28 @@ class PatternBoosting:
 
                     log_string = f"{iteration_number=} \n"
                     log_string += f"{metal_center=} \n"
-                    log_string += f"{Settings.getsize(self.training_dataset)=} \n"
+                    log_string += f"{self.settings.getsize(self.training_dataset)=} \n"
                     log_string += '\n' + '\n'
-                    log_string += f"{Settings.getsize(self.boosting_matrix)=}" + '\n'
-                    log_string += f"{Settings.get_pickle_size(self.boosting_matrix)=}" + '\n'
+                    log_string += f"{self.settings.getsize(self.boosting_matrix)=}" + '\n'
+                    log_string += f"{self.settings.get_pickle_size(self.boosting_matrix)=}" + '\n'
                     log_string += f"{sys.getsizeof(self.boosting_matrix)=}" + '\n'
 
                     log_string += '\n' + '\n'
-                    log_string += f"{Settings.getsize(self.boosting_matrix.get_matrix())=}" + '\n'
-                    log_string += f"{Settings.get_pickle_size(self.boosting_matrix.get_matrix())=}" + '\n'
+                    log_string += f"{self.settings.getsize(self.boosting_matrix.get_matrix())=}" + '\n'
+                    log_string += f"{self.settings.get_pickle_size(self.boosting_matrix.get_matrix())=}" + '\n'
                     log_string += f"{sys.getsizeof(self.boosting_matrix.get_matrix())=}" + '\n'
                     log_string += '\n' + '\n'
-                    log_string += f"{Settings.getsize(self.model)=}" + '\n'
-                    log_string += f"{Settings.get_pickle_size(self.model)=}" + '\n'
+                    log_string += f"{self.settings.getsize(self.model)=}" + '\n'
+                    log_string += f"{self.settings.get_pickle_size(self.model)=}" + '\n'
                     log_string += f"{sys.getsizeof(self.model)=}" + '\n'
                     log_string += '\n' + '\n'
-                    log_string += f"{Settings.getsize(self)=}" + '\n'
-                    log_string += f"{Settings.get_pickle_size(self)=}" + '\n'
+                    log_string += f"{self.settings.getsize(self)=}" + '\n'
+                    log_string += f"{self.settings.get_pickle_size(self)=}" + '\n'
                     log_string += f"{sys.getsizeof(self)=}" + '\n'
                     log_string += '\n' + '\n'
-                    log_string += "difference=" + str(Settings.getsize(self) - (
-                            Settings.getsize(self.training_dataset) + Settings.getsize(
-                        self.boosting_matrix) + Settings.getsize(
+                    log_string += "difference=" + str(self.settings.getsize(self) - (
+                            self.settings.getsize(self.training_dataset) + self.settings.getsize(
+                        self.boosting_matrix) + self.settings.getsize(
                         self.model))) + '\n'
                     log_string += '\n' + '\n'
 
@@ -215,12 +213,12 @@ class PatternBoosting:
                 n_selected_paths = len(self.get_selected_paths_in_boosting_matrix())
                 self.true_positive_ratio_1.append(times_a_target_path_has_been_selected / n_selected_paths)
 
-            if self.train_error[-1] < Settings.target_train_error:
+            if self.train_error[-1] < self.settings.target_train_error:
                 break
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
-        if Settings.plot_log_info is True:
+        if self.settings.plot_log_info is True:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
             logger.debug(
@@ -231,7 +229,7 @@ class PatternBoosting:
 
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
-        if Settings.plot_log_info is True:
+        if self.settings.plot_log_info is True:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
             logger.debug(
@@ -242,11 +240,11 @@ class PatternBoosting:
 
             # ----------------------------------------------------------------------------------------------------------
             # TODO remove memory tracer
-            if Settings.plot_log_info is True:
-                    traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
-                    metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
-                    logger.debug(
-                        f"starting computing test boosting matrix {metal_center}: {traced_memory}")
+            if self.settings.plot_log_info is True:
+                traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
+                metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
+                logger.debug(
+                    f"starting computing test boosting matrix {metal_center}: {traced_memory}")
             # ----------------------------------------------------------------------------------------------------------
 
             if self.settings.verbose is True:
@@ -258,11 +256,11 @@ class PatternBoosting:
 
             # ----------------------------------------------------------------------------------------------------------
             # TODO remove memory tracer
-            if Settings.plot_log_info is True:
-                    traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
-                    metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
-                    logger.debug(
-                        f"starting predicting test error {metal_center}: {traced_memory}")
+            if self.settings.plot_log_info is True:
+                traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
+                metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
+                logger.debug(
+                    f"starting predicting test error {metal_center}: {traced_memory}")
             # ----------------------------------------------------------------------------------------------------------
 
             if self.settings.verbose is True:
@@ -271,15 +269,15 @@ class PatternBoosting:
             if self.settings.verbose is True:
                 print("evaluate progression")
             self.test_error = self.evaluate_progression(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
-            self.test_dataset_final_predictions = self.predict(test_dataset, self.boosting_matrix_matrix_for_test_dataset)
-
+            self.test_dataset_final_predictions = self.predict(test_dataset,
+                                                               self.boosting_matrix_matrix_for_test_dataset)
 
             # ----------------------------------------------------------------------------------------------------------
             # TODO remove memory tracer
-            if Settings.plot_log_info is True:
-                    traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
-                    metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
-                    logger.debug(f" done{metal_center}: {traced_memory}")
+            if self.settings.plot_log_info is True:
+                traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
+                metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
+                logger.debug(f" done{metal_center}: {traced_memory}")
             # ----------------------------------------------------------------------------------------------------------
 
     def find_second_best_column(self, first_column_number: int) -> tuple[int, float]:
@@ -357,7 +355,7 @@ class PatternBoosting:
         for i, graph in enumerate(graphs_list):
             boosting_matrix_matrix_rows.append(
                 self.__create_boosting_vector_for_graph(graph, selected_paths=selected_paths))
-            if i % 10==0:
+            if i % 10 == 0:
                 metal_center = self.training_dataset.graphs_list[0].get_metal_center_labels()
                 print(f"computing boosting matrix for graph {i} out of {len(graphs_list)}, {metal_center}")
         # old way
@@ -453,7 +451,6 @@ class PatternBoosting:
 
         return new_paths, new_columns
 
-
     @staticmethod
     def __split(list, n):
         k, m = divmod(len(list), n)
@@ -495,7 +492,6 @@ class PatternBoosting:
                 graph = self.training_dataset.graphs_list[ith_graph]
                 nodes = graph.label_to_node[label[0]]
                 boosting_matrix[ith_graph][ith_label] = len(nodes)
-
 
         self.boosting_matrix = BoostingMatrix(boosting_matrix, matrix_header)
 

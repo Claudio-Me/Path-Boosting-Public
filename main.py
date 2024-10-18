@@ -54,7 +54,7 @@ if __name__ == '__main__':
         tracemalloc.start()
         print(tracemalloc.get_traced_memory())
 
-        settings.log_principal_settings_values(logger=logger)
+        settings.log_principal_settings_values(logger=logger, settings=settings)
 
     # ----------------------------------------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     else:
         # pattern boosting
-        pattern_boosting = PatternBoosting()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
 
         final_test_error = pattern_boosting.test_error[-1]
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     if settings.wrapper_boosting is True:
         if settings.dataset_name == "5k_synthetic_dataset":
-            synthetic_dataset = SyntheticDataset()
+            synthetic_dataset = SyntheticDataset(settings=settings)
         else:
             synthetic_dataset = None
         if settings.save_analysis or settings.show_analysis:
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     else:
         if settings.save_analysis or settings.show_analysis:
-            analysis = AnalysisPatternBoosting()
+            analysis = AnalysisPatternBoosting(settings=settings)
             analysis.load_and_analyze(directory=data_reader.get_save_location(folder_relative_path="results",
                                                                               unique_subfolder=True),
                                       show=settings.show_analysis,

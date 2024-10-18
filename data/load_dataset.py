@@ -9,7 +9,7 @@ from pathlib import Path
 
 def load_dataset(dataset_name=None):
     if dataset_name is None:
-        dataset_name: str = Settings.dataset_name
+        dataset_name: str = Settings().dataset_name
 
     # Get the absolute path to the directory where read_data.py is located
     current_dir = Path(__file__).parent.resolve()
@@ -31,11 +31,11 @@ def load_dataset(dataset_name=None):
 
 
     elif dataset_name == "60k_dataset":
-        if Settings.generate_new_dataset is False:
+        if Settings().generate_new_dataset is False:
             dataset = load_dataset_from_binary(directory=current_dir, filename="60k_dataset")
         else:
             print("Creating 60k dataset")
-            if Settings.generate_from_binary_file is False:
+            if Settings().generate_from_binary_file is False:
                 dataset_path = current_dir / 'dNatQ_graphs'
                 dataset = read_data_from_directory(dataset_path)
             else:
@@ -45,12 +45,13 @@ def load_dataset(dataset_name=None):
 
 
     elif dataset_name == "5k_synthetic_dataset":
-        if Settings.generate_new_dataset is False:
+        if Settings().generate_new_dataset is False:
             dataset = load_dataset_from_binary(directory=current_dir, filename="5k_synthetic_dataset")
 
         else:
             print("Creating a new labels for 5k dataset")
-            create_dataset = SyntheticDataset()
+            settings=Settings()
+            create_dataset = SyntheticDataset(settings=settings)
             dataset = create_dataset.create_dataset_from_5k_selection_graph(directory=current_dir)
             save_dataset_in_binary_file(dataset=dataset, directory=current_dir, filename="5k_synthetic_dataset")
             writing_directory = current_dir.parent
@@ -59,7 +60,7 @@ def load_dataset(dataset_name=None):
     return dataset
 
 
-def split_dataset_by_metal_centers(dataset, considered_metal_centers: list = Settings.considered_metal_centers) -> list[
+def split_dataset_by_metal_centers(dataset, considered_metal_centers: list = Settings().considered_metal_centers) -> list[
     Dataset]:
     "It returns a list of datasets where dataset in i-th position have all the graphs that have the i-th atom as metal center"
     if not isinstance(dataset, Dataset):

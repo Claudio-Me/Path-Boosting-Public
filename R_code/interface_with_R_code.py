@@ -2,7 +2,7 @@ import numpy as np
 
 from settings import Settings
 import pandas as pd
-if Settings.algorithm=="R":
+if Settings().algorithm=="R":
     import rpy2.robjects as robjects
     from rpy2.robjects import pandas2ri
     from rpy2.robjects import numpy2ri

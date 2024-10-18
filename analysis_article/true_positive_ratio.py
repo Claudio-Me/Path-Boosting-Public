@@ -57,7 +57,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
                                                                           random_split_seed=settings.random_split_test_dataset_seed)
 
         # pattern boosting
-        pattern_boosting = PatternBoosting()
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
         final_test_error = pattern_boosting.test_error[-1]
         final_train_error = pattern_boosting.train_error[-1]
@@ -81,7 +81,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
                 cumulative_times_selected[name] += times_selected
 
         # compute overfitting iteration
-        synthetic_dataset = SyntheticDataset()
+        synthetic_dataset = SyntheticDataset(settings=settings)
         overfitting_iteration.append(early_stopping(test_errors=pattern_boosting.test_error, patience=3))
         missed_paths = []
         for target_path in synthetic_dataset.target_paths:
@@ -95,11 +95,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
 
 
 
-
-    synthetic_dataset = SyntheticDataset()
-
-
-    synthetic_dataset = SyntheticDataset()
+    synthetic_dataset = SyntheticDataset(settings=settings)
     n_target_paths = len(synthetic_dataset.target_paths)
 
     def plot_tpr_vs_iterations_max_min(true_positive_ratios_per_iteration: list[list[float]], save_fig=True):

@@ -62,7 +62,7 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
                                                                           random_split_seed=settings.random_split_test_dataset_seed)
 
         # pattern boosting
-        pattern_boosting = PatternBoosting()
+        pattern_boosting = PatternBoosting(settings= settings)
         pattern_boosting.training(train_dataset, test_dataset)
         final_test_error = pattern_boosting.test_error[-1]
         final_train_error = pattern_boosting.train_error[-1]
@@ -88,7 +88,7 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
                 dictionary_n_times_selected_stored_in_lists[name].append(times_selected)
 
         # compute overfitting iteration
-        synthetic_dataset = SyntheticDataset()
+        synthetic_dataset = SyntheticDataset(settings=settings)
         overfitting_iteration.append(early_stopping(test_errors=pattern_boosting.test_error, patience=3))
         missed_paths = []
         for target_path in synthetic_dataset.target_paths:
@@ -144,12 +144,12 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     print(np.average(overfitting_iteration), np.std(overfitting_iteration))
 
     print("coefficients for the synthetic dataset")
-    synthetic_dataset = SyntheticDataset()
+    synthetic_dataset = SyntheticDataset(settings=settings)
     print(synthetic_dataset.target_paths)
     print(synthetic_dataset.coefficients)
 
     avg_selected_paths_per_iterations = np.average(n_selected_paths_per_iterations, axis=0)
-    synthetic_dataset = SyntheticDataset()
+    synthetic_dataset = SyntheticDataset(settings=settings)
     n_target_paths = len(synthetic_dataset.target_paths)
 
 if __name__ == '__main__':

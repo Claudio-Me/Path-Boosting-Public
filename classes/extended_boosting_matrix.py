@@ -12,6 +12,7 @@ from classes.graph import GraphPB
 from collections import defaultdict
 import matplotlib.pyplot as plt
 import ast
+
 from settings import Settings
 import copy
 
@@ -228,7 +229,8 @@ class ExtendedBoostingMatrix:
     @staticmethod
     def create_boosting_matrix(selected_paths: list[tuple],
                                list_graphs_nx: list[nx.classes.multigraph.MultiGraph],
-                               ebm_dataframe: pd.DataFrame = None) -> pd.DataFrame:
+                               ebm_dataframe: pd.DataFrame = None,
+                               settings = settings) -> pd.DataFrame:
         # we assume the order of observations in boosting matrix is the same as the order in the variable dataset
         assert isinstance(selected_paths, list)
 
@@ -241,7 +243,7 @@ class ExtendedBoostingMatrix:
 
         else:
             # function to help the retrival of attributes in nx graphs
-            graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(graph) for graph in list_graphs_nx]
+            graphsPB_list: list[GraphPB] = [GraphPB.from_GraphNX_to_GraphPB(nx_Graph=graph,settings=settings) for graph in list_graphs_nx]
             dictionary_for_dataframe = defaultdict(list)
 
             for path in selected_paths:

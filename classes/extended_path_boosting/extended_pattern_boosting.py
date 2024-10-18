@@ -257,7 +257,8 @@ class ExtendedPatternBoosting:
         elif isinstance(train_data, list):
             self.train_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
                                                                              list_graphs_nx=train_data,
-                                                                             ebm_dataframe=self.train_ebm_dataframe)
+                                                                             ebm_dataframe=self.train_ebm_dataframe,
+                                                                             settings = self.settings)
         else:
             raise Exception(
                 "impossible to create boosting matrix for train data, provide boosting matrix or list of graph")
@@ -289,7 +290,9 @@ class ExtendedPatternBoosting:
         elif isinstance(test_data, list):
             self.test_bm_df = ExtendedBoostingMatrix.create_boosting_matrix(selected_paths=self.selected_paths,
                                                                             list_graphs_nx=test_data,
-                                                                            ebm_dataframe=self.test_ebm_dataframe)
+                                                                            ebm_dataframe=self.test_ebm_dataframe,
+                                                                            settings=self.settings
+                                                                    )
         else:
             raise Exception(
                 "impossible to create boosting matrix for test data, provide boosting matrix or list of graph")
