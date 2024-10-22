@@ -148,7 +148,7 @@ def patience_cross_validation(file_path=None, patience_range=range(5, 100, 5)):
 
     # get average value of each column
     overfitting_evolution = np.mean(np.array(overfitting_evolution), axis=0)
-    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution, patience_range=patience_range,
+    plot_patience_overfitting_evolution(overfitting_evolution=overfitting_evolution * 30, patience_range=patience_range,
                                         saving_location=os.path.dirname(file_path))
 
     return overfitting_evolution

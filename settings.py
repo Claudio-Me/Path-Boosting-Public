@@ -19,7 +19,7 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.maximum_number_of_steps = 1664
+        self.maximum_number_of_steps = 2000
 
         self.save_analysis: bool = True
         self.show_analysis: bool = False
@@ -46,7 +46,7 @@ class Settings:
 
         self.scenario = 3
 
-        self.unique_id_name = "71001"
+        self.unique_id_name = "71002"
 
         self.target_train_error = 0.0000001
 
