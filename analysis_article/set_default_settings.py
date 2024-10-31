@@ -20,6 +20,8 @@ def set_default_settings():
 
     settings.wrapper_boosting = True
 
+    settings.convert_to_undirected = True
+
     # used in wrapped boosting to specify the centers over which split the dataset
     if settings.wrapper_boosting is True:
         settings.considered_metal_centers = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30,  # first block

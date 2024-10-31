@@ -120,8 +120,8 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
         iterations = list(range(1, len(mean_tpr) + 1))
 
         plt.figure(figsize=(10, 6))
-        plt.errorbar(iterations, mean_tpr, yerr=std_tpr, fmt='-o', color='b',
-                     label='True Positive Ratio (TPR) with Std. Err.', ecolor='red', elinewidth=3, capsize=0)
+        # plot standars error:
+        # plt.errorbar(iterations, mean_tpr, yerr=std_tpr, fmt='-o', color='b', label='True Positive Ratio (TPR) with Std. Err.', ecolor='red', elinewidth=3, capsize=0)
         plt.fill_between(iterations, min_tpr, max_tpr, color='b', alpha=0.1, label='Min-Max Range')
 
         plt.xlabel('Iterations')
@@ -141,5 +141,5 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
 
 
 
-# uncomment to use the file as a script
-true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=3, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True, show_settings=True)
+if __name__ == '__main__':
+    true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True, show_settings=True)
