@@ -19,7 +19,7 @@ import pickle
 class Settings:
     # -----------------------------------------------------------------------------------------------------------------
     def __init__(self):
-        self.maximum_number_of_steps = 1364
+        self.maximum_number_of_steps = 1664
 
         self.save_analysis: bool = True
         self.show_analysis: bool = False
