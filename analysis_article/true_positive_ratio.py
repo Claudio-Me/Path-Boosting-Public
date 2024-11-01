@@ -123,7 +123,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
 
         plt.xlabel('Iterations')
         plt.ylabel('True Positive Ratio')
-        plt.title('True Positive Ratio vs. Iterations with Max, Min, and Std. Err.')
+        plt.title('True Positive Ratio vs. Iterations with Max, Min')
         plt.legend()
         plt.grid(True)
         if save_fig is True:
