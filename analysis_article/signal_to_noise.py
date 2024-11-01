@@ -1,5 +1,7 @@
 import sys
 
+from psutil import users
+
 sys.path.insert(0, "../")
 from jupiter_notebook_functions import *
 
@@ -130,9 +132,18 @@ def signal_to_noise(number_of_simulations=200,
 
 
 if __name__ == '__main__':
-    signal_to_noise(number_of_simulations=200,
-                    noise_variance_list=[0.2, 0.5, 0.8, 1.1, 1.4, 1.7],
-                    # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
-                    synthetic_dataset_scenario=3,
-                    dataset_name="5k_synthetic_dataset", maximum_number_of_steps=None,
-                    save_fig=True, use_wrapper_boosting=None, show_settings=True)
+    number_of_simulations = 100
+    noise_variance_list = [0.2, 0.5, 0.8, 1.1, 1.4,
+                           1.7]  # [0.2, 0.325, 0.5, 0.625, 0.75, 0.875, 1, 1.125, 1.25, 1.375, 1.5, 1.625]
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset"  "5_k_selection_graphs"  "60k_dataset"
+    synthetic_dataset_scenario = 3  # used only in the case dataset_name is "5k_synthetic_dataset"
+    maximum_number_of_steps = None
+    save_fig = True
+    use_wrapper_boosting = False
+    show_settings = True
+
+    signal_to_noise(number_of_simulations=number_of_simulations,
+                    noise_variance_list=noise_variance_list,
+                    synthetic_dataset_scenario=synthetic_dataset_scenario,
+                    dataset_name=dataset_name, maximum_number_of_steps=maximum_number_of_steps,
+                    save_fig=save_fig, use_wrapper_boosting=use_wrapper_boosting, show_settings=show_settings)

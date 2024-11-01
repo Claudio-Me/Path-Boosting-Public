@@ -6,17 +6,14 @@ from analysis_article.set_default_settings import set_default_settings
 # %%
 
 
-
 def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
                         maximum_number_of_steps=None, save_fig=False, show_settings=True):
     settings = set_default_settings()
-
 
     settings.noise_variance = noise_variance
 
     settings.scenario = synthetic_dataset_scenario
     settings.set_scenario(synthetic_dataset_scenario)
-
 
     settings.save_analysis = False
     settings.show_analysis = False
@@ -93,8 +90,6 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
     averages_times_selected = {name: cumulative_times_selected[name] / number_of_simulations for name in
                                cumulative_times_selected}
 
-
-
     synthetic_dataset = SyntheticDataset(settings=settings)
     n_target_paths = len(synthetic_dataset.target_paths)
 
@@ -139,7 +134,13 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
     plot_tpr_vs_iterations_max_min(true_positive_ratio_1, save_fig=save_fig)
 
 
-
-
 if __name__ == '__main__':
-    true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2, maximum_number_of_steps=None, save_fig=True, show_settings=True)
+    number_of_simulations = 200
+    noise_variance = 0.2
+    maximum_numer_of_steps = None
+    save_fig = False
+    show_settings = True
+    synthetic_dataset_scenario = 3
+    true_positive_ratio(number_of_simulations=number_of_simulations,
+                        synthetic_dataset_scenario=synthetic_dataset_scenario, noise_variance=noise_variance,
+                        maximum_number_of_steps=maximum_numer_of_steps, save_fig=save_fig, show_settings=show_settings)

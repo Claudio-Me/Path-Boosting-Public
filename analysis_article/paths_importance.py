@@ -1,12 +1,16 @@
 from collections import defaultdict
 import sys
-sys.path.insert(0,"../")
+
+from scipy.ndimage import maximum
+
+sys.path.insert(0, "../")
 from jupiter_notebook_functions import *
 from analysis_article.set_default_settings import set_default_settings
 
 
 def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic_dataset_scenario=1, noise_variance=0.2,
-                              maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True):
+                              maximum_number_of_steps=None, update_features_importance_by_comparison=True,
+                              show_settings=True):
     settings = set_default_settings()
 
     settings.noise_variance = noise_variance
@@ -62,7 +66,7 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
                                                                           random_split_seed=settings.random_split_test_dataset_seed)
 
         # pattern boosting
-        pattern_boosting = PatternBoosting(settings= settings)
+        pattern_boosting = PatternBoosting(settings=settings)
         pattern_boosting.training(train_dataset, test_dataset)
         final_test_error = pattern_boosting.test_error[-1]
         final_train_error = pattern_boosting.train_error[-1]
@@ -96,14 +100,12 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
                 missed_paths.append(target_path)
         missed_paths_counter.append(len(missed_paths))
 
-
     # add zeroes to every path list such that the length of the list for each path is equal to number of simulations
     for name in dictionary_paths_importance_stored_in_lists:
         if len(dictionary_paths_importance_stored_in_lists[name]) < number_of_simulations:
             zeroes = [0] * (number_of_simulations - len(dictionary_paths_importance_stored_in_lists[name]))
             dictionary_paths_importance_stored_in_lists[name] = dictionary_paths_importance_stored_in_lists[
                                                                     name] + zeroes
-
 
     for name in dictionary_n_times_selected_stored_in_lists:
         if len(dictionary_n_times_selected_stored_in_lists[name]) < number_of_simulations:
@@ -152,5 +154,17 @@ def paths_importance_analysis(dataset_name, number_of_simulations=200, synthetic
     synthetic_dataset = SyntheticDataset(settings=settings)
     n_target_paths = len(synthetic_dataset.target_paths)
 
+
 if __name__ == '__main__':
-    paths_importance_analysis("5k_synthetic_dataset", number_of_simulations=200, synthetic_dataset_scenario=2, noise_variance=0.2, maximum_number_of_steps=None, update_features_importance_by_comparison=True, show_settings=True)
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset"  "5_k_selection_graphs"  "60k_dataset"
+    synthetic_dataset_scenario = 3  # used only in the case dataset_name is "5k_synthetic_dataset"
+    number_of_simulations = 200
+    noise_variance = 0.2
+    maximum_number_of_steps = None
+    update_features_importance_by_comparison = True
+    show_settings = True
+    paths_importance_analysis(dataset_name=dataset_name, number_of_simulations=number_of_simulations,
+                              synthetic_dataset_scenario=synthetic_dataset_scenario,
+                              noise_variance=noise_variance, maximum_number_of_steps=maximum_number_of_steps,
+                              update_features_importance_by_comparison=update_features_importance_by_comparison,
+                              show_settings=show_settings)

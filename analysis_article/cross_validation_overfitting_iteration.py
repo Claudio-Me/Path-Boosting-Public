@@ -158,9 +158,9 @@ def patience_cross_validation(file_path=None, patience_range=range(5, 100, 5)):
 if __name__ == '__main__':
     number_of_simulations = 1
     k_folds = 5
-    scenario = 3
     patience = 100
-    dataset_name = "60k_dataset"
+    dataset_name = "5k_synthetic_dataset"  # "5k_synthetic_dataset"  "5_k_selection_graphs"  "60k_dataset"
+    scenario = 3  # used only in the case dataset_name is "5k_synthetic_dataset"
     noise_variance = 0.2
     maximum_number_of_steps = 1800
     save_fig = True

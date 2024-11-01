@@ -94,6 +94,7 @@ class WrapperPatternBoosting:
     def train(self, train_dataset, test_dataset=None):
         # ----------------------------------------------------------------------------------------------------------
         # TODO remove memory tracer
+        # TODO remove memory tracer
         if self.settings.plot_log_info is True:
             traced_memory = [memory_value / 1000000 for memory_value in tracemalloc.get_traced_memory()]
             logger.debug(f"Memory at the beginning of the prediction: {traced_memory}")
@@ -144,7 +145,7 @@ class WrapperPatternBoosting:
         input_for_parallelization = list(zip(self.pattern_boosting_models_list, train_datasets_list, test_datasets_list,
                                              global_labels_variance))
         print(f"{len(input_for_parallelization)=}")
-        with mp.get_context("spawn").Pool(30) as pool:
+        with mp.get_context("spawn").Pool(6) as pool:
             # mp.get_context("spawn").Pool(min(self.settings.max_number_of_cores, len(self.settings.considered_metal_centers)))
             # pool = mp.Pool(min(self.settings.max_number_of_cores, len(self.settings.considered_metal_centers)))
             array_of_outputs = pool.map(train_pattern_boosting, input_for_parallelization)
