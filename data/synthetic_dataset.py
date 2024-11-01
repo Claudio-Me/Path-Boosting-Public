@@ -22,13 +22,13 @@ class SyntheticDataset:
 
     def __init__(self, settings: Settings):
 
+        self.settings = settings
 
+        self.target_paths = self.settings.target_paths
 
-        self.target_paths = Settings.target_paths
-
-        self.variance = Settings.noise_variance
+        self.variance = self.settings.noise_variance
         random_generator_for_coefficients = random.Random()
-        random_generator_for_coefficients.seed(Settings.random_coefficients_synthetic_dataset_seed)
+        random_generator_for_coefficients.seed(self.settings.random_coefficients_synthetic_dataset_seed)
         self.coefficients = [random_generator_for_coefficients.uniform(2, 3) for _ in range(len(self.target_paths))]
 
         for i, coefficient in enumerate(self.coefficients):
@@ -88,7 +88,7 @@ class SyntheticDataset:
         # add random noise
         if add_noise is True:
             # noise = np.random.normal(0, self.variance, len(y))
-            noise = [Settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(0, np.sqrt(self.variance)) for _ in range(len(y))]
+            noise = [self.settings.random_generator_for_noise_in_synthetic_dataset.normalvariate(0, np.sqrt(self.variance)) for _ in range(len(y))]
 
             y = y + noise
 
@@ -102,9 +102,9 @@ class SyntheticDataset:
             labels = [labels]
 
         y_pred = self.oracle_model_predict(graphs_list)
-        if Settings.final_evaluation_error == "MSE":
+        if self.settings.final_evaluation_error == "MSE":
             model_error = metrics.mean_squared_error(labels, y_pred)
-        elif Settings.final_evaluation_error == "absolute_mean_error":
+        elif self.settings.final_evaluation_error == "absolute_mean_error":
             model_error = metrics.mean_absolute_error(labels, y_pred)
         else:
             raise ValueError("measure error not found")
