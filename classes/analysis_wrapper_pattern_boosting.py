@@ -1,10 +1,3 @@
-from sklearn import metrics
-import numpy as np
-from classes.boosting_matrix import BoostingMatrix
-from classes.dataset import Dataset
-from matplotlib.ticker import MaxNLocator
-from collections import Counter
-from classes.pattern_boosting import PatternBoosting
 from settings import Settings
 from classes.enumeration.estimation_type import EstimationType
 from data.synthetic_dataset import SyntheticDataset
@@ -17,17 +10,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from classes.analysis import *
+from sklearn.metrics import mean_absolute_error
 
 
 class AnalysisWrapperPatternBoosting:
-    def __init__(self, wrapper_pattern_boosting: WrapperPatternBoosting, settings: Settings, test_predictions: list[float] | None = None,
+    def __init__(self, wrapper_pattern_boosting: WrapperPatternBoosting, settings: Settings,
+                 test_predictions: list[float] | None = None,
                  train_predictions: list[float] | None = None, save: bool = False, show: bool = False):
         self.show: bool = show
         self.save: bool = save
         self.wrapper_pattern_boosting = wrapper_pattern_boosting
         self.test_predictions = test_predictions
         self.train_predictions = train_predictions
-        self.settings= settings
+        self.settings = settings
         # old method, it works, but it is slow
         # self.train_predictions = self.wrapper_pattern_boosting.predict(self.wrapper_pattern_boosting.test_dataset)
         if self.test_predictions is None:
@@ -42,7 +37,7 @@ class AnalysisWrapperPatternBoosting:
         self.plot_top_n_paths_heatmap(n)
         self.plot_top_importance_paths(n)
         self.plot_top_importance_paths(n, 2)
-
+        print("MAE: ", self.compute_mae())
         self.plot_performance_scatter_plot(dataset='Train')
         self.plot_performance_scatter_plot(dataset='Test')
         density_scatterplot(labels=self.wrapper_pattern_boosting.test_dataset.get_labels(),
@@ -428,7 +423,8 @@ class AnalysisWrapperPatternBoosting:
         highest_correlations_missed_paths = pd.DataFrame(number_of_times_path_is_present)
         # sort by correlation value
         if len(highest_correlations_missed_paths) != 0:
-            highest_correlations_missed_paths = highest_correlations_missed_paths.sort_values(0, axis=1, ascending=False)
+            highest_correlations_missed_paths = highest_correlations_missed_paths.sort_values(0, axis=1,
+                                                                                              ascending=False)
         highest_correlations_missed_paths.index = ["correlation", "times present"]
 
         if self.show is True:
@@ -440,3 +436,9 @@ class AnalysisWrapperPatternBoosting:
             with open(saving_location, 'w') as tf:
                 tf.write(dataframe_to_save.style.to_latex())
         return highest_correlations_missed_paths
+
+    def compute_mae(self):
+        y = self.wrapper_pattern_boosting.test_dataset.get_labels()
+        y_hat = self.test_predictions
+        mae = mean_absolute_error(y_true=y, y_pred=y_hat)
+        return mae
