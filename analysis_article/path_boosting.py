@@ -8,7 +8,6 @@ from classes.analysis_wrapper_pattern_boosting import AnalysisWrapperPatternBoos
 from settings import Settings
 from data.synthetic_dataset import SyntheticDataset
 from classes.analysis_patternboosting import AnalysisPatternBoosting
-from data.load_dataset import load_dataset
 from classes.wrapper_pattern_boosting import WrapperPatternBoosting
 import sys
 
@@ -39,7 +38,7 @@ if __name__ == '__main__':
     print("Number of CPU's: ", settings.max_number_of_cores)
     print("Dataset name: ", settings.dataset_name)
 
-    dataset = load_dataset()
+    dataset = load_dataset(settings= settings)
 
     train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
                                                                       random_split_seed=settings.random_split_test_dataset_seed)

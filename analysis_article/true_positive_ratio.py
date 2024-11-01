@@ -48,7 +48,7 @@ def true_positive_ratio(number_of_simulations=200, synthetic_dataset_scenario=1,
     for i in range(number_of_simulations):
         print("i")
         print(i)
-        dataset = load_dataset()
+        dataset = load_dataset(settings= settings)
 
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
                                                                           random_split_seed=settings.random_split_test_dataset_seed)

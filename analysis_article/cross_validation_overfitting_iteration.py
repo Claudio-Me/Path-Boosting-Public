@@ -61,7 +61,7 @@ def cross_validation(number_of_simulations=200, k_folds=5, scenario=1, patience=
         print("iteration number ", i)
         print(settings.maximum_number_of_steps)
 
-        dataset = load_dataset()
+        dataset = load_dataset(settings= settings)
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
                                                                           random_split_seed=settings.random_split_test_dataset_seed)
         if settings.dataset_name == "5k_synthetic_dataset":

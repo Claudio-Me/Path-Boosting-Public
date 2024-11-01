@@ -35,7 +35,7 @@ if __name__ == '__main__':
     print("Number of CPU's: ", settings.max_number_of_cores)
     print("Dataset name: ", settings.dataset_name)
 
-    dataset = load_dataset()
+    dataset = load_dataset(settings= settings)
 
     # ----------------------------------------------------------------------------------------------------------
 

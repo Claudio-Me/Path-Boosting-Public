@@ -7,9 +7,9 @@ from data.synthetic_dataset import SyntheticDataset
 from pathlib import Path
 
 
-def load_dataset(dataset_name=None):
+def load_dataset(dataset_name=None, settings: Settings = None):
     if dataset_name is None:
-        dataset_name: str = Settings().dataset_name
+        dataset_name: str = settings.dataset_name
 
     # Get the absolute path to the directory where read_data.py is located
     current_dir = Path(__file__).parent.resolve()
@@ -17,11 +17,11 @@ def load_dataset(dataset_name=None):
     dataset_path = current_dir / dataset_name
 
     if dataset_name == "5_k_selection_graphs":
-        if Settings.generate_new_dataset is False:
+        if settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(directory=current_dir, filename="5_k_selection_graphs")
         else:
             print("Creating 5k dataset")
-            if Settings.generate_from_binary_file is False:
+            if settings.generate_from_binary_file is False:
                 dataset = read_data_from_directory(dataset_path)
             else:
                 dataset = load_dataset_from_binary(directory=current_dir, filename="5_k_selection_graphs_original")
@@ -31,11 +31,11 @@ def load_dataset(dataset_name=None):
 
 
     elif dataset_name == "60k_dataset":
-        if Settings().generate_new_dataset is False:
+        if settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(directory=current_dir, filename="60k_dataset")
         else:
             print("Creating 60k dataset")
-            if Settings().generate_from_binary_file is False:
+            if settings.generate_from_binary_file is False:
                 dataset_path = current_dir / 'dNatQ_graphs'
                 dataset = read_data_from_directory(dataset_path)
             else:
@@ -45,12 +45,12 @@ def load_dataset(dataset_name=None):
 
 
     elif dataset_name == "5k_synthetic_dataset":
-        if Settings().generate_new_dataset is False:
+        if settings.generate_new_dataset is False:
             dataset = load_dataset_from_binary(directory=current_dir, filename="5k_synthetic_dataset")
 
         else:
             print("Creating a new labels for 5k dataset")
-            settings=Settings()
+
             create_dataset = SyntheticDataset(settings=settings)
             dataset = create_dataset.create_dataset_from_5k_selection_graph(directory=current_dir)
             save_dataset_in_binary_file(dataset=dataset, directory=current_dir, filename="5k_synthetic_dataset")

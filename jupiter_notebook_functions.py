@@ -697,7 +697,7 @@ def cross_validation_synthetic_dataset(folder_relative_path, n_iterations, k_fol
     while i < n_iterations:
         print("iteration number ", i)
 
-        dataset = load_dataset()
+        dataset = load_dataset(settings= settings)
         train_dataset, test_dataset = data_reader.split_training_and_test(dataset, settings.test_size,
                                                                           random_split_seed=settings.random_split_test_dataset_seed)
 
