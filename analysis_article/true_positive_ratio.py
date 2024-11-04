@@ -140,7 +140,7 @@ if __name__ == '__main__':
     number_of_simulations = 200
     noise_variance = 0.2
     maximum_numer_of_steps = None
-    save_fig = False
+    save_fig = True
     show_settings = True
     synthetic_dataset_scenario = 3
     true_positive_ratio(number_of_simulations=number_of_simulations,
