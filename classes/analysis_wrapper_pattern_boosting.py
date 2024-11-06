@@ -124,6 +124,13 @@ class AnalysisWrapperPatternBoosting:
         # Convert atomic numbers to element names
         top_paths = [[AnalysisWrapperPatternBoosting.atomic_number_to_name.get(atom, str(atom)) for atom in path] for
                      path in top_paths]
+        new_top_paths = []
+        for path in top_paths:
+            path_string = ""
+            for atom in path:
+                path_string += atom + "-"
+            new_top_paths.append(path_string[:-1])
+        top_paths = new_top_paths
 
         # Create a figure and a single subplot
         fig, ax = plt.subplots()
